@@ -3,512 +3,344 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maqam Explorer</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Scheherazade+New:wght@400;600;700&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<title>Maqam Explorer — Rumi School of the Arts</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23f7f5f0'/%3E%3Cpolygon points='32,4 60,18 60,46 32,60 4,46 4,18' fill='none' stroke='%231a2744' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%231a2744'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a2744">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maqam">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icon-144.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Scheherazade+New:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #c9972c;
-    --gold-light: #f0c96a;
-    --gold-dim: #7a5a18;
-    --ink: #0d0a06;
-    --parchment: #1a1408;
-    --parchment-mid: #241c0c;
-    --parchment-light: #2e2410;
-    --cream: #f5e9c8;
-    --cream-dim: #b09a6e;
-    --accent: #c04a2a;
-    --accent-light: #e86040;
-    --teal: #2a7c7a;
-    --teal-light: #4ab8b5;
-  }
+:root{
+  --navy:    #1a2744;
+  --navy-l:  #2a3d6e;
+  --navy-d:  #0e1a30;
+  --gold:    #b8962a;
+  --gold-l:  #d4b44a;
+  --teal:    #2a7c7a;
+  --tl:      #3aacaa;
+  --white:   #ffffff;
+  --off:     #f7f5f0;
+  --paper:   #eeeae2;
+  --border:  #d8d0c0;
+  --text:    #1a2744;
+  --muted:   #6a7090;
+  --accent:  #c04a2a;
+  --shadow:  rgba(26,39,68,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--off);color:var(--text);font-family:'Source Sans 3',sans-serif;min-height:100vh;overflow-x:hidden;}
+/* Subtle Arabic geometric watermark like RSOTA */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%231a2744' stroke-width='.4' opacity='.04'%3E%3Cpolygon points='60,5 115,32 115,88 60,115 5,88 5,32'/%3E%3Cpolygon points='60,18 102,40 102,80 60,102 18,80 18,40'/%3E%3Ccircle cx='60' cy='60' r='18'/%3E%3Cline x1='60' y1='5' x2='60' y2='18'/%3E%3Cline x1='60' y1='102' x2='60' y2='115'/%3E%3Cline x1='5' y1='32' x2='18' y2='40'/%3E%3Cline x1='102' y1='40' x2='115' y2='32'/%3E%3Cline x1='5' y1='88' x2='18' y2='80'/%3E%3Cline x1='102' y1='80' x2='115' y2='88'/%3E%3C/g%3E%3C/svg%3E");
+}
+.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 24px 80px;}
+header{text-align:center;margin-bottom:48px;padding:40px 20px 32px;border-bottom:2px solid var(--navy);}
+.orn{font-size:1.6rem;color:var(--navy);letter-spacing:8px;opacity:.3;display:block;margin-bottom:8px;}
+@keyframes shimmer{0%,100%{opacity:.6}50%{opacity:1}}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:900;color:var(--navy);letter-spacing:1px;text-shadow:none;}
+.subtitle{font-family:'Scheherazade New',serif;font-size:1.5rem;color:var(--navy-l);margin-top:10px;letter-spacing:2px;direction:rtl;opacity:.8;}
+.hline{display:flex;align-items:center;gap:16px;margin-top:20px;justify-content:center;}
+.hline::before,.hline::after{content:'';flex:1;max-width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--navy),transparent);}
+.diamond{width:8px;height:8px;background:var(--navy);transform:rotate(45deg);}
+.controls{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--navy);padding:32px;margin-bottom:20px;position:relative;box-shadow:0 2px 16px var(--shadow);}
+.controls::before{display:none;}
+.corner{display:none;}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--gold);}
+.corner::before{width:100%;height:1.5px;top:0;}
+.corner::after{width:1.5px;height:100%;top:0;}
+.corner.tl{top:6px;left:6px}.corner.tr{top:6px;right:6px;transform:scaleX(-1)}.corner.bl{bottom:6px;left:6px;transform:scaleY(-1)}.corner.br{bottom:6px;right:6px;transform:scale(-1)}
+.cgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:20px;}
+@media(max-width:750px){.cgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.cgrid{grid-template-columns:1fr}}
+.sg{display:flex;flex-direction:column;gap:8px;}
+label{font-size:.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.csd{position:relative;user-select:none;}
+.csd-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(10,8,4,.7);border:1px solid rgba(201,151,44,.4);color:var(--cream);font-family:'Josefin Sans',sans-serif;font-size:.9rem;letter-spacing:1px;padding:12px 14px;border-radius:2px;cursor:pointer;transition:border-color .2s,background .2s;min-height:46px;}
+.csd-trigger:hover,.csd.open .csd-trigger{border-color:var(--navy);background:var(--off);}
+.csd-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.csd-arrow{flex-shrink:0;width:10px;height:6px;fill:none;stroke:var(--navy);stroke-width:1.8;stroke-linecap:round;transition:transform .2s;}
+.csd.open .csd-arrow{transform:rotate(180deg);}
+.csd-list{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1c1508;border:1px solid rgba(201,151,44,.45);border-radius:2px;z-index:9999;max-height:300px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.85);}
+.csd.open .csd-list{display:block;}
+.csd-list::-webkit-scrollbar{width:4px}.csd-list::-webkit-scrollbar-track{background:#1c1508}.csd-list::-webkit-scrollbar-thumb{background:var(--gold-dim)}
+.csd-group{padding:7px 14px 3px;font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);border-top:1px solid rgba(201,151,44,.12);pointer-events:none;}
+.csd-group:first-child{border-top:none;}
+.csd-group.common{color:var(--navy);font-weight:700;}
+.csd-opt{padding:9px 16px;font-family:'Josefin Sans',sans-serif;font-size:.88rem;color:var(--cdim);cursor:pointer;transition:background .12s,color .12s;}
+.csd-opt:hover{background:rgba(201,151,44,.13);color:var(--cream);}
+.csd-opt.selected{background:rgba(201,151,44,.2);color:var(--gold-light);}
+.meta-grid{margin-top:24px;padding-top:24px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:500px){.meta-grid{grid-template-columns:1fr}}
+.mi{display:flex;flex-direction:column;gap:5px;}
+.ml{font-size:.62rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold-dim);}
+.mv{font-family:'Source Sans 3',sans-serif;font-size:.95rem;color:var(--text);line-height:1.4;}
+.panel{background:linear-gradient(135deg,var(--pm),rgba(42,124,122,.06));border:1px solid rgba(201,151,44,.2);border-top:2px solid var(--gold);padding:36px;margin-bottom:24px;box-shadow:0 10px 40px rgba(0,0,0,.4);}
+.rtitle{font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;display:flex;align-items:center;gap:16px;font-style:italic;}
+.rtitle::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+.notes-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;align-items:center;}
+.nc{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.nb{width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex-direction:column;background:var(--white);border:1px solid var(--border);font-family:'Source Sans 3',sans-serif;font-size:.95rem;font-weight:600;color:var(--text);transition:all .25s;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:na .35s ease backwards;}
+@keyframes na{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.nb:hover{background:rgba(201,151,44,.15);color:var(--gold-light);transform:translateY(-3px) scale(1.05);}
+.nb.root{background:var(--navy);border-color:var(--navy);color:var(--white);box-shadow:0 4px 16px rgba(26,39,68,.25);}
+.nb.qt{border-color:var(--teal);color:var(--teal);}
+.qt-tag{font-size:.48rem;color:var(--teal);}
+.ndeg{font-size:.58rem;letter-spacing:1px;color:var(--muted);}
+.arrow{color:rgba(201,151,44,.3);font-size:.75rem;margin-bottom:18px;}
+.isec{margin-top:24px;padding-top:24px;border-top:1px solid var(--border);}
+.slabel{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.irow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;}
+.ibadge{padding:4px 12px;border:1px solid rgba(201,151,44,.2);background:rgba(201,151,44,.05);font-size:.72rem;letter-spacing:2px;color:var(--cdim);}
+.ibadge.aug{border-color:var(--accent);color:var(--accent);background:rgba(192,74,42,.05);}
+.ibadge.qt{border-color:var(--teal);color:var(--teal);background:rgba(42,124,122,.05);}
+.jins{margin-top:18px;padding:14px 18px;background:rgba(10,8,4,.5);border-left:2px solid var(--gold-dim);font-size:.83rem;color:var(--cdim);line-height:1.7;font-style:italic;}
+/* Fretboard */
+.fret-panel{background:linear-gradient(135deg,var(--pm),rgba(42,124,122,.06));border:1px solid rgba(201,151,44,.2);border-top:2px solid var(--teal);padding:24px 20px;margin-bottom:24px;box-shadow:0 10px 40px rgba(0,0,0,.4);}@media(max-width:500px){.fret-panel{padding:16px 10px;}}
+.fret-panel .rtitle{border: none;}
+#fretCanvas{display:block;width:100%;border-radius:2px;}
+/* Drone */
+.drone{background:linear-gradient(135deg,var(--pm),rgba(42,124,122,.05));border:1px solid rgba(201,151,44,.18);border-left:3px solid var(--teal);padding:22px 30px;display:flex;flex-direction:column;gap:14px;margin-bottom:0;}
+.drone-hdr{display:flex;align-items:center;gap:14px;}
+.drone-title{font-family:'Source Sans 3',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--teal);}
+.drone-note{font-size:1.3rem;font-weight:600;color:var(--gold-light);letter-spacing:2px;min-width:36px;text-align:center;padding:2px 10px;border:1px solid rgba(201,151,44,.3);background:rgba(10,8,4,.5);}
+.drone-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+.drone-btn{display:flex;align-items:center;gap:9px;background:rgba(42,124,122,.15);border:1px solid var(--teal);color:var(--tl);font-family:'Josefin Sans',sans-serif;font-size:.78rem;letter-spacing:3px;text-transform:uppercase;padding:11px 22px;cursor:pointer;transition:all .2s;border-radius:2px;}
+.drone-btn:hover:not(:disabled){background:var(--navy-l);}
+.drone-btn.playing{background:var(--accent);border-color:var(--accent);color:var(--white);}
+.drone-btn:disabled{opacity:.35;cursor:not-allowed;}
+.dico{width:13px;height:13px;fill:currentColor;}
+.vol-grp{display:flex;align-items:center;gap:10px;flex:1;min-width:160px;}
+.vol-lbl{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+input[type=range].vol{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:linear-gradient(90deg,var(--teal),rgba(201,151,44,.3));border-radius:2px;outline:none;cursor:pointer;}
+input[type=range].vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--navy);border-radius:50%;cursor:pointer;}
+.dstatus{font-size:.68rem;letter-spacing:2px;color:var(--cdim);opacity:.6;min-height:13px;}
+.footer{text-align:center;margin-top:60px;padding-top:28px;border-top:1px solid var(--border);color:var(--muted);font-family:'Source Sans 3',sans-serif;font-size:.75rem;letter-spacing:4px;text-transform:uppercase;}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--off)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* YouTube section */
+.yt-panel{background:linear-gradient(135deg,var(--pm),rgba(180,30,30,.04));border:1px solid rgba(201,151,44,.18);border-left:3px solid #cc2222;padding:28px 32px;display:flex;flex-direction:column;gap:16px;}
+.yt-title{font-family:'Cinzel Decorative',serif;font-size:.72rem;letter-spacing:4px;color:#ff5555;}
 
-  body {
-    background-color: var(--ink);
-    color: var(--cream);
-    font-family: 'Josefin Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+.yt-search-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;}
+.yt-input{flex:1;min-width:180px;background:rgba(10,8,4,.7);border:1px solid rgba(201,151,44,.35);color:var(--cream);font-family:'Josefin Sans',sans-serif;font-size:.9rem;padding:12px 14px;border-radius:2px;outline:none;transition:border-color .2s;}
+.yt-input:focus{border-color:var(--gold);}
+.yt-input::placeholder{color:rgba(176,154,110,.35);}
+.yt-btn{display:flex;align-items:center;gap:8px;background:rgba(180,30,30,.18);border:1px solid #aa2222;color:#ff7777;font-family:'Josefin Sans',sans-serif;font-size:.73rem;letter-spacing:2px;text-transform:uppercase;padding:12px 20px;cursor:pointer;transition:all .2s;border-radius:2px;white-space:nowrap;}
+.yt-btn:hover{background:rgba(180,30,30,.38);color:#fff;box-shadow:0 0 14px rgba(180,30,30,.3);}
+.yt-btn:disabled{opacity:.35;cursor:not-allowed;}
+.yt-btn svg{width:15px;height:15px;fill:currentColor;flex-shrink:0;}
+.yt-suggest-label{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dim);}
+.yt-suggest{display:flex;flex-wrap:wrap;gap:8px;}
+.yt-chip{padding:6px 13px;border:1px solid rgba(201,151,44,.2);background:rgba(201,151,44,.05);color:var(--cdim);font-family:'Josefin Sans',sans-serif;font-size:.72rem;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap;}
+.yt-chip:hover{background:rgba(201,151,44,.14);color:var(--cream);border-color:rgba(201,151,44,.5);}
+.yt-results{display:flex;flex-direction:column;gap:8px;}
+.yt-result-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid rgba(201,151,44,.15);background:rgba(10,8,4,.4);cursor:pointer;transition:all .15s;border-radius:2px;}
+.yt-result-item:hover{background:rgba(201,151,44,.08);border-color:rgba(201,151,44,.35);}
+.yt-result-thumb{width:80px;height:45px;object-fit:cover;border-radius:2px;flex-shrink:0;background:#111;}
+.yt-result-info{flex:1;min-width:0;}
+.yt-result-title{font-size:.82rem;color:var(--cream);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.yt-result-channel{font-size:.68rem;color:var(--cdim);margin-top:3px;}
+.yt-player{display:none;flex-direction:column;gap:12px;}
+.yt-player.visible{display:flex;}
+.yt-player-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.yt-player-label{font-size:.63rem;letter-spacing:1px;color:rgba(176,154,110,.6);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.yt-close{background:rgba(180,30,30,.15);border:1px solid rgba(180,30,30,.4);color:#ff7777;font-family:'Josefin Sans',sans-serif;font-size:.63rem;letter-spacing:2px;padding:5px 12px;cursor:pointer;border-radius:2px;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.yt-close:hover{background:rgba(180,30,30,.35);color:#fff;}
+.yt-ratio{position:relative;width:100%;padding-top:56.25%;border:1px solid rgba(201,151,44,.15);border-radius:2px;overflow:hidden;background:#000;}
+.yt-ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.yt-status{font-size:.68rem;letter-spacing:1px;color:rgba(176,154,110,.5);min-height:16px;}
+.yt-player{display:none;flex-direction:column;gap:12px;}
+.yt-player.visible{display:flex;}
+.yt-player-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.yt-player-label{font-size:.63rem;letter-spacing:2px;text-transform:uppercase;color:rgba(176,154,110,.5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.yt-close{background:rgba(180,30,30,.15);border:1px solid rgba(180,30,30,.4);color:#ff7777;font-family:'Josefin Sans',sans-serif;font-size:.63rem;letter-spacing:2px;padding:5px 12px;cursor:pointer;border-radius:2px;text-transform:uppercase;transition:all .15s;white-space:nowrap;}
+.yt-close:hover{background:rgba(180,30,30,.35);color:#fff;}
+.yt-ratio{position:relative;width:100%;padding-top:56.25%;border:1px solid rgba(201,151,44,.15);border-radius:2px;overflow:hidden;background:#000;}
+.yt-ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.yt-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(176,154,110,.5);font-family:'Josefin Sans',sans-serif;font-size:.8rem;letter-spacing:2px;}
+</style>
 
-  /* Geometric background pattern */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      repeating-linear-gradient(60deg, transparent, transparent 40px, rgba(201,151,44,0.03) 40px, rgba(201,151,44,0.03) 41px),
-      repeating-linear-gradient(-60deg, transparent, transparent 40px, rgba(201,151,44,0.03) 40px, rgba(201,151,44,0.03) 41px),
-      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(201,151,44,0.02) 40px, rgba(201,151,44,0.02) 41px);
-    pointer-events: none;
-    z-index: 0;
-  }
+<style>
+/* ── RSOTA THEME OVERRIDE ─────────────────────────────────────── */
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 20px 80px;
-  }
+/* Dropdown trigger */
+.csd-trigger{background:var(--white)!important;border:1px solid var(--border)!important;color:var(--text)!important;font-family:'Source Sans 3',sans-serif!important;}
+.csd-trigger:hover,.csd.open .csd-trigger{border-color:var(--navy)!important;background:var(--off)!important;}
+.csd-arrow{stroke:var(--navy)!important;}
 
-  /* Header */
-  header {
-    text-align: center;
-    margin-bottom: 60px;
-    position: relative;
-  }
+/* Dropdown list */
+.csd-list{background:var(--white)!important;border:1px solid var(--border)!important;box-shadow:0 8px 32px var(--shadow)!important;}
+.csd-list::-webkit-scrollbar-track{background:var(--off)!important;}
+.csd-list::-webkit-scrollbar-thumb{background:var(--border)!important;}
+.csd-group{color:var(--muted)!important;border-top-color:var(--border)!important;}
+.csd-group.common{color:var(--navy)!important;font-weight:700!important;}
+.csd-opt{color:var(--text)!important;font-family:'Source Sans 3',sans-serif!important;}
+.csd-opt:hover{background:var(--off)!important;color:var(--navy)!important;}
+.csd-opt.selected{background:var(--navy)!important;color:var(--white)!important;}
 
-  .arabic-ornament {
-    font-size: 2.2rem;
-    color: var(--gold);
-    letter-spacing: 8px;
-    opacity: 0.7;
-    display: block;
-    margin-bottom: 12px;
-    animation: shimmer 4s ease-in-out infinite;
-  }
+/* Meta */
+.ml{color:var(--muted)!important;letter-spacing:2px!important;}
+.mv{color:var(--text)!important;font-family:'Source Sans 3',sans-serif!important;}
 
-  @keyframes shimmer {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
+/* Result panel */
+.result,.panel{background:var(--white)!important;border:1px solid var(--border)!important;border-top:3px solid var(--navy)!important;box-shadow:0 2px 16px var(--shadow)!important;}
 
-  h1 {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 700;
-    color: var(--gold-light);
-    letter-spacing: 4px;
-    text-shadow: 0 0 40px rgba(201,151,44,0.4), 0 2px 4px rgba(0,0,0,0.8);
-    line-height: 1.1;
-  }
+/* Note bubbles */
+.nb{background:var(--white)!important;border-color:var(--border)!important;color:var(--text)!important;}
+.nb:hover{background:var(--navy)!important;color:var(--white)!important;}
+.nb.root{background:var(--navy)!important;border-color:var(--navy)!important;color:var(--white)!important;box-shadow:0 4px 16px rgba(26,39,68,.2)!important;}
+.nb.qt{border-color:var(--teal)!important;color:var(--teal)!important;}
+.qt-tag{color:var(--teal)!important;}
+.ndeg{color:var(--muted)!important;}
+.arrow{color:var(--border)!important;}
 
-  .subtitle {
-    font-family: 'Scheherazade New', serif;
-    font-size: 1.4rem;
-    color: var(--cream-dim);
-    margin-top: 12px;
-    letter-spacing: 2px;
-    direction: rtl;
-  }
+/* Interval section */
+.isec{border-top-color:var(--border)!important;}
+.slabel{color:var(--muted)!important;}
+.ibadge{border-color:var(--border)!important;background:var(--off)!important;color:var(--text)!important;}
+.ibadge.aug{border-color:var(--accent)!important;color:var(--accent)!important;background:rgba(192,74,42,.05)!important;}
+.ibadge.qt{border-color:var(--teal)!important;color:var(--teal)!important;background:rgba(42,124,122,.05)!important;}
 
-  .header-line {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 24px;
-    justify-content: center;
-  }
+/* Description box */
+.jins{background:var(--off)!important;border-left:3px solid var(--navy)!important;color:var(--text)!important;}
 
-  .header-line::before, .header-line::after {
-    content: '';
-    flex: 1;
-    max-width: 200px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
+/* Fretboard panel */
+.fret-panel{background:var(--white)!important;border:1px solid var(--border)!important;border-top:3px solid var(--teal)!important;box-shadow:0 2px 16px var(--shadow)!important;}
+.fret-panel .rtitle{color:var(--teal)!important;}
 
-  .diamond {
-    width: 8px;
-    height: 8px;
-    background: var(--gold);
-    transform: rotate(45deg);
-    box-shadow: 0 0 10px var(--gold);
-  }
+/* Drone panel */
+.drone{background:var(--white)!important;border:1px solid var(--border)!important;border-left:4px solid var(--teal)!important;box-shadow:0 2px 16px var(--shadow)!important;}
+.drone-title{color:var(--teal)!important;font-family:'Source Sans 3',sans-serif!important;font-weight:600!important;}
+.drone-note{color:var(--navy)!important;border-color:var(--border)!important;background:var(--off)!important;font-family:'Playfair Display',serif!important;}
+.drone-btn{background:var(--navy)!important;border-color:var(--navy)!important;color:var(--white)!important;font-family:'Source Sans 3',sans-serif!important;border-radius:2px!important;}
+.drone-btn:hover:not(:disabled){background:var(--navy-l)!important;}
+.drone-btn.playing{background:var(--accent)!important;border-color:var(--accent)!important;}
+.dstatus,.dStatus{color:var(--muted)!important;}
+.vol-lbl{color:var(--muted)!important;}
+input[type=range].vol{background:linear-gradient(90deg,var(--teal),var(--border))!important;}
+input[type=range].vol::-webkit-slider-thumb{background:var(--navy)!important;}
 
-  /* Controls panel */
-  .controls {
-    background: linear-gradient(135deg, var(--parchment-mid) 0%, var(--parchment-light) 100%);
-    border: 1px solid rgba(201,151,44,0.25);
-    border-radius: 2px;
-    padding: 40px;
-    margin-bottom: 40px;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(201,151,44,0.1);
-  }
+/* Meta grid border */
+.meta-grid{border-top-color:var(--border)!important;}
 
-  .controls::before {
-    content: '';
-    position: absolute;
-    top: 8px; left: 8px; right: 8px; bottom: 8px;
-    border: 1px solid rgba(201,151,44,0.08);
-    pointer-events: none;
-    border-radius: 1px;
-  }
+/* Scrollbar */
+::-webkit-scrollbar-track{background:var(--off)!important;}
+::-webkit-scrollbar-thumb{background:var(--border)!important;}
 
-  /* Corner ornaments */
-  .corner { position: absolute; width: 20px; height: 20px; }
-  .corner::before, .corner::after { content: ''; position: absolute; background: var(--gold); }
-  .corner::before { width: 100%; height: 1.5px; top: 0; }
-  .corner::after { width: 1.5px; height: 100%; top: 0; }
-  .corner.tl { top: 6px; left: 6px; }
-  .corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
-  .corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
-  .corner.br { bottom: 6px; right: 6px; transform: scale(-1); }
-
-  .controls-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-  }
-
-  @media (max-width: 600px) {
-    .controls-grid { grid-template-columns: 1fr; }
-  }
-
-  .select-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  label {
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-
-  select {
-    background: rgba(10, 8, 4, 0.7);
-    border: 1px solid rgba(201,151,44,0.4);
-    color: var(--cream);
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 1rem;
-    font-weight: 400;
-    letter-spacing: 1px;
-    padding: 14px 20px;
-    border-radius: 2px;
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9972c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    padding-right: 44px;
-  }
-
-  select:focus {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 2px rgba(201,151,44,0.15), 0 0 20px rgba(201,151,44,0.1);
-  }
-
-  select:hover {
-    border-color: var(--gold-light);
-    background-color: rgba(201,151,44,0.05);
-  }
-
-  option {
-    background: #1a1408;
-    color: var(--cream);
-  }
-
-  /* Maqam description */
-  .maqam-meta {
-    margin-top: 28px;
-    padding-top: 28px;
-    border-top: 1px solid rgba(201,151,44,0.15);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  @media (max-width: 600px) {
-    .maqam-meta { grid-template-columns: 1fr; }
-  }
-
-  .meta-item {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .meta-label {
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-  }
-
-  .meta-value {
-    font-family: 'Scheherazade New', serif;
-    font-size: 1.1rem;
-    color: var(--cream-dim);
-    line-height: 1.4;
-  }
-
-  /* Result display */
-  .result-panel {
-    background: linear-gradient(135deg, var(--parchment-mid) 0%, rgba(42,124,122,0.08) 100%);
-    border: 1px solid rgba(201,151,44,0.2);
-    border-top: 2px solid var(--gold);
-    padding: 40px;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    animation: panelFadeIn 0.4s ease;
-  }
-
-  @keyframes panelFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .result-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1rem;
-    color: var(--gold);
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .result-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(201,151,44,0.4), transparent);
-  }
-
-  /* Notes display */
-  .notes-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 32px;
-    align-items: center;
-  }
-
-  .note-chip {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .note-bubble {
-    width: 62px;
-    height: 62px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(10,8,4,0.8);
-    border: 1px solid rgba(201,151,44,0.3);
-    font-family: 'Josefin Sans', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: var(--cream);
-    transition: all 0.3s ease;
-    position: relative;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    animation: noteAppear 0.4s ease backwards;
-  }
-
-  @keyframes noteAppear {
-    from { opacity: 0; transform: scale(0.7); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .note-bubble:hover {
-    background: rgba(201,151,44,0.15);
-    border-color: var(--gold);
-    color: var(--gold-light);
-    transform: translateY(-4px) scale(1.05);
-  }
-
-  .note-bubble.root {
-    background: linear-gradient(135deg, rgba(201,151,44,0.3), rgba(201,151,44,0.1));
-    border-color: var(--gold);
-    color: var(--gold-light);
-    box-shadow: 0 0 20px rgba(201,151,44,0.3);
-  }
-
-  .note-bubble.half-flat {
-    border-color: rgba(74,184,181,0.5);
-    color: var(--teal-light);
-  }
-
-  .note-number {
-    font-size: 0.6rem;
-    letter-spacing: 1px;
-    color: var(--gold-dim);
-    font-family: 'Josefin Sans', sans-serif;
-  }
-
-  .arrow-sep {
-    color: rgba(201,151,44,0.3);
-    font-size: 0.8rem;
-    margin-bottom: 20px;
-  }
-
-  /* Intervals display */
-  .intervals-section {
-    margin-top: 28px;
-    padding-top: 28px;
-    border-top: 1px solid rgba(201,151,44,0.1);
-  }
-
-  .section-label {
-    font-size: 0.65rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 16px;
-  }
-
-  .intervals-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .interval-badge {
-    padding: 5px 14px;
-    border: 1px solid rgba(201,151,44,0.2);
-    background: rgba(201,151,44,0.05);
-    font-size: 0.75rem;
-    letter-spacing: 2px;
-    color: var(--cream-dim);
-    font-family: 'Josefin Sans', sans-serif;
-  }
-
-  .interval-badge.aug { border-color: rgba(192,74,42,0.4); color: var(--accent-light); background: rgba(192,74,42,0.06); }
-  .interval-badge.half { border-color: rgba(74,184,181,0.4); color: var(--teal-light); background: rgba(74,184,181,0.06); }
-
-  /* Jins info */
-  .jins-info {
-    margin-top: 20px;
-    padding: 16px 20px;
-    background: rgba(10,8,4,0.5);
-    border-left: 2px solid var(--gold-dim);
-    font-size: 0.85rem;
-    color: var(--cream-dim);
-    line-height: 1.7;
-    font-style: italic;
-  }
-
-  /* Footer ornament */
-  .footer-ornament {
-    text-align: center;
-    margin-top: 60px;
-    color: var(--gold-dim);
-    font-size: 1.4rem;
-    letter-spacing: 12px;
-    opacity: 0.5;
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--ink); }
-  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
-
-  .tag-quarter {
-    font-size: 0.55rem;
-    letter-spacing: 0;
-    color: var(--teal-light);
-    margin-top: 1px;
-    display: block;
-    text-align: center;
-  }
+/* Footer */
+.footer{border-top:1px solid var(--border)!important;color:var(--muted)!important;font-family:'Source Sans 3',sans-serif!important;font-size:.75rem!important;letter-spacing:4px!important;}
 </style>
 </head>
 <body>
-
-<div class="container">
+<div class="wrap">
   <header>
-    <span class="arabic-ornament">✦ ✧ ✦</span>
+    <span class="orn">✦ ✧ ✦</span>
     <h1>MAQAM EXPLORER</h1>
     <div class="subtitle">مقامات الموسيقى العربية</div>
-    <div class="header-line"><div class="diamond"></div></div>
+    <div class="hline"><div class="diamond"></div></div>
   </header>
 
   <div class="controls">
-    <div class="corner tl"></div>
-    <div class="corner tr"></div>
-    <div class="corner bl"></div>
-    <div class="corner br"></div>
-
-    <div class="controls-grid">
-      <div class="select-group">
-        <label for="maqamSelect">Select Maqam</label>
-        <select id="maqamSelect"></select>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <div class="cgrid">
+      <div class="sg">
+        <label>Select Maqam</label>
+        <div class="csd" id="ddMaqam">
+          <div class="csd-trigger" id="ddMaqam-trigger"><span class="csd-text" id="ddMaqam-text">—</span><svg class="csd-arrow" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg></div>
+          <div class="csd-list" id="ddMaqam-list"></div>
+        </div>
       </div>
-      <div class="select-group">
-        <label for="keySelect">Root Note / Key</label>
-        <select id="keySelect"></select>
+      <div class="sg">
+        <label>Root Note</label>
+        <div class="csd" id="ddKey">
+          <div class="csd-trigger" id="ddKey-trigger"><span class="csd-text" id="ddKey-text">—</span><svg class="csd-arrow" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg></div>
+          <div class="csd-list" id="ddKey-list"></div>
+        </div>
+      </div>
+      <div class="sg">
+        <label>Accidentals</label>
+        <div class="csd" id="ddAcc">
+          <div class="csd-trigger" id="ddAcc-trigger"><span class="csd-text" id="ddAcc-text">—</span><svg class="csd-arrow" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg></div>
+          <div class="csd-list" id="ddAcc-list"></div>
+        </div>
+      </div>
+      <div class="sg">
+        <label>Oud Tuning</label>
+        <div class="csd" id="ddTuning">
+          <div class="csd-trigger" id="ddTuning-trigger"><span class="csd-text" id="ddTuning-text">—</span><svg class="csd-arrow" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg></div>
+          <div class="csd-list" id="ddTuning-list"></div>
+        </div>
       </div>
     </div>
-
-    <div class="maqam-meta" id="maqamMeta">
-      <div class="meta-item">
-        <span class="meta-label">Family</span>
-        <span class="meta-value" id="metaFamily">—</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Arabic Name</span>
-        <span class="meta-value" id="metaArabic">—</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Character</span>
-        <span class="meta-value" id="metaChar">—</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Common Region</span>
-        <span class="meta-value" id="metaRegion">—</span>
-      </div>
+    <div class="meta-grid">
+      <div class="mi"><span class="ml">Family</span><span class="mv" id="mFamily">—</span></div>
+      <div class="mi"><span class="ml">Arabic Name</span><span class="mv" id="mArabic">—</span></div>
+      <div class="mi"><span class="ml">Character</span><span class="mv" id="mChar">—</span></div>
+      <div class="mi"><span class="ml">Common Region</span><span class="mv" id="mRegion">—</span></div>
     </div>
   </div>
 
-  <div class="result-panel" id="resultPanel">
-    <div class="result-title">Notes of the Scale</div>
+  <div class="panel">
+    <div class="rtitle">Notes of the Scale</div>
     <div class="notes-row" id="notesRow"></div>
-    <div class="intervals-section">
-      <div class="section-label">Interval Pattern</div>
-      <div class="intervals-row" id="intervalsRow"></div>
+    <div class="isec">
+      <div class="slabel">Interval Pattern</div>
+      <div class="irow" id="iRow"></div>
     </div>
-    <div class="jins-info" id="jinsInfo"></div>
+    <div class="jins" id="jinsInfo"></div>
   </div>
 
-  <div class="footer-ornament">✦ ✦ ✦ ✦ ✦</div>
+  <div class="fret-panel">
+    <div class="rtitle" style="border-top:none;color:var(--tl);">OUD FRETBOARD</div>
+    <canvas id="fretCanvas"></canvas>
+  </div>
+
+  <div class="drone">
+    <div class="drone-hdr">
+      <span class="drone-title">CELLO DRONE</span>
+      <span class="drone-note" id="droneNote">C</span>
+    </div>
+    <div class="drone-row">
+      <button class="drone-btn" id="droneBtn" onclick="toggleDrone()">
+        <svg class="dico" id="icoPlay" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        <svg class="dico" id="icoStop" viewBox="0 0 24 24" style="display:none"><rect x="4" y="3" width="5" height="18"/><rect x="15" y="3" width="5" height="18"/></svg>
+        <span id="droneLbl">Play Drone</span>
+      </button>
+      <div class="vol-grp">
+        <span class="vol-lbl">Volume</span>
+        <input type="range" class="vol" id="volSlider" min="-30" max="0" value="-6" oninput="setVol(this.value)">
+      </div>
+    </div>
+    <div class="dstatus" id="dStatus">Press Play to start drone</div>
+  </div>
+
+  <div style="height:24px"></div>
+
+  <div class="footer">Maqam Explorer &nbsp;·&nbsp; Rumi School of the Arts &nbsp;·&nbsp; rsota.com.au</div>
 </div>
-
 <script>
-// ─── CHROMATIC SCALE ───────────────────────────────────────────────────────
-// We use a 24-step system (quarter-tones) for accurate maqam representation
-// Each step = 50 cents. A semitone = 2 steps.
+'use strict';
 
-const CHROMATIC = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const FLAT_NAMES = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
-const ALL_ROOTS = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+// ═══════════════════════════════════════════════════════════════════
+// ALL DATA AND FUNCTIONS — defined before any render() call
+// ═══════════════════════════════════════════════════════════════════
 
-// Quarter tone labels
-// We'll map intervals: W = whole (2 semitones), H = half (1 semitone),
-// A = augmented 2nd (3 semitones), 3q = 3 quarter tones (1.5 semitones)
-// expressed as semitone counts for chromatic transposition.
-// For quarter-tone notes (3q interval = 1.5 semitones), we mark them as "½♭"
-
-// ─── MAQAM DATABASE ────────────────────────────────────────────────────────
-// Intervals given in semitones. Q = 0.5 (quarter tone flat marker for display)
-// We'll use decimal: 0.5 means a quarter tone (half of a semitone).
-// Note: Quarter-tone flats are displayed with a ½♭ symbol.
+const ALL_ROOTS   = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const MOST_COMMON = ['Rast','Bayati','Hijaz','Nahawand','Kurd','Ajam','Saba','Sikah','Nawa Athar','Hijaz Kar'];
 
 const MAQAMAT = {
   // ─── RAST FAMILY ───────────────────────────────────────────────
   "Rast": {
     arabic: "راست",
     family: "Rast",
-    intervals: [2, 1.5, 0.5, 2, 2, 1.5, 0.5], // W, 3q, q, W, W, 3q, q
+    intervals: [2, 1.5, 1.5, 2, 2, 1.5, 1.5], // jins Rast + jins Rast
     character: "Balanced, serene, noble",
     region: "Pan-Arab, Turkey",
     description: "The most fundamental maqam. Built on two Rast tetrachords. The 3rd and 7th degrees are quarter-tone flat (sikah & awj), giving it a distinctly Middle Eastern colour.",
@@ -517,7 +349,7 @@ const MAQAMAT = {
   "Suznak": {
     arabic: "سوزناك",
     family: "Rast",
-    intervals: [2, 1.5, 0.5, 2, 1, 2, 0.5],
+    intervals: [2, 1.5, 1.5, 2, 1, 3, 1],
     character: "Longing, yearning, passionate",
     region: "Turkey, Levant",
     description: "Similar to Rast but with a raised 6th. The augmented step between 5–6 gives it a tense, yearning quality.",
@@ -526,7 +358,7 @@ const MAQAMAT = {
   "Mahur": {
     arabic: "ماهور",
     family: "Rast",
-    intervals: [2, 1.5, 0.5, 2, 2, 2, 1],
+    intervals: [2, 1.5, 1.5, 2, 2, 2, 1],
     character: "Bright, dignified, majestic",
     region: "Iran, Turkey",
     description: "A Rast variant where the upper tetrachord resembles a major scale. Very bright and stately.",
@@ -535,7 +367,7 @@ const MAQAMAT = {
   "Yakah": {
     arabic: "يكاه",
     family: "Rast",
-    intervals: [2, 1.5, 0.5, 2, 2, 1.5, 0.5],
+    intervals: [2, 1.5, 1.5, 2, 2, 1.5, 1.5],
     character: "Grounded, spacious",
     region: "Egypt, Levant",
     description: "Essentially Rast on G. Used as the lower octave foundation in many classical compositions.",
@@ -545,7 +377,7 @@ const MAQAMAT = {
   "Bayati": {
     arabic: "بياتي",
     family: "Bayati",
-    intervals: [1.5, 0.5, 2, 2, 1.5, 0.5, 2],
+    intervals: [1.5, 1.5, 2, 2, 1.5, 1.5, 2],
     character: "Deeply expressive, sorrowful, earthy",
     region: "Pan-Arab, widespread",
     description: "One of the most used maqamat. Starts with a minor 2nd and a quarter-tone flat 3rd. Extremely emotive and deeply rooted in Arab classical tradition.",
@@ -554,7 +386,7 @@ const MAQAMAT = {
   "Husseini": {
     arabic: "حسيني",
     family: "Bayati",
-    intervals: [1.5, 0.5, 2, 2, 2, 0.5, 1.5],
+    intervals: [1.5, 1.5, 2, 2, 1, 2, 2],
     character: "Dignified sorrow, introspection",
     region: "Egypt, Iraq",
     description: "A Bayati variant with a different upper tetrachord. Named after Hussein, carrying a solemn, dignified quality.",
@@ -563,7 +395,7 @@ const MAQAMAT = {
   "Saba": {
     arabic: "صبا",
     family: "Bayati",
-    intervals: [1.5, 0.5, 1, 1.5, 1, 2, 1.5],
+    intervals: [1.5, 1.5, 1, 3, 1, 2, 2],
     character: "Weeping, grief, lament",
     region: "Egypt, Levant",
     description: "Extremely expressive maqam associated with deep grief and lament. Has a uniquely chromatic lower tetrachord.",
@@ -582,7 +414,7 @@ const MAQAMAT = {
   "Hijaz": {
     arabic: "حجاز",
     family: "Hijaz",
-    intervals: [1, 3, 1, 2, 1.5, 0.5, 2],
+    intervals: [1, 3, 1, 2, 1.5, 1.5, 2],
     character: "Desert longing, exotic, mysterious",
     region: "Pan-Arab, Andalusia",
     description: "The iconic maqam of the desert and pilgrimage. The augmented 2nd (3 semitones) between the 2nd and 3rd degrees creates its signature exotic sound.",
@@ -609,7 +441,7 @@ const MAQAMAT = {
   "Zanjaran": {
     arabic: "زنجران",
     family: "Hijaz",
-    intervals: [1, 3, 1, 2, 1, 2, 1],
+    intervals: [1, 3, 1, 2, 1, 2, 2],
     character: "Exotic, adventurous",
     region: "Egypt, Levant",
     description: "A Hijaz variant with a symmetrical and adventurous upper structure.",
@@ -637,7 +469,7 @@ const MAQAMAT = {
   "Farahfaza": {
     arabic: "فرح فزا",
     family: "Nahawand",
-    intervals: [2, 1, 2, 2, 1.5, 0.5, 2],
+    intervals: [2, 1, 2, 2, 1.5, 1.5, 2],
     character: "Joyful sorrow, bittersweet",
     region: "Egypt, Iraq",
     description: "A Nahawand variant with an Ajam-influenced upper part. The name means 'joy-bringing' yet retains a bittersweet quality.",
@@ -665,7 +497,7 @@ const MAQAMAT = {
   "Jiharkah": {
     arabic: "جهاركاه",
     family: "Ajam",
-    intervals: [2, 2, 1, 2, 1.5, 0.5, 2],
+    intervals: [2, 2, 1, 2, 1.5, 1.5, 2],
     character: "Bright with Eastern warmth",
     region: "Egypt, Levant",
     description: "A major-flavoured maqam with an Eastern upper tetrachord (Rast on upper), blending Western brightness with Oriental warmth.",
@@ -703,7 +535,7 @@ const MAQAMAT = {
   "Sikah": {
     arabic: "سيكاه",
     family: "Sikah",
-    intervals: [1.5, 0.5, 2, 1.5, 0.5, 2, 1.5],
+    intervals: [1.5, 2, 2, 1.5, 1.5, 2, 1.5],
     character: "Ethereal, floating, mystical",
     region: "Egypt, Pan-Arab",
     description: "Built entirely on quarter-tone intervals, Sikah starts and ends on a quarter-tone flat note. Mystical and otherworldly.",
@@ -712,7 +544,7 @@ const MAQAMAT = {
   "Iraq": {
     arabic: "عراق",
     family: "Sikah",
-    intervals: [1.5, 0.5, 2, 1, 1, 2, 1],
+    intervals: [1.5, 2, 1.5, 1.5, 2, 2, 1.5],
     character: "Nostalgic, ancient",
     region: "Iraq, Egypt",
     description: "A Sikah variant with distinct Iraqi flavour. Named after the region. Evokes ancient history.",
@@ -749,7 +581,7 @@ const MAQAMAT = {
   "Athar Kurd": {
     arabic: "أثر كرد",
     family: "Athar Kurd",
-    intervals: [1, 3, 1, 2, 2, 1.5, 0.5],
+    intervals: [1, 3, 1, 2, 2, 1.5, 1.5],
     character: "Dark mystery, suspense",
     region: "Egypt, Levant",
     description: "Lower Hijaz starting on a minor 2nd (Kurd), upper Rast. Creates a uniquely dark and suspenseful texture.",
@@ -768,7 +600,7 @@ const MAQAMAT = {
   "Mustaar": {
     arabic: "مستعار",
     family: "Bayati",
-    intervals: [1.5, 0.5, 2, 2, 1, 2, 1.5],
+    intervals: [1.5, 1.5, 2, 2, 1, 2, 2],
     character: "Borrowed longing",
     region: "Egypt",
     description: "Name means 'borrowed'. A Bayati variant with a melancholic, wandering quality.",
@@ -786,7 +618,7 @@ const MAQAMAT = {
   "Suzdalara": {
     arabic: "سوزدلارا",
     family: "Rast",
-    intervals: [2, 1.5, 0.5, 2, 1, 3, 1],
+    intervals: [2, 1.5, 1.5, 2, 1, 3, 1],
     character: "Burning heart, passion",
     region: "Turkey",
     description: "Name means 'burning in the chest'. Combines Rast lower with Hijaz upper. Very passionate.",
@@ -795,7 +627,7 @@ const MAQAMAT = {
   "Tarz Naw": {
     arabic: "طرز نو",
     family: "Rast",
-    intervals: [2, 2, 1.5, 0.5, 2, 1.5, 0.5],
+    intervals: [2, 2, 1.5, 1.5, 2, 1.5, 1.5],
     character: "New style, fresh",
     region: "Egypt, Iraq",
     description: "A newer-style maqam. Bright with an Eastern upper flavour.",
@@ -804,7 +636,7 @@ const MAQAMAT = {
   "Bayati Shuri": {
     arabic: "بياتي شوري",
     family: "Bayati",
-    intervals: [1.5, 0.5, 2, 2, 1, 3, 1],
+    intervals: [1.5, 1.5, 2, 2, 1, 3, 1],
     character: "Urban sorrow, city blues",
     region: "Egypt",
     description: "A Bayati variant popular in Egyptian urban music. Blends deep Bayati sorrow with a Hijaz upper tetrachord.",
@@ -813,7 +645,7 @@ const MAQAMAT = {
   "Huzam": {
     arabic: "هزام",
     family: "Sikah",
-    intervals: [1.5, 0.5, 1, 1.5, 1, 3, 1],
+    intervals: [1.5, 2, 1, 3, 1, 1.5, 2],
     character: "Majestic grief, noble sorrow",
     region: "Egypt, Pan-Arab",
     description: "A Sikah variant with a Hijaz upper section. The majestic quality of Hijaz merges with the ethereal Sikah base.",
@@ -822,7 +654,7 @@ const MAQAMAT = {
   "Awj Ara": {
     arabic: "أوج آرا",
     family: "Sikah",
-    intervals: [1.5, 0.5, 2, 2, 1, 3, 1],
+    intervals: [1.5, 2, 1, 3, 1, 1.5, 2],
     character: "Illuminated, expansive",
     region: "Egypt",
     description: "Decorated Sikah variant. The name references the high Awj note. Spacious and illuminated.",
@@ -830,188 +662,509 @@ const MAQAMAT = {
   }
 };
 
-// ─── HELPER FUNCTIONS ──────────────────────────────────────────────────────
+// ── OUD TUNINGS ──────────────────────────────────────────────────────────────
+const OUD_TUNINGS = {
+  arabic:  { label:'Arabic Standard', strings:['C2','F2','A2','D3','G3','C4'] },
+  ff:      { label:'FF Tuning',       strings:['F2','A2','D3','G3','C4','F4'] },
+  iraqi:   { label:'Iraqi',           strings:['F2','G2','A2','D3','G3','C4'] },
+  turkish: { label:'Turkish',         strings:['D2','G2','B2','E3','A3','D4'] },
+  syrian:  { label:'Syrian/Levant',   strings:['C2','F2','A2','D3','G3','C4'] },
+};
 
-function noteIndex(note) {
-  const map = { 'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,
-                'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11 };
-  return map[note];
+const NOTE_MIDI = {
+  'C2':36,'C#2':37,'Db2':37,'D2':38,'D#2':39,'Eb2':39,'E2':40,'F2':41,'F#2':42,'Gb2':42,'G2':43,'G#2':44,'Ab2':44,'A2':45,'A#2':46,'Bb2':46,'B2':47,
+  'C3':48,'C#3':49,'Db3':49,'D3':50,'D#3':51,'Eb3':51,'E3':52,'F3':53,'F#3':54,'Gb3':54,'G3':55,'G#3':56,'Ab3':56,'A3':57,'A#3':58,'Bb3':58,'B3':59,
+  'C4':60,'C#4':61,'Db4':61,'D4':62,'D#4':63,'Eb4':63,'E4':64,'F4':65,'F#4':66,'Gb4':66,'G4':67,'G#4':68,'Ab4':68,'A4':69,'A#4':70,'Bb4':70,'B4':71,
+};
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function noteIndex(n) {
+  return {'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11}[n] || 0;
 }
-
-// Preferred enharmonic names based on root
-function getPreferredName(semitones, rootNote) {
-  const sharps = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  const flats  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
-  const useFlat = ['F','Bb','Eb','Ab','Db','Gb'].includes(rootNote);
-  return useFlat ? flats[semitones % 12] : sharps[semitones % 12];
+function noteName(semi, root, acc) {
+  const S=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const F=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+  const flat = acc==='flats' ? true : acc==='sharps' ? false : ['F','Bb','Eb','Ab','Db','Gb'].includes(root);
+  return flat ? F[semi%12] : S[semi%12];
 }
-
-function buildScale(rootNote, intervals) {
-  const rootIdx = noteIndex(rootNote);
-  const notes = [];
-  let current = rootIdx;
-  notes.push({ name: rootNote, qt: false, semitones: 0 });
-  let cumulative = 0;
-  for (let i = 0; i < intervals.length - 1; i++) {
-    cumulative += intervals[i];
-    const isQuarter = (cumulative % 1 !== 0);
-    const semiPos = Math.round(rootIdx + cumulative) % 12;
-    const name = getPreferredName((rootIdx + Math.round(cumulative)) % 12, rootNote);
-    notes.push({ name, qt: isQuarter, semitones: cumulative });
+function buildScale(root, intervals, acc) {
+  const ri = noteIndex(root);
+  const notes = [{name:root, qt:false}];
+  let cum = 0;
+  for (let i=0; i<intervals.length-1; i++) {
+    cum += intervals[i];
+    notes.push({name: noteName((ri+Math.round(cum))%12, root, acc), qt: cum%1!==0});
   }
   return notes;
 }
 
-function intervalLabel(interval) {
-  if (interval === 0.5) return { label: "¼", type: "quarter" };
-  if (interval === 1)   return { label: "H", type: "half" };
-  if (interval === 1.5) return { label: "¾", type: "quarter" };
-  if (interval === 2)   return { label: "W", type: "whole" };
-  if (interval === 3)   return { label: "A2", type: "aug" };
-  return { label: interval + "st", type: "" };
-}
+// ── CUSTOM DROPDOWN ──────────────────────────────────────────────────────────
+function makeDD(id, onChange) {
+  const wrap    = document.getElementById(id);
+  const trigger = document.getElementById(id+'-trigger');
+  const textEl  = document.getElementById(id+'-text');
+  const list    = document.getElementById(id+'-list');
+  let value = null;
 
-function intervalName(interval) {
-  if (interval === 0.5) return "Quarter Tone";
-  if (interval === 1)   return "Half Step";
-  if (interval === 1.5) return "3 Quarter Tones";
-  if (interval === 2)   return "Whole Step";
-  if (interval === 3)   return "Augmented 2nd";
-  return "";
-}
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const wasOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.csd.open').forEach(el => el.classList.remove('open'));
+    if (!wasOpen) wrap.classList.add('open');
+  });
 
-// ─── UI POPULATION ─────────────────────────────────────────────────────────
-
-const maqamSelect = document.getElementById('maqamSelect');
-const keySelect   = document.getElementById('keySelect');
-
-// Populate maqam dropdown (grouped by family)
-const families = {};
-for (const [name, data] of Object.entries(MAQAMAT)) {
-  if (!families[data.family]) families[data.family] = [];
-  families[data.family].push(name);
-}
-for (const [family, names] of Object.entries(families)) {
-  const grp = document.createElement('optgroup');
-  grp.label = `── ${family} Family`;
-  for (const name of names) {
-    const opt = document.createElement('option');
-    opt.value = name;
-    opt.textContent = `${name} — ${MAQAMAT[name].arabic}`;
-    grp.appendChild(opt);
+  function choose(v, t) {
+    value = v; textEl.textContent = t;
+    list.querySelectorAll('.csd-opt').forEach(o => o.classList.toggle('selected', o.dataset.v===v));
+    wrap.classList.remove('open');
+    onChange(v);
   }
-  maqamSelect.appendChild(grp);
+
+  return {
+    addGroup(title, cls) {
+      const g = document.createElement('div');
+      g.className = 'csd-group' + (cls ? ' '+cls : '');
+      g.textContent = title;
+      list.appendChild(g);
+    },
+    addOption(v, t, first) {
+      const o = document.createElement('div');
+      o.className = 'csd-opt'; o.dataset.v = v; o.textContent = t;
+      o.addEventListener('click', () => choose(v,t));
+      list.appendChild(o);
+      if (first && value===null) { value=v; textEl.textContent=t; o.classList.add('selected'); }
+    },
+    get() { return value; },
+    setValue(v) {
+      const o = list.querySelector('[data-v="'+v+'"]');
+      if (o) { value=v; textEl.textContent=o.textContent; list.querySelectorAll('.csd-opt').forEach(x=>x.classList.toggle('selected',x.dataset.v===v)); }
+    }
+  };
+}
+document.addEventListener('click', () => document.querySelectorAll('.csd.open').forEach(el=>el.classList.remove('open')));
+
+// ── FRETBOARD RENDERER ───────────────────────────────────────────────────────
+function drawFretboard(scaleNotes, tuningKey) {
+  const canvas = document.getElementById('fretCanvas');
+  if (!canvas) return;
+
+  const tuning = OUD_TUNINGS[tuningKey];
+  if (!tuning) return;
+  const strings  = tuning.strings.slice().reverse(); // lightest top, thickest bottom
+  const nStrings = strings.length;
+
+  // Support both plain name arrays and full note objects {name, qt}
+  const noteObjs = scaleNotes.map(n => typeof n === 'string' ? {name:n, qt:false} : n);
+
+  // ── Responsive layout ──────────────────────────────────────────
+  const displayW = canvas.offsetWidth || 800;
+  const isMobile = displayW < 500;
+
+  // On mobile show fewer frets so dots are bigger and more readable
+  const NFRETS = isMobile ? 7 : 13;
+
+  // String gap — give generous vertical space per string
+  const MIN_STR_GAP = isMobile ? 36 : 28;
+  const LEFT_PAD    = isMobile ? 38 : 52;
+  const RIGHT_PAD   = isMobile ? 10 : 16;
+  const TOP_PAD     = isMobile ? 24 : 26;
+  const LEGEND_H    = isMobile ? 0  : 28; // hide legend on mobile (no room)
+  const BOT_PAD     = isMobile ? 12 : 26;
+
+  const LEFT   = LEFT_PAD;
+  const RIGHT  = displayW - RIGHT_PAD;
+  const TOP    = TOP_PAD;
+  const strGap = Math.max(MIN_STR_GAP, isMobile ? 40 : 32);
+  const BOTTOM = TOP + strGap * (nStrings - 1);
+  const H      = BOTTOM + BOT_PAD + LEGEND_H;
+  const W      = displayW;
+  const fretW  = (RIGHT - LEFT) / NFRETS;
+
+  canvas.width  = W;
+  canvas.height = H;
+
+  const ctx = canvas.getContext('2d');
+
+  // Dot & font sizes scale with available fret width
+  const dotR     = Math.max(isMobile ? 9 : 7,  Math.min(fretW * 0.32, isMobile ? 14 : 11));
+  const dotRRoot = dotR + 2;
+  const fontSize = Math.max(isMobile ? 8 : 6,  Math.min(dotR * 0.85, isMobile ? 11 : 9));
+  const labelFont = (isMobile ? 'bold 11px' : 'bold 11px') + " Josefin Sans,sans-serif";
+  const fretNumFont = (isMobile ? '10px' : '10px') + " Josefin Sans,sans-serif";
+
+  // Scale semitone set — and separate set for quarter-tone flat notes
+  const scaleSet = new Set(noteObjs.map(n => noteIndex(n.name)));
+  const qtSet    = new Set(noteObjs.filter(n => n.qt).map(n => noteIndex(n.name)));
+  const rootSemi = noteIndex(ddKey.get() || 'C');
+  const acc      = ddAcc.get() || 'auto';
+  const useFlat  = acc==='flats' ? true : acc==='sharps' ? false : ['F','Bb','Eb','Ab','Db','Gb'].includes(ddKey.get());
+  const SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+  // Background
+  // Light theme fretboard background
+  ctx.fillStyle = '#f2ede4';
+  ctx.fillRect(0, 0, W, H);
+
+  // Fret lines
+  for (let f = 0; f <= NFRETS; f++) {
+    const x = LEFT + f * fretW;
+    ctx.strokeStyle = f===0 ? 'rgba(26,39,68,.9)' : 'rgba(26,39,68,.2)';
+    ctx.lineWidth   = f===0 ? 4 : 1;
+    ctx.beginPath(); ctx.moveTo(x, TOP-2); ctx.lineTo(x, BOTTOM+2); ctx.stroke();
+  }
+
+  // Position markers & fret numbers
+  const markers = isMobile ? [3,5,7] : [3,5,7,9,12];
+  markers.forEach(f => {
+    if (f > NFRETS) return;
+    const x   = LEFT + (f - 0.5) * fretW;
+    const mid = TOP + strGap * (nStrings-1) / 2;
+    ctx.fillStyle = 'rgba(26,39,68,.08)';
+    ctx.beginPath();
+    if (f===12) {
+      ctx.arc(x, mid - strGap*0.45, 5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, mid + strGap*0.45, 5, 0, Math.PI*2);
+    } else {
+      ctx.arc(x, mid, 5, 0, Math.PI*2);
+    }
+    ctx.fill();
+    ctx.fillStyle = 'rgba(26,39,68,.5)';
+    ctx.font = fretNumFont; ctx.textAlign = 'center';
+    ctx.fillText(f, x, TOP - 8);
+  });
+
+  // Strings & dots
+  strings.forEach((openNote, si) => {
+    const y        = TOP + si * strGap;
+    const openMidi = NOTE_MIDI[openNote] || 48;
+    const openSemi = openMidi % 12;
+    const openIn   = scaleSet.has(openSemi);
+    const openRoot = openSemi === rootSemi;
+
+    // String line
+    ctx.strokeStyle = `rgba(80,60,20,${0.2 + (si+1)*0.07})`;
+    ctx.lineWidth   = 0.7 + si * 0.38;
+    ctx.beginPath(); ctx.moveTo(LEFT, y); ctx.lineTo(RIGHT, y); ctx.stroke();
+
+    // Open string label — check if open string note is a qt note in scale
+    const openIsQt = openIn && qtSet.has(openSemi);
+    const lbl = openNote.replace(/\d/g, '');
+    ctx.font      = labelFont;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = openRoot ? '#1a2744' : openIn ? '#2a7c7a' : 'rgba(26,39,68,.25)';
+    ctx.fillText(lbl + (openIsQt ? '¼' : ''), LEFT - 5, y + 4);
+
+    // Note dots on frets
+    for (let f = 1; f <= NFRETS; f++) {
+      const semi   = (openMidi + f) % 12;
+      if (!scaleSet.has(semi)) continue;
+      const isRoot = semi === rootSemi;
+      const isQt   = qtSet.has(semi);   // quarter-tone flat note
+      const x      = LEFT + (f - 0.5) * fretW;
+      const r      = isRoot ? dotRRoot : dotR;
+
+      // Glow ring for root
+      if (isRoot) {
+        ctx.beginPath(); ctx.arc(x, y, r+4, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(26,39,68,.1)'; ctx.fill();
+      }
+
+      if (isQt && !isRoot) {
+        // Quarter-tone note: draw half-filled circle (left=filled, right=empty)
+        // indicating the note is between two semitones
+        ctx.beginPath(); ctx.arc(x, y, r, Math.PI*0.5, Math.PI*1.5);
+        ctx.lineTo(x, y - r); ctx.closePath();
+        ctx.fillStyle = '#4ab8b5'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.strokeStyle = '#4ab8b5'; ctx.lineWidth = 1.5; ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.fillStyle   = isRoot ? '#1a2744' : 'rgba(42,124,122,.88)';
+        ctx.strokeStyle = isRoot ? '#1a2744' : '#2a7c7a';
+        ctx.lineWidth   = 1.5; ctx.fill(); ctx.stroke();
+      }
+
+      const letter = useFlat ? FLAT[semi] : SHARP[semi];
+      ctx.fillStyle    = isRoot ? '#ffffff' : '#ffffff';
+      ctx.font         = `bold ${letter.length>1 ? Math.round(fontSize*0.75) : Math.round(fontSize)}px Josefin Sans,sans-serif`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(letter, x, y);
+      ctx.textBaseline = 'alphabetic';
+    }
+  });
+
+  // Legend (desktop only)
+  if (!isMobile) {
+    const ly = H - 8;
+    ctx.font = '10px Josefin Sans,sans-serif'; ctx.textAlign = 'left';
+    // Root dot
+    ctx.fillStyle = '#1a2744';
+    ctx.beginPath(); ctx.arc(LEFT+5, ly-4, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(26,39,68,.6)'; ctx.fillText('Root', LEFT+14, ly);
+    // Scale note dot
+    ctx.fillStyle = 'rgba(42,124,122,.9)';
+    ctx.beginPath(); ctx.arc(LEFT+62, ly-4, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(26,39,68,.6)'; ctx.fillText('Scale note', LEFT+71, ly);
+    // Quarter-tone half-filled dot
+    ctx.beginPath(); ctx.arc(LEFT+138, ly-4, 5, Math.PI*0.5, Math.PI*1.5);
+    ctx.lineTo(LEFT+138, ly-9); ctx.closePath();
+    ctx.fillStyle = '#4ab8b5'; ctx.fill();
+    ctx.beginPath(); ctx.arc(LEFT+138, ly-4, 5, 0, Math.PI*2);
+    ctx.strokeStyle = '#4ab8b5'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = 'rgba(26,39,68,.6)';
+    ctx.fillText('¼♭ Quarter-tone flat', LEFT+147, ly);
+  }
 }
 
-// Populate key dropdown
-for (const root of ALL_ROOTS) {
-  const opt = document.createElement('option');
-  opt.value = root;
-  opt.textContent = root;
-  keySelect.appendChild(opt);
-}
-
-// ─── RENDER ────────────────────────────────────────────────────────────────
-
+// ── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
-  const maqamName = maqamSelect.value;
-  const rootNote  = keySelect.value;
+  const maqamName = ddMaqam.get();
+  const root      = ddKey.get();
+  const acc       = ddAcc.get();
+  const tuning    = ddTuning.get();
+  if (!maqamName || !root || !acc || !tuning) return;
+
   const maqam = MAQAMAT[maqamName];
+  document.getElementById('mFamily').textContent = maqam.family + ' Family';
+  document.getElementById('mArabic').textContent = maqam.arabic;
+  document.getElementById('mChar').textContent   = maqam.character;
+  document.getElementById('mRegion').textContent = maqam.region;
+  document.getElementById('droneNote').textContent = root;
+  droneChangeNote(root);
 
-  // Meta
-  document.getElementById('metaFamily').textContent  = maqam.family + ' Family';
-  document.getElementById('metaArabic').textContent  = maqam.arabic;
-  document.getElementById('metaChar').textContent    = maqam.character;
-  document.getElementById('metaRegion').textContent  = maqam.region;
-
-  // Build scale
-  const notes = buildScale(rootNote, maqam.intervals);
-
-  // Notes row
-  const notesRow = document.getElementById('notesRow');
-  notesRow.innerHTML = '';
-  const degree = ['I','II','III','IV','V','VI','VII','VIII'];
+  const notes = buildScale(root, maqam.intervals, acc);
+  const nr    = document.getElementById('notesRow');
+  nr.innerHTML = '';
+  const DEG   = ['I','II','III','IV','V','VI','VII'];
 
   notes.forEach((note, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'note-chip';
-    chip.style.animationDelay = (i * 0.06) + 's';
+    if (i>0) { const a=document.createElement('div'); a.className='arrow'; a.textContent='›'; nr.appendChild(a); }
+    const chip = document.createElement('div'); chip.className='nc';
+    const bub  = document.createElement('div');
+    bub.className = 'nb'+(i===0?' root':'')+(note.qt?' qt':'');
+    bub.style.animationDelay = (i*0.055)+'s';
+    const ns = document.createElement('span'); ns.textContent = note.name; bub.appendChild(ns);
+    if (note.qt) { const t=document.createElement('span'); t.className='qt-tag'; t.textContent='¼♭'; bub.appendChild(t); }
+    const dg = document.createElement('div'); dg.className='ndeg'; dg.textContent=DEG[i]||'';
+    chip.appendChild(bub); chip.appendChild(dg); nr.appendChild(chip);
+  });
+  const al=document.createElement('div'); al.className='arrow'; al.textContent='›'; nr.appendChild(al);
+  const c8=document.createElement('div'); c8.className='nc';
+  const b8=document.createElement('div'); b8.className='nb root'; b8.style.animationDelay=(notes.length*0.055)+'s'; b8.textContent=root+"'";
+  const d8=document.createElement('div'); d8.className='ndeg'; d8.textContent='VIII';
+  c8.appendChild(b8); c8.appendChild(d8); nr.appendChild(c8);
 
-    const bubble = document.createElement('div');
-    bubble.className = 'note-bubble' + (i === 0 ? ' root' : '') + (note.qt ? ' half-flat' : '');
-    bubble.style.animationDelay = (i * 0.06) + 's';
-
-    bubble.innerHTML = note.name;
-    if (note.qt) {
-      const tag = document.createElement('span');
-      tag.className = 'tag-quarter';
-      tag.textContent = '¼♭';
-      bubble.appendChild(tag);
-    }
-
-    const num = document.createElement('div');
-    num.className = 'note-number';
-    num.textContent = degree[i] || '';
-
-    chip.appendChild(bubble);
-    chip.appendChild(num);
-    notesRow.appendChild(chip);
-
-    // Add arrow between notes (not after last)
-    if (i < notes.length - 1) {
-      const arr = document.createElement('div');
-      arr.className = 'arrow-sep';
-      arr.textContent = '›';
-      notesRow.appendChild(arr);
-    }
+  const ir = document.getElementById('iRow'); ir.innerHTML='';
+  maqam.intervals.forEach((iv,i) => {
+    const b=document.createElement('div');
+    const lbl=iv===0.5?'¼':iv===1?'H':iv===1.5?'¾':iv===2?'W':'A2';
+    const cls=iv===3?' aug':(iv===0.5||iv===1.5)?' qt':'';
+    b.className='ibadge'+cls; b.textContent=lbl; ir.appendChild(b);
+    if (i<maqam.intervals.length-1) { const s=document.createElement('span'); s.style.cssText='color:rgba(201,151,44,.2);font-size:.7rem;'; s.textContent='·'; ir.appendChild(s); }
   });
 
-  // Add octave root
-  const chip8 = document.createElement('div');
-  chip8.className = 'note-chip';
-  const bub8 = document.createElement('div');
-  bub8.className = 'note-bubble root';
-  bub8.style.animationDelay = (notes.length * 0.06) + 's';
-  bub8.innerHTML = rootNote + "'";
-  const num8 = document.createElement('div');
-  num8.className = 'note-number';
-  num8.textContent = 'VIII';
-  chip8.appendChild(bub8);
-  chip8.appendChild(num8);
-
-  const arrLast = document.createElement('div');
-  arrLast.className = 'arrow-sep';
-  arrLast.textContent = '›';
-  notesRow.appendChild(arrLast);
-  notesRow.appendChild(chip8);
-
-  // Intervals row
-  const intervalsRow = document.getElementById('intervalsRow');
-  intervalsRow.innerHTML = '';
-  maqam.intervals.forEach((iv, i) => {
-    const { label, type } = intervalLabel(iv);
-    const badge = document.createElement('div');
-    badge.className = 'interval-badge' + (type === 'aug' ? ' aug' : '') + (type === 'quarter' ? ' half' : '');
-    badge.title = intervalName(iv);
-    badge.textContent = label;
-    intervalsRow.appendChild(badge);
-    if (i < maqam.intervals.length - 1) {
-      const sep = document.createElement('span');
-      sep.style.color = 'rgba(201,151,44,0.2)';
-      sep.style.fontSize = '0.7rem';
-      sep.textContent = '·';
-      intervalsRow.appendChild(sep);
-    }
-  });
-
-  // Description
   document.getElementById('jinsInfo').textContent =
-    maqam.description + (maqam.jins ? ` | Jins: ${maqam.jins}` : '');
+    maqam.description + (maqam.jins ? ' | Jins: '+maqam.jins : '');
+
+  // Fretboard — draw with current canvas size
+  drawFretboard(notes, tuning);  // pass full objects including qt flag
+
+  // Save prefs
+  try {
+    localStorage.setItem('mq_maqam', maqamName);
+    localStorage.setItem('mq_key',   root);
+    localStorage.setItem('mq_acc',   acc);
+    localStorage.setItem('mq_tuning',tuning);
+  } catch(e) {}
 }
 
-maqamSelect.addEventListener('change', render);
-keySelect.addEventListener('change', render);
+// ── DRONE (real cello MP3 files) ─────────────────────────────────────────────
+// Maps each root note to its MP3 filename. Place all MP3s in the same
+// folder as this HTML file. Filenames match exactly as downloaded.
+
+const DRONE_FILES = {
+  'C':  'Cello Drone C [MimVnBAuYqA].mp3',
+  'C#': 'Cello Drone Db [LxFwYJlnmqo].mp3',
+  'D':  'Cello Drone D [ygo0ZimLfsQ].mp3',
+  'Eb': 'Cello Drone Eb [jgFNsz_9w4A].mp3',
+  'E':  'Cello Drone E [oYLSMPvGoL8].mp3',
+  'F':  'Cello Drone F [cC4DzsV4ivs].mp3',
+  'F#': 'Cello Drone F-Gb [NUFgXjFL8YM].mp3',
+  'G':  'Cello Drone G [IvXXdGhJA1Q].mp3',
+  'Ab': 'Cello Drone Ab [5vBDWMOyRCM].mp3',
+  'A':  'Cello Drone A [qpQ6c0NotCY].mp3',
+  'Bb': 'Cello Drone Bb [UfY3u7xvgf8].mp3',
+  'B':  'Cello Drone B [0_iqlSl0o4o].mp3',
+};
+
+// Normalise any root name to our map key
+function droneKey(root) {
+  const map = {'Db':'C#','D#':'Eb','Gb':'F#','G#':'Ab','A#':'Bb'};
+  return map[root] || root;
+}
+
+let droneAudio   = null;   // current HTMLAudioElement
+let isPlaying    = false;
+let droneVolume  = 0.8;
+
+function droneChangeNote(root) {
+  document.getElementById('droneNote').textContent = root;
+  if (!isPlaying) return;
+  // Crossfade to new note: fade out current, load & play new
+  const oldAudio = droneAudio;
+  if (oldAudio) {
+    // Fade out old
+    let vol = oldAudio.volume;
+    const fadeOut = setInterval(function() {
+      vol = Math.max(0, vol - 0.05);
+      oldAudio.volume = vol;
+      if (vol <= 0) { clearInterval(fadeOut); oldAudio.pause(); oldAudio.src = ''; }
+    }, 40);
+  }
+  setTimeout(function() { if (isPlaying) dronePlay(root); }, 400);
+}
+
+function dronePlay(root) {
+  const key      = droneKey(root);
+  const filename = DRONE_FILES[key];
+  if (!filename) {
+    document.getElementById('dStatus').textContent = 'No drone file for ' + root;
+    return;
+  }
+  const audio    = new Audio(filename);
+  audio.loop     = true;
+  audio.volume   = 0;
+  droneAudio     = audio;
+
+  audio.play().then(function() {
+    // Fade in
+    let vol = 0;
+    const fadeIn = setInterval(function() {
+      vol = Math.min(droneVolume, vol + 0.04);
+      audio.volume = vol;
+      if (vol >= droneVolume) clearInterval(fadeIn);
+    }, 40);
+    document.getElementById('dStatus').textContent = '♩ Playing ' + root + ' drone';
+  }).catch(function(e) {
+    document.getElementById('dStatus').textContent =
+      'Could not load MP3 — make sure the drone files are in the same folder as this HTML file.';
+  });
+}
+
+async function toggleDrone() {
+  const btn = document.getElementById('droneBtn');
+  const lbl = document.getElementById('droneLbl');
+  const iP  = document.getElementById('icoPlay');
+  const iS  = document.getElementById('icoStop');
+  const root = ddKey.get() || 'C';
+
+  if (!isPlaying) {
+    isPlaying = true;
+    btn.classList.add('playing');
+    iP.style.display = 'none'; iS.style.display = '';
+    lbl.textContent = 'Stop Drone';
+    document.getElementById('dStatus').textContent = 'Loading ' + root + ' drone…';
+    dronePlay(root);
+  } else {
+    isPlaying = false;
+    if (droneAudio) {
+      // Fade out then stop
+      let vol = droneAudio.volume;
+      const fadeOut = setInterval(function() {
+        vol = Math.max(0, vol - 0.05);
+        droneAudio.volume = vol;
+        if (vol <= 0) {
+          clearInterval(fadeOut);
+          droneAudio.pause();
+          droneAudio.src = '';
+          droneAudio = null;
+        }
+      }, 40);
+    }
+    btn.classList.remove('playing');
+    iP.style.display = ''; iS.style.display = 'none';
+    lbl.textContent = 'Play Drone';
+    document.getElementById('dStatus').textContent = '';
+  }
+}
+
+function setVol(v) {
+  droneVolume = Math.pow(10, parseFloat(v) / 20);
+  if (droneAudio) droneAudio.volume = droneVolume;
+}
+
+// ── BUILD DROPDOWNS (all 4 defined before render) ────────────────────────────
+const ddMaqam  = makeDD('ddMaqam',  render);
+const ddKey    = makeDD('ddKey',    render);
+const ddAcc    = makeDD('ddAcc',    render);
+const ddTuning = makeDD('ddTuning', render);
+
+ddMaqam.addGroup('★ Most Common','common');
+MOST_COMMON.forEach(n => { if(MAQAMAT[n]) ddMaqam.addOption(n, n+' — '+MAQAMAT[n].arabic, true); });
+const fams={};
+Object.keys(MAQAMAT).forEach(n=>{ const f=MAQAMAT[n].family; if(!fams[f])fams[f]=[]; fams[f].push(n); });
+Object.keys(fams).forEach(f=>{ ddMaqam.addGroup('── '+f+' Family'); fams[f].forEach(n=>ddMaqam.addOption(n,n+' — '+MAQAMAT[n].arabic,false)); });
+
+ALL_ROOTS.forEach(r => ddKey.addOption(r, r, r==='C'));
+ddAcc.addOption('auto','Auto',true);
+ddAcc.addOption('sharps','♯  Sharps',false);
+ddAcc.addOption('flats','♭  Flats',false);
+ddTuning.addOption('arabic',  'Arabic Standard — C F A D G C', true);
+ddTuning.addOption('ff',      'FF Tuning — F A D G C F',       false);
+ddTuning.addOption('iraqi',   'Iraqi — F G A D G C',           false);
+ddTuning.addOption('turkish', 'Turkish — D G B E A D',         false);
+ddTuning.addOption('syrian',  'Syrian / Levant — C F A D G C', false);
+
+// ── RESTORE SAVED PREFS ──────────────────────────────────────────────────────
+try {
+  const m=localStorage.getItem('mq_maqam'), k=localStorage.getItem('mq_key'),
+        a=localStorage.getItem('mq_acc'),   t=localStorage.getItem('mq_tuning');
+  if(m) ddMaqam.setValue(m);
+  if(k) ddKey.setValue(k);
+  if(a) ddAcc.setValue(a);
+  if(t) ddTuning.setValue(t);
+} catch(e) {}
+
+// ── INITIAL RENDER (everything defined above — safe to call now) ─────────────
 render();
+
+// Redraw fretboard on resize
+window.addEventListener('resize', render);
+
+
+// ── YOUTUBE ──────────────────────────────────────────────────────────────────
+// Uses YouTube Data API v3 (free, 10k units/day).
+// Key stored in localStorage — enter once and it persists.
+
+var YT_API_KEY = 'AIzaSyDK_adgs3iCWziPVWEDfy-InhFxDnbagmI';
+
+// Enable search buttons immediately since key is built in
+function ytEnableButtons() {
+  document.getElementById('ytSearchBtn').disabled = false;
+  document.getElementById('ytAutoBtn').disabled   = false;
+  document.querySelectorAll('.yt-chip').forEach(function(c){
+    c.style.opacity = '1'; c.style.pointerEvents = '';
+  });
+}
+
+var _renderBeforeYT = render;
+render = function() {
+  _renderBeforeYT();
+  ytUpdateSuggestions();
+};
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(reg) { console.log('SW registered:', reg.scope); })
+      .catch(function(err) { console.log('SW error:', err); });
+  });
+}
 </script>
 </body>
 </html>

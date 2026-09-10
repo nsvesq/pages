@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#0d0a06"/>
+  <!-- Outer geometric ring -->
+  <polygon points="256,40 464,152 464,360 256,472 48,360 48,152"
+    fill="none" stroke="#c9972c" stroke-width="14"/>
+  <!-- Inner geometric ring -->
+  <polygon points="256,90 414,178 414,334 256,422 98,334 98,178"
+    fill="none" stroke="#c9972c" stroke-width="5" opacity="0.4"/>
+  <!-- Spoke lines -->
+  <line x1="256" y1="40"  x2="256" y2="180" stroke="#c9972c" stroke-width="6" opacity="0.5"/>
+  <line x1="256" y1="332" x2="256" y2="472" stroke="#c9972c" stroke-width="6" opacity="0.5"/>
+  <line x1="48"  y1="152" x2="168" y2="220" stroke="#c9972c" stroke-width="6" opacity="0.5"/>
+  <line x1="344" y1="292" x2="464" y2="360" stroke="#c9972c" stroke-width="6" opacity="0.5"/>
+  <line x1="464" y1="152" x2="344" y2="220" stroke="#c9972c" stroke-width="6" opacity="0.5"/>
+  <line x1="168" y1="292" x2="48"  y2="360" stroke="#c9972c" stroke-width="6" opacity="0.5"/>
+  <!-- Centre glow -->
+  <circle cx="256" cy="256" r="52" fill="#c9972c" opacity="0.15"/>
+  <circle cx="256" cy="256" r="36" fill="#c9972c" opacity="0.25"/>
+  <!-- Centre dot -->
+  <circle cx="256" cy="256" r="22" fill="#c9972c"/>
+  <!-- Arabic-inspired inner detail -->
+  <circle cx="256" cy="256" r="10" fill="#0d0a06"/>
+  <!-- Text -->
+  <text x="256" y="510" font-family="serif" font-size="36" fill="#c9972c"
+    text-anchor="middle" opacity="0.7" letter-spacing="8">مقام</text>
+</svg>
