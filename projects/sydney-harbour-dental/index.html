@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sydney Harbour Dental | Dr Mark Killen</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628;
+  --deep-blue: #132744;
+  --ocean: #1a5276;
+  --teal: #2e8b8b;
+  --gold: #c9a96e;
+  --gold-light: #dfc69a;
+  --cream: #f7f3ed;
+  --white: #ffffff;
+  --text: #2c3e50;
+  --text-light: #6b7d8e;
+  --glass: rgba(255,255,255,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--cream);
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 1.2rem 4%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.4s ease;
+  background: transparent;
+}
+nav.scrolled {
+  background: rgba(10,22,40,0.95);
+  backdrop-filter: blur(12px);
+  padding: 0.8rem 4%;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.5px;
+}
+.nav-logo span { color: var(--gold); }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-links a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-cta {
+  background: var(--gold) !important;
+  color: var(--navy) !important;
+  padding: 0.6rem 1.5rem;
+  border-radius: 100px;
+  font-weight: 600 !important;
+}
+.nav-cta:hover { background: var(--gold-light) !important; }
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  z-index: 1001;
+}
+.hamburger span {
+  width: 24px;
+  height: 2px;
+  background: white;
+  transition: 0.3s;
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--deep-blue) 40%, var(--ocean) 100%);
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 80%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(46,139,139,0.15) 0%, transparent 70%);
+  animation: float 12s ease-in-out infinite;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(to top, var(--cream), transparent);
+  z-index: 2;
+}
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-40px, 30px) rotate(3deg); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  padding: 0 8%;
+  max-width: 750px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--glass);
+  border: 1px solid rgba(201,169,110,0.3);
+  padding: 0.5rem 1.2rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  color: var(--gold);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  animation: fadeUp 0.8s ease forwards;
+  opacity: 0;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  color: var(--white);
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.8s ease 0.2s forwards;
+  opacity: 0;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+.hero p {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+  max-width: 520px;
+  font-weight: 300;
+  animation: fadeUp 0.8s ease 0.4s forwards;
+  opacity: 0;
+}
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.8s ease 0.6s forwards;
+  opacity: 0;
+}
+.btn-primary {
+  background: var(--gold);
+  color: var(--navy);
+  padding: 1rem 2.2rem;
+  border-radius: 100px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(201,169,110,0.3);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--white);
+  padding: 1rem 2.2rem;
+  border-radius: 100px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255,255,255,0.3);
+  transition: all 0.3s;
+}
+.btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.hero-visual {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fadeUp 1s ease 0.8s forwards;
+  opacity: 0;
+}
+.stat-card {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  text-align: center;
+  min-width: 180px;
+}
+.stat-card .number {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  color: var(--gold);
+  font-weight: 700;
+}
+.stat-card .label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.3rem;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* SECTIONS */
+section {
+  padding: 7rem 8%;
+}
+.section-label {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  color: var(--navy);
+  margin-bottom: 1.2rem;
+  line-height: 1.2;
+}
+.section-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-light);
+  max-width: 600px;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* WHY CHOOSE US */
+.why-section { background: var(--cream); }
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 3.5rem;
+}
+.why-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.why-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(10,22,40,0.08);
+}
+.why-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold), var(--teal));
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.why-card:hover::before { opacity: 1; }
+.why-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(201,169,110,0.1), rgba(46,139,139,0.1));
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.why-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--navy);
+  margin-bottom: 0.8rem;
+}
+.why-card p {
+  color: var(--text-light);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* SERVICES */
+.services-section {
+  background: var(--navy);
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.services-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(46,139,139,0.1), transparent 60%);
+}
+.services-section .section-title { color: var(--white); }
+.services-section .section-subtitle { color: rgba(255,255,255,0.5); }
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+  position: relative;
+  z-index: 1;
+}
+.service-card {
+  background: var(--glass);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 2.5rem;
+  transition: all 0.4s;
+  cursor: default;
+}
+.service-card:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(201,169,110,0.3);
+  transform: translateY(-4px);
+}
+.service-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  color: rgba(201,169,110,0.2);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+.service-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  color: var(--white);
+}
+.service-card p {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* DR KILLEN */
+.doctor-section {
+  background: var(--white);
+}
+.doctor-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 5rem;
+  align-items: center;
+  margin-top: 3rem;
+}
+.doctor-image-wrapper {
+  position: relative;
+}
+.doctor-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--deep-blue), var(--ocean));
+  position: relative;
+  overflow: hidden;
+}
+.doctor-image-placeholder {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: white;
+}
+.doctor-image-placeholder .initials {
+  font-family: 'Playfair Display', serif;
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 4px;
+  margin-bottom: 0.5rem;
+}
+.doctor-image-placeholder .title {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+.doctor-accent {
+  position: absolute;
+  bottom: -1.5rem;
+  right: -1.5rem;
+  width: 120px;
+  height: 120px;
+  border-radius: 20px;
+  background: var(--gold);
+  z-index: -1;
+}
+
+.doctor-info h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+}
+.doctor-role {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+.doctor-info p {
+  color: var(--text-light);
+  line-height: 1.8;
+  font-size: 0.95rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+}
+.credentials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+.credential {
+  background: var(--cream);
+  padding: 0.6rem 1.2rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--navy);
+}
+
+/* LOCATION */
+.location-section {
+  background: var(--cream);
+}
+.location-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 3rem;
+}
+.location-map {
+  border-radius: 20px;
+  overflow: hidden;
+  height: 400px;
+  background: var(--deep-blue);
+  position: relative;
+}
+.location-map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: saturate(0.8) contrast(1.1);
+}
+.location-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.detail-item {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.detail-item:last-child { border: none; }
+.detail-label {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.detail-value {
+  font-size: 1rem;
+  color: var(--navy);
+  line-height: 1.6;
+}
+.detail-value a {
+  color: var(--ocean);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.detail-value a:hover { color: var(--gold); }
+
+/* CONTACT CTA */
+.cta-section {
+  background: linear-gradient(135deg, var(--navy), var(--deep-blue));
+  text-align: center;
+  padding: 6rem 8%;
+  position: relative;
+  overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(201,169,110,0.08), transparent 50%),
+              radial-gradient(circle at 70% 50%, rgba(46,139,139,0.08), transparent 50%);
+}
+.cta-section .section-title {
+  color: var(--white);
+  position: relative;
+  z-index: 1;
+}
+.cta-section p {
+  color: rgba(255,255,255,0.6);
+  font-size: 1.05rem;
+  margin: 1rem auto 2.5rem;
+  max-width: 500px;
+  position: relative;
+  z-index: 1;
+  font-weight: 300;
+}
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+/* FOOTER */
+footer {
+  background: var(--navy);
+  padding: 3rem 8%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--white);
+}
+.footer-logo span { color: var(--gold); }
+.footer-copy {
+  color: rgba(255,255,255,0.35);
+  font-size: 0.8rem;
+}
+.footer-social {
+  display: flex;
+  gap: 1rem;
+}
+.footer-social a {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+.footer-social a:hover {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* HOURS TABLE */
+.hours-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 1.5rem;
+  font-size: 0.9rem;
+}
+.hours-day { color: var(--navy); font-weight: 500; }
+.hours-time { color: var(--text-light); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .hero-visual { display: none; }
+  .doctor-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+  .location-grid { grid-template-columns: 1fr; }
+  section { padding: 4rem 6%; }
+  .hero-content { padding: 0 6%; }
+}
+
+@media (max-width: 600px) {
+  .why-grid { grid-template-columns: 1fr; }
+  .services-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-logo">Sydney Harbour <span>Dental</span></div>
+  <div class="nav-links">
+    <a href="#why">Why Us</a>
+    <a href="#services">Services</a>
+    <a href="#doctor">Dr Killen</a>
+    <a href="#location">Location</a>
+    <a href="#contact" class="nav-cta">Book Now</a>
+  </div>
+  <div class="hamburger" onclick="document.querySelector('.nav-links').style.display = document.querySelector('.nav-links').style.display === 'flex' ? 'none' : 'flex'">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">☆ Barangaroo · King Street Wharf</div>
+    <h1>Dentistry with a <em>harbour view</em></h1>
+    <p>Experience world-class dental care in Sydney's most relaxing practice. Overlooking Darling Harbour, we combine gentle expertise with stunning surroundings.</p>
+    <div class="hero-buttons">
+      <a href="#contact" class="btn-primary">Book a Consultation</a>
+      <a href="#services" class="btn-secondary">Explore Services</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="stat-card">
+      <div class="number">20+</div>
+      <div class="label">Years Experience</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">5★</div>
+      <div class="label">Patient Rated</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">100%</div>
+      <div class="label">Pain-Free Focus</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US -->
+<section class="why-section" id="why">
+  <div class="section-label">Why Choose Us</div>
+  <div class="section-title">A dental practice with<br>a difference</div>
+  <div class="section-subtitle">From the moment you walk through the door, you'll be greeted with warmth and a truly relaxing environment.</div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">🌊</div>
+      <h3>Harbour Views</h3>
+      <p>Enjoy stunning water views from your dental chair. Our Barangaroo location offers one of Sydney's most calming clinical environments.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🤝</div>
+      <h3>Personal Attention</h3>
+      <p>We take whatever time is necessary to listen to your concerns. We believe in providing a solution rather than just a procedure.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🛡️</div>
+      <h3>Pain-Free Dentistry</h3>
+      <p>We pride ourselves on gentle, pain-free dental care. Even the most anxious patients leave feeling comfortable and at ease.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">⚡</div>
+      <h3>Latest Technology</h3>
+      <p>Our surgery is fitted with cutting-edge equipment, enabling both comfort and exceptional quality results for every patient.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="section-label">Our Services</div>
+  <div class="section-title">From prevention<br>to perfection</div>
+  <div class="section-subtitle">Comprehensive dental care tailored to your needs, from routine check-ups to complete smile makeovers.</div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-num">01</div>
+      <h3>General Dentistry</h3>
+      <p>Cleanings, fillings, root canal therapy, periodontal treatment and extractions — all performed with the latest technology and a gentle touch.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-num">02</div>
+      <h3>Cosmetic Dentistry</h3>
+      <p>Porcelain veneers, smile makeovers and aesthetic treatments to give you the bright, confident smile you've always wanted.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-num">03</div>
+      <h3>Dental Implants</h3>
+      <p>The modern way to replace missing teeth. We work closely with specialist implant surgeons to achieve the best possible outcomes.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-num">04</div>
+      <h3>Teeth Whitening</h3>
+      <p>ZOOM in-chair whitening and custom take-home kits — two convenient options for a brilliantly brighter smile.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-num">05</div>
+      <h3>Preventive Care</h3>
+      <p>Prevention is the cornerstone of our practice. Regular check-ups, cleaning and personalised oral hygiene guidance to maintain your smile for life.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-num">06</div>
+      <h3>Invisalign</h3>
+      <p>Straighten your teeth discreetly with clear aligners. A virtually invisible way to achieve the smile you deserve.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DR KILLEN -->
+<section class="doctor-section" id="doctor">
+  <div class="doctor-layout">
+    <div class="doctor-image-wrapper">
+      <div class="doctor-image">
+        <img src="./dr-mark-killen.jpg" alt="Dr Mark Killen" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      <div class="doctor-accent"></div>
+    </div>
+    <div class="doctor-info">
+      <div class="section-label">Meet Your Dentist</div>
+      <h2>Dr Mark Killen</h2>
+      <div class="doctor-role">Owner & Principal Dentist</div>
+      <p>Dr Mark Killen is well known for his kind and gentle manner, guaranteed to calm even the most anxious patient. His commitment to informative and ethical dental care ensures you receive the best possible results.</p>
+      <p>Mark studied his Bachelor of Science at the University of New South Wales in 1998, completing an Honours year in Pathology. He then earned his Bachelor of Dental Surgery with Honours from the University of Sydney in 2003.</p>
+      <p>After building a solid foundation at Westmead Hospital alongside specialist practitioners, Mark spent over a decade mastering the latest dental technologies — delivering results that are both exciting and relaxing for patients.</p>
+      <div class="credentials">
+        <span class="credential">BSc (Hons) UNSW</span>
+        <span class="credential">BDS (Hons) USyd</span>
+        <span class="credential">Westmead Hospital</span>
+        <span class="credential">20+ Years Experience</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="location-section" id="location">
+  <div class="section-label">Find Us</div>
+  <div class="section-title">Harbourside location</div>
+  <div class="section-subtitle">Conveniently located at King Street Wharf, just minutes from Wynyard Station and right next door to Barangaroo.</div>
+  <div class="location-grid">
+    <div class="location-map">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.9!2d151.2005!3d-33.8650!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12ae3f00000000%3A0x0!2zNSBMaW1lIFN0LCBTeWRuZXk!5e0!3m2!1sen!2sau!4v1" allowfullscreen loading="lazy"></iframe>
+    </div>
+    <div class="location-details">
+      <div class="detail-item">
+        <div class="detail-label">Address</div>
+        <div class="detail-value">Suite 425, Level 4<br>5 Lime Street, Barangaroo<br>Sydney NSW 2000</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Contact</div>
+        <div class="detail-value">
+          <a href="tel:0292996655">(02) 9299 6655</a><br>
+          <a href="mailto:smile@sydneyharbourdental.com.au">smile@sydneyharbourdental.com.au</a>
+        </div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Opening Hours</div>
+        <div class="hours-grid">
+          <span class="hours-day">Monday</span><span class="hours-time">8:30am – 5:30pm</span>
+          <span class="hours-day">Tuesday</span><span class="hours-time">8:30am – 5:30pm</span>
+          <span class="hours-day">Wednesday</span><span class="hours-time">8:30am – 5:30pm</span>
+          <span class="hours-day">Thursday</span><span class="hours-time">8:30am – 5:30pm</span>
+          <span class="hours-day">Friday</span><span class="hours-time">8:30am – 3:30pm</span>
+          <span class="hours-day">Saturday</span><span class="hours-time">By Appointment</span>
+          <span class="hours-day">Sunday</span><span class="hours-time">Closed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="section-title">Ready for a brighter smile?</div>
+  <p>Book your consultation with Dr Killen and experience dentistry the way it should be — gentle, personal and world-class.</p>
+  <div class="cta-buttons">
+    <a href="tel:0292996655" class="btn-primary">Call (02) 9299 6655</a>
+    <a href="mailto:smile@sydneyharbourdental.com.au" class="btn-secondary" style="color:white; border-color: rgba(255,255,255,0.3);">Email Us</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Sydney Harbour <span>Dental</span></div>
+  <div class="footer-copy">&copy; 2026 Sydney Harbour Dental. All rights reserved.</div>
+  <div class="footer-social">
+    <a href="https://www.facebook.com/SydneyHarbourDental/" target="_blank">f</a>
+  </div>
+</footer>
+
+<script>
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Animate on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.why-card, .service-card, .detail-item').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(30px)';
+  el.style.transition = 'all 0.6s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
