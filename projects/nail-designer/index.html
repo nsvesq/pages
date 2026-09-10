@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lacquered — Bespoke Nail Atelier</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #1a0a0a;
+  --bg-warm: #2C1810;
+  --rose: #E8C4C4;
+  --rose-mid: #D4A5A5;
+  --crimson: #9B2335;
+  --crimson-bright: #C41E3A;
+  --body-font: 'Outfit', sans-serif;
+  --display-font: 'Cormorant Garamond', serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-warm) 30%, var(--bg-deep) 70%, #0d0505 100%);
+  font-family: var(--display-font);
+  color: var(--rose);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(212,165,165,0.2); border-radius: 2px; }
+
+/* Animations */
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0; }
+  100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes gentlePulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+}
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(212,165,165,0.15); }
+  50% { border-color: rgba(212,165,165,0.5); }
+}
+@keyframes checkDraw {
+  0% { stroke-dashoffset: 40; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes successPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.9; }
+}
+@keyframes revealStep {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Particles */
+.particle {
+  position: fixed;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(212,165,165,0.35);
+  pointer-events: none;
+  animation: floatUp 9s ease-in infinite;
+}
+
+/* Ambient Orbs */
+.orb {
+  position: fixed; border-radius: 50%; pointer-events: none;
+  animation: gentlePulse 7s ease-in-out infinite;
+}
+.orb-1 {
+  top: -20%; right: -10%; width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(155,35,53,0.08) 0%, transparent 70%);
+}
+.orb-2 {
+  bottom: -15%; left: -10%; width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(212,165,165,0.06) 0%, transparent 70%);
+  animation-delay: 2s;
+}
+
+/* Header */
+header {
+  padding: 28px 36px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; z-index: 10;
+}
+.logo {
+  font-size: clamp(22px, 4vw, 30px); font-weight: 300;
+  letter-spacing: 6px; text-transform: uppercase;
+  background: linear-gradient(90deg, var(--rose), var(--rose-mid), var(--crimson), var(--rose));
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+.logo-sub {
+  font-family: var(--body-font); font-size: 10px;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--rose-mid); opacity: 0.6; margin-top: 3px;
+}
+.step-indicator {
+  font-family: var(--body-font); font-size: 11px;
+  letter-spacing: 2px; color: var(--rose-mid); opacity: 0.5;
+}
+
+/* Progress */
+.progress-track {
+  width: 100%; height: 1px; background: rgba(212,165,165,0.1);
+  position: relative;
+}
+.progress-fill {
+  height: 1px;
+  background: linear-gradient(90deg, var(--rose-mid), var(--crimson));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Main */
+main {
+  max-width: 820px; margin: 0 auto;
+  padding: 40px 24px 140px;
+}
+
+/* Step sections */
+.step { display: none; animation: revealStep 0.6s ease forwards; }
+.step.active { display: block; }
+
+.step-title {
+  font-size: clamp(28px, 5vw, 42px); font-weight: 300;
+  text-align: center; margin-bottom: 8px; font-style: italic;
+}
+.step-subtitle {
+  font-family: var(--body-font); font-weight: 200; font-size: 13px;
+  text-align: center; color: var(--rose-mid); opacity: 0.6; margin-bottom: 40px;
+}
+
+/* Welcome hero */
+.hero-nail { margin: 0 auto 36px; display: block; }
+.hero-title {
+  font-size: clamp(34px, 6vw, 54px); font-weight: 300;
+  line-height: 1.2; margin-bottom: 18px; font-style: italic;
+  text-align: center;
+}
+.hero-desc {
+  font-family: var(--body-font); font-weight: 200; font-size: 15px;
+  line-height: 1.8; max-width: 420px; margin: 0 auto 28px;
+  color: var(--rose-mid); opacity: 0.7; text-align: center;
+}
+.name-input {
+  background: rgba(212,165,165,0.05);
+  border: 1px solid rgba(212,165,165,0.15);
+  border-radius: 30px; padding: 14px 24px;
+  color: var(--rose); font-family: var(--body-font);
+  font-size: 14px; width: 260px; text-align: center;
+  transition: all 0.3s ease; display: block; margin: 0 auto;
+}
+.name-input:focus { outline: none; border-color: rgba(212,165,165,0.5); }
+
+/* Shape grid */
+.shape-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; max-width: 500px; margin: 0 auto;
+}
+.shape-btn {
+  background: rgba(212,165,165,0.03);
+  border: 1px solid rgba(212,165,165,0.1);
+  border-radius: 16px; padding: 24px 12px 16px;
+  cursor: pointer; transition: all 0.3s ease;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.shape-btn:hover {
+  background: rgba(212,165,165,0.06);
+  border-color: rgba(212,165,165,0.25);
+}
+.shape-btn.selected {
+  background: rgba(155,35,53,0.15);
+  border-color: rgba(155,35,53,0.5);
+  box-shadow: 0 0 30px rgba(155,35,53,0.15);
+}
+.shape-label {
+  font-family: var(--body-font); font-size: 12px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--rose-mid); opacity: 0.5; transition: all 0.3s ease;
+}
+.shape-btn.selected .shape-label { color: var(--rose); opacity: 1; }
+
+/* Color swatches */
+.color-grid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  justify-content: center; max-width: 460px; margin: 0 auto;
+}
+.color-swatch {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid rgba(212,165,165,0.15);
+  cursor: pointer; transition: all 0.3s ease;
+  position: relative;
+}
+.color-swatch.selected {
+  border: 3px solid var(--rose);
+  transform: scale(1.15);
+}
+.color-swatch .check {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  display: none;
+}
+.color-swatch.selected .check { display: block; }
+
+.palette-preview {
+  display: flex; justify-content: center; gap: 8px;
+  margin-top: 30px; padding: 16px;
+  background: rgba(212,165,165,0.03); border-radius: 12px;
+  max-width: 320px; margin-left: auto; margin-right: auto;
+}
+.palette-label {
+  font-family: var(--body-font); font-size: 11px;
+  letter-spacing: 1.5px; color: var(--rose-mid); opacity: 0.5;
+  align-self: center; margin-right: 8px;
+}
+.palette-chip {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Section label */
+.section-label {
+  font-family: var(--body-font); font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--rose-mid); opacity: 0.5; margin-bottom: 14px;
+}
+
+/* Style tags */
+.style-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+.style-tag {
+  padding: 8px 16px; border-radius: 20px;
+  background: rgba(212,165,165,0.04);
+  border: 1px solid rgba(212,165,165,0.1);
+  cursor: pointer; transition: all 0.3s ease;
+  display: flex; align-items: center; gap: 6px;
+  color: var(--rose-mid); font-family: var(--body-font); font-size: 12px;
+}
+.style-tag:hover { border-color: rgba(212,165,165,0.3); }
+.style-tag.selected {
+  background: rgba(155,35,53,0.2);
+  border-color: rgba(155,35,53,0.4);
+  color: var(--rose);
+}
+
+/* Upload zone */
+.upload-zone {
+  border: 2px dashed rgba(212,165,165,0.15);
+  border-radius: 16px; padding: 36px 24px;
+  text-align: center; cursor: pointer;
+  transition: all 0.3s ease; margin-bottom: 16px;
+}
+.upload-zone:hover { border-color: rgba(212,165,165,0.3); }
+.upload-zone.dragover {
+  border-color: rgba(155,35,53,0.5);
+  background: rgba(155,35,53,0.05);
+  animation: borderGlow 1s ease infinite;
+}
+.upload-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(212,165,165,0.08);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+.upload-text {
+  font-family: var(--body-font); font-size: 13px;
+  color: var(--rose-mid); opacity: 0.7;
+}
+.upload-hint {
+  font-family: var(--body-font); font-size: 11px;
+  color: var(--rose-mid); opacity: 0.35; margin-top: 6px;
+}
+
+/* Image previews */
+.image-previews { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+.img-thumb {
+  width: 80px; height: 80px; border-radius: 12px;
+  overflow: hidden; position: relative;
+  border: 1px solid rgba(212,165,165,0.15);
+}
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.img-remove {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(0,0,0,0.65); border: none;
+  color: #fff; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Description textarea */
+.desc-area {
+  width: 100%; background: rgba(212,165,165,0.03);
+  border: 1px solid rgba(212,165,165,0.12);
+  border-radius: 14px; padding: 18px 20px;
+  color: var(--rose); font-family: var(--body-font);
+  font-size: 14px; line-height: 1.7; resize: vertical;
+  transition: all 0.3s ease; min-height: 130px;
+}
+.desc-area:focus { outline: none; border-color: rgba(212,165,165,0.5); }
+.char-count {
+  font-family: var(--body-font); font-size: 11px;
+  color: var(--rose-mid); opacity: 0.3; margin-top: 8px; text-align: right;
+}
+
+/* Review card */
+.review-card {
+  background: rgba(212,165,165,0.03);
+  border: 1px solid rgba(212,165,165,0.1);
+  border-radius: 20px; padding: 32px;
+  max-width: 520px; margin: 0 auto;
+}
+.review-section {
+  margin-bottom: 24px; padding-bottom: 24px;
+  border-bottom: 1px solid rgba(212,165,165,0.08);
+}
+.review-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.review-label {
+  font-family: var(--body-font); font-size: 11px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--rose-mid); opacity: 0.4; margin-bottom: 10px;
+}
+.review-value {
+  font-family: var(--display-font); font-size: 20px; color: var(--rose);
+}
+.review-desc {
+  font-family: var(--body-font); font-size: 13px;
+  color: var(--rose); line-height: 1.7; opacity: 0.8;
+}
+
+/* Navigation bar */
+.nav-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 20px 24px 28px;
+  background: linear-gradient(transparent, rgba(26,10,10,0.95) 30%);
+  display: flex; justify-content: center; gap: 12px;
+  z-index: 20;
+}
+.btn {
+  padding: 14px 32px; border-radius: 30px;
+  font-family: var(--body-font); font-size: 13px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s ease; border: none;
+}
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(212,165,165,0.2);
+  color: var(--rose-mid);
+}
+.btn-secondary:hover { border-color: rgba(212,165,165,0.5); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--crimson), var(--rose-mid));
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(155,35,53,0.3);
+}
+.btn-primary:hover { box-shadow: 0 4px 30px rgba(155,35,53,0.5); }
+.btn-primary:disabled {
+  background: rgba(212,165,165,0.1);
+  color: rgba(212,165,165,0.3);
+  box-shadow: none; cursor: not-allowed;
+}
+.btn-submit {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-bright));
+  color: #fff; padding: 14px 48px; letter-spacing: 2px;
+  box-shadow: 0 4px 30px rgba(155,35,53,0.4);
+}
+.btn-submit:hover { box-shadow: 0 4px 40px rgba(155,35,53,0.6); }
+
+/* Success screen */
+.success-screen {
+  display: none; min-height: 100vh;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 20px;
+}
+.success-screen.visible { display: flex; }
+.success-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose-mid), var(--crimson));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 30px;
+  box-shadow: 0 0 40px rgba(212,165,165,0.3);
+  animation: successPulse 3s ease-in-out infinite;
+}
+.success-title {
+  color: var(--rose); font-size: clamp(28px, 5vw, 42px);
+  font-weight: 300; margin-bottom: 12px; letter-spacing: 2px;
+}
+.success-desc {
+  color: var(--rose-mid); font-family: var(--body-font);
+  font-weight: 200; font-size: 16px; max-width: 360px;
+  line-height: 1.6; opacity: 0.8; margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .shape-grid { grid-template-columns: repeat(2, 1fr); }
+  header { padding: 20px 20px; }
+  main { padding: 24px 16px 140px; }
+  .review-card { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient Orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- App Container -->
+<div id="app">
+  <!-- Header -->
+  <header>
+    <div>
+      <div class="logo">Lacquered</div>
+      <div class="logo-sub">Bespoke Nail Atelier</div>
+    </div>
+    <div class="step-indicator" id="stepIndicator">WELCOME — 1/5</div>
+  </header>
+
+  <!-- Progress -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:20%"></div>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- STEP 0: Welcome -->
+    <section class="step active" id="step0">
+      <svg class="hero-nail" viewBox="0 0 120 120" width="120" height="120">
+        <defs>
+          <linearGradient id="nailGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#D4A5A5"/><stop offset="100%" stop-color="#9B2335"/>
+          </linearGradient>
+        </defs>
+        <path d="M45,110 L42,40 Q42,8 60,8 Q78,8 78,40 L75,110 Q60,115 45,110Z" fill="none" stroke="url(#nailGrad)" stroke-width="1.5" opacity="0.6"/>
+        <path d="M50,108 L48,45 Q48,18 60,18 Q72,18 72,45 L70,108 Q60,112 50,108Z" fill="none" stroke="url(#nailGrad)" stroke-width="0.8" opacity="0.3"/>
+      </svg>
+      <h2 class="hero-title">Design Your<br>Dream Nails</h2>
+      <p class="hero-desc">Upload inspiration images, describe your vision, and let our artists bring your perfect design to life.</p>
+      <input type="text" class="name-input" id="nameInput" placeholder="Your name (optional)">
+    </section>
+
+    <!-- STEP 1: Shape -->
+    <section class="step" id="step1">
+      <h2 class="step-title">Choose Your Shape</h2>
+      <p class="step-subtitle">The foundation of your design</p>
+      <div class="shape-grid" id="shapeGrid"></div>
+    </section>
+
+    <!-- STEP 2: Colors -->
+    <section class="step" id="step2">
+      <h2 class="step-title">Select Your Palette</h2>
+      <p class="step-subtitle">Choose up to 4 colors</p>
+      <div class="color-grid" id="colorGrid"></div>
+      <div class="palette-preview" id="palettePreview" style="display:none">
+        <span class="palette-label">YOUR PALETTE</span>
+        <div id="paletteChips" style="display:flex;gap:8px"></div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Vision -->
+    <section class="step" id="step3">
+      <h2 class="step-title">Share Your Vision</h2>
+      <p class="step-subtitle">Upload inspo or describe your dream design</p>
+
+      <div class="section-label">Quick Style Tags</div>
+      <div class="style-tags" id="styleTags"></div>
+
+      <div class="section-label">Upload Inspiration (up to 5)</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+        <div class="upload-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="#D4A5A5" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p class="upload-text">Drop images here or tap to browse</p>
+        <p class="upload-hint">PNG, JPG, WEBP</p>
+      </div>
+      <div class="image-previews" id="imagePreviews"></div>
+
+      <div class="section-label">Describe Your Design</div>
+      <textarea class="desc-area" id="descArea" placeholder="Tell us everything… colour gradients, special accents, a mood, a vibe — whatever inspires you. The more detail, the closer we get to your dream design." rows="5"></textarea>
+      <div class="char-count" id="charCount">0 characters</div>
+    </section>
+
+    <!-- STEP 4: Review -->
+    <section class="step" id="step4">
+      <h2 class="step-title">Review Your Design</h2>
+      <p class="step-subtitle">Everything look perfect?</p>
+      <div class="review-card" id="reviewCard"></div>
+    </section>
+  </main>
+
+  <!-- Navigation -->
+  <div class="nav-bar" id="navBar">
+    <button class="btn btn-primary" id="btnNext" onclick="nextStep()">Begin</button>
+  </div>
+</div>
+
+<!-- Success Screen -->
+<div class="success-screen" id="successScreen">
+  <div>
+    <div class="success-icon">
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <path d="M8 18 L15 26 L28 10" fill="none" stroke="#fff" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="stroke-dasharray:40;animation:checkDraw 0.6s ease forwards"/>
+      </svg>
+    </div>
+    <h2 class="success-title">Design Submitted</h2>
+    <p class="success-desc" id="successMsg">Your vision has been received. Our nail artist will craft something extraordinary for you.</p>
+    <button class="btn btn-secondary" style="margin-top:30px" onclick="resetAll()">Start New Design</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───
+const SHAPES = [
+  { id:"almond", label:"Almond", path:"M25,80 Q25,10 50,2 Q75,10 75,80 Q50,85 25,80Z" },
+  { id:"coffin", label:"Coffin", path:"M28,80 L22,15 Q35,2 50,2 Q65,2 78,15 L72,80 Q50,85 28,80Z" },
+  { id:"stiletto", label:"Stiletto", path:"M28,80 Q30,20 50,0 Q70,20 72,80 Q50,85 28,80Z" },
+  { id:"square", label:"Square", path:"M25,80 L25,10 Q25,2 35,2 L65,2 Q75,2 75,10 L75,80 Q50,85 25,80Z" },
+  { id:"oval", label:"Oval", path:"M25,80 L25,25 Q25,2 50,2 Q75,2 75,25 L75,80 Q50,85 25,80Z" },
+  { id:"round", label:"Round", path:"M25,80 L25,30 Q25,5 50,5 Q75,5 75,30 L75,80 Q50,85 25,80Z" },
+];
+const COLORS = [
+  "#E8C4C4","#F2D2BD","#D4A5A5","#9B2335","#C41E3A",
+  "#FF6B6B","#FF8C94","#FFB5C2","#E6B8A2","#D4956B",
+  "#8B4513","#2C1810","#000000","#FFFFFF","#C0C0C0",
+  "#FFD700","#4A90D9","#2D5F2D","#6B3FA0","#FF69B4",
+];
+const STYLES = [
+  { id:"french", label:"French Tip", emoji:"🤍" },
+  { id:"ombre", label:"Ombré", emoji:"🌅" },
+  { id:"chrome", label:"Chrome", emoji:"✨" },
+  { id:"floral", label:"Floral Art", emoji:"🌸" },
+  { id:"geometric", label:"Geometric", emoji:"◆" },
+  { id:"marble", label:"Marble", emoji:"🪨" },
+  { id:"glitter", label:"Glitter", emoji:"💎" },
+  { id:"abstract", label:"Abstract", emoji:"🎨" },
+];
+const STEP_LABELS = ["WELCOME","SHAPE","PALETTE","STYLE","REVIEW"];
+const LIGHT_COLORS = ["#FFFFFF","#FFD700","#C0C0C0","#F2D2BD","#FFB5C2","#E8C4C4","#FF8C94","#E6B8A2"];
+
+// ─── STATE ───
+let currentStep = 0;
+let selectedShape = null;
+let selectedColors = [];
+let selectedStyles = [];
+let uploadedImages = [];
+
+// ─── INIT ───
+function init() {
+  createParticles();
+  buildShapes();
+  buildColors();
+  buildStyles();
+
+  const uz = document.getElementById('uploadZone');
+  const fi = document.getElementById('fileInput');
+  uz.addEventListener('click', () => fi.click());
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('dragover'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('dragover'));
+  uz.addEventListener('drop', e => {
+    e.preventDefault(); uz.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  fi.addEventListener('change', e => handleFiles(e.target.files));
+
+  document.getElementById('descArea').addEventListener('input', e => {
+    document.getElementById('charCount').textContent = e.target.value.length + ' characters';
+  });
+}
+
+function createParticles() {
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = (i * 0.65) + 's';
+    document.body.appendChild(p);
+  }
+}
+
+function buildShapes() {
+  const grid = document.getElementById('shapeGrid');
+  SHAPES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'shape-btn';
+    btn.innerHTML = `
+      <svg viewBox="0 0 100 90" width="50" height="50">
+        <defs><linearGradient id="sg-${s.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#D4A5A5"/><stop offset="100%" stop-color="#8B6F6F"/>
+        </linearGradient></defs>
+        <path d="${s.path}" fill="url(#sg-${s.id})" opacity="0.4" class="shape-path"/>
+      </svg>
+      <span class="shape-label">${s.label}</span>`;
+    btn.onclick = () => selectShape(s.id);
+    grid.appendChild(btn);
+  });
+}
+
+function selectShape(id) {
+  selectedShape = id;
+  document.querySelectorAll('.shape-btn').forEach((btn, i) => {
+    const isSelected = SHAPES[i].id === id;
+    btn.classList.toggle('selected', isSelected);
+    const path = btn.querySelector('.shape-path');
+    path.setAttribute('opacity', isSelected ? '0.9' : '0.4');
+    const stops = btn.querySelectorAll('stop');
+    stops[0].setAttribute('stop-color', isSelected ? '#E8C4C4' : '#D4A5A5');
+    stops[1].setAttribute('stop-color', isSelected ? '#9B2335' : '#8B6F6F');
+  });
+  updateNav();
+}
+
+function buildColors() {
+  const grid = document.getElementById('colorGrid');
+  COLORS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'color-swatch';
+    btn.style.background = c;
+    const checkColor = LIGHT_COLORS.includes(c) ? '#1a0a0a' : '#fff';
+    btn.innerHTML = `<svg class="check" viewBox="0 0 24 24" width="18" height="18">
+      <path d="M5 12l5 5 9-9" fill="none" stroke="${checkColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    btn.onclick = () => toggleColor(c, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function toggleColor(c, btn) {
+  if (selectedColors.includes(c)) {
+    selectedColors = selectedColors.filter(x => x !== c);
+    btn.classList.remove('selected');
+    btn.style.boxShadow = 'none';
+    btn.style.transform = 'scale(1)';
+  } else if (selectedColors.length < 4) {
+    selectedColors.push(c);
+    btn.classList.add('selected');
+    btn.style.boxShadow = `0 0 20px ${c}40, 0 0 40px ${c}20`;
+  }
+  updatePalettePreview();
+}
+
+function updatePalettePreview() {
+  const box = document.getElementById('palettePreview');
+  const chips = document.getElementById('paletteChips');
+  if (selectedColors.length === 0) { box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  chips.innerHTML = selectedColors.map(c => `<div class="palette-chip" style="background:${c}"></div>`).join('');
+}
+
+function buildStyles() {
+  const container = document.getElementById('styleTags');
+  STYLES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'style-tag';
+    btn.innerHTML = `<span style="font-size:14px">${s.emoji}</span> ${s.label}`;
+    btn.onclick = () => {
+      if (selectedStyles.includes(s.id)) {
+        selectedStyles = selectedStyles.filter(x => x !== s.id);
+        btn.classList.remove('selected');
+      } else if (selectedStyles.length < 3) {
+        selectedStyles.push(s.id);
+        btn.classList.add('selected');
+      }
+      updateNav();
+    };
+    container.appendChild(btn);
+  });
+}
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/') || uploadedImages.length >= 5) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedImages.push({ url: e.target.result, name: file.name });
+      renderPreviews();
+      updateNav();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPreviews() {
+  const container = document.getElementById('imagePreviews');
+  container.innerHTML = uploadedImages.map((img, i) => `
+    <div class="img-thumb">
+      <img src="${img.url}" alt="${img.name}">
+      <button class="img-remove" onclick="removeImage(${i})">×</button>
+    </div>`).join('');
+}
+
+function removeImage(i) {
+  uploadedImages.splice(i, 1);
+  renderPreviews();
+  updateNav();
+}
+
+// ─── NAVIGATION ───
+function updateStep() {
+  document.querySelectorAll('.step').forEach((el, i) => {
+    el.classList.toggle('active', i === currentStep);
+  });
+  document.getElementById('stepIndicator').textContent =
+    STEP_LABELS[currentStep] + ' — ' + (currentStep + 1) + '/5';
+  document.getElementById('progressFill').style.width =
+    ((currentStep + 1) / 5 * 100) + '%';
+  updateNav();
+
+  if (currentStep === 4) buildReview();
+}
+
+function updateNav() {
+  const bar = document.getElementById('navBar');
+  let html = '';
+  if (currentStep > 0) {
+    html += '<button class="btn btn-secondary" onclick="prevStep()">Back</button>';
+  }
+  if (currentStep < 4) {
+    const disabled = !canProceed() ? 'disabled' : '';
+    const label = currentStep === 0 ? 'Begin' : 'Continue';
+    html += `<button class="btn btn-primary" id="btnNext" onclick="nextStep()" ${disabled}>${label}</button>`;
+  } else {
+    html += '<button class="btn btn-submit" onclick="submitDesign()">Submit Design</button>';
+  }
+  bar.innerHTML = html;
+}
+
+function canProceed() {
+  if (currentStep === 1) return !!selectedShape;
+  if (currentStep === 3) {
+    const desc = document.getElementById('descArea')?.value || '';
+    return desc.length > 0 || uploadedImages.length > 0;
+  }
+  return true;
+}
+
+function nextStep() {
+  if (!canProceed()) return;
+  if (currentStep < 4) { currentStep++; updateStep(); }
+}
+function prevStep() {
+  if (currentStep > 0) { currentStep--; updateStep(); }
+}
+
+function buildReview() {
+  const card = document.getElementById('reviewCard');
+  let html = '';
+  const shape = SHAPES.find(s => s.id === selectedShape);
+  const c1 = selectedColors[0] || '#D4A5A5', c2 = selectedColors[1] || '#9B2335';
+
+  // Shape
+  html += `<div class="review-section" style="display:flex;align-items:center;gap:20px">
+    <svg viewBox="0 0 100 90" width="44" height="44">
+      <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>
+      </linearGradient></defs>
+      <path d="${shape ? shape.path : ''}" fill="url(#rg)" opacity="0.8"/>
+    </svg>
+    <div><div class="review-label">Shape</div>
+    <div class="review-value">${shape ? shape.label : 'Not selected'}</div></div></div>`;
+
+  // Colors
+  if (selectedColors.length) {
+    html += `<div class="review-section"><div class="review-label">Palette</div>
+      <div style="display:flex;gap:8px">${selectedColors.map(c =>
+        `<div style="width:32px;height:32px;border-radius:8px;background:${c};border:1px solid rgba(255,255,255,0.1)"></div>`
+      ).join('')}</div></div>`;
+  }
+
+  // Styles
+  if (selectedStyles.length) {
+    html += `<div class="review-section"><div class="review-label">Styles</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${selectedStyles.map(id => {
+        const s = STYLES.find(x => x.id === id);
+        return `<span style="padding:6px 14px;border-radius:16px;background:rgba(155,35,53,0.15);border:1px solid rgba(155,35,53,0.3);font-family:var(--body-font);font-size:12px;color:var(--rose)">${s.emoji} ${s.label}</span>`;
+      }).join('')}</div></div>`;
+  }
+
+  // Images
+  if (uploadedImages.length) {
+    html += `<div class="review-section"><div class="review-label">Inspiration (${uploadedImages.length} image${uploadedImages.length>1?'s':''})</div>
+      <div style="display:flex;gap:8px">${uploadedImages.map(img =>
+        `<div style="width:56px;height:56px;border-radius:10px;overflow:hidden;border:1px solid rgba(212,165,165,0.15)"><img src="${img.url}" style="width:100%;height:100%;object-fit:cover"></div>`
+      ).join('')}</div></div>`;
+  }
+
+  // Description
+  const desc = document.getElementById('descArea')?.value || '';
+  if (desc) {
+    html += `<div class="review-section"><div class="review-label">Your Vision</div>
+      <div class="review-desc">"${desc}"</div></div>`;
+  }
+
+  card.innerHTML = html;
+}
+
+function submitDesign() {
+  document.getElementById('app').style.display = 'none';
+  const name = document.getElementById('nameInput').value;
+  document.getElementById('successMsg').textContent =
+    (name ? `Thank you, ${name}! ` : 'Thank you! ') +
+    'Your vision has been received. Our nail artist will craft something extraordinary for you.';
+  document.getElementById('successScreen').classList.add('visible');
+}
+
+function resetAll() {
+  currentStep = 0;
+  selectedShape = null;
+  selectedColors = [];
+  selectedStyles = [];
+  uploadedImages = [];
+
+  document.getElementById('nameInput').value = '';
+  document.getElementById('descArea').value = '';
+  document.getElementById('charCount').textContent = '0 characters';
+  document.getElementById('imagePreviews').innerHTML = '';
+  document.querySelectorAll('.shape-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelector('.shape-path').setAttribute('opacity','0.4');
+  });
+  document.querySelectorAll('.color-swatch').forEach(b => {
+    b.classList.remove('selected'); b.style.boxShadow='none'; b.style.transform='scale(1)';
+  });
+  document.querySelectorAll('.style-tag').forEach(b => b.classList.remove('selected'));
+  updatePalettePreview();
+
+  document.getElementById('successScreen').classList.remove('visible');
+  document.getElementById('app').style.display = 'block';
+  updateStep();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

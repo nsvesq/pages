@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maqam Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Scheherazade+New:wght@400;600;700&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9972c;
+    --gold-light: #f0c96a;
+    --gold-dim: #7a5a18;
+    --ink: #0d0a06;
+    --parchment: #1a1408;
+    --parchment-mid: #241c0c;
+    --parchment-light: #2e2410;
+    --cream: #f5e9c8;
+    --cream-dim: #b09a6e;
+    --accent: #c04a2a;
+    --accent-light: #e86040;
+    --teal: #2a7c7a;
+    --teal-light: #4ab8b5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--ink);
+    color: var(--cream);
+    font-family: 'Josefin Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Geometric background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(60deg, transparent, transparent 40px, rgba(201,151,44,0.03) 40px, rgba(201,151,44,0.03) 41px),
+      repeating-linear-gradient(-60deg, transparent, transparent 40px, rgba(201,151,44,0.03) 40px, rgba(201,151,44,0.03) 41px),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(201,151,44,0.02) 40px, rgba(201,151,44,0.02) 41px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+  }
+
+  .arabic-ornament {
+    font-size: 2.2rem;
+    color: var(--gold);
+    letter-spacing: 8px;
+    opacity: 0.7;
+    display: block;
+    margin-bottom: 12px;
+    animation: shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 4px;
+    text-shadow: 0 0 40px rgba(201,151,44,0.4), 0 2px 4px rgba(0,0,0,0.8);
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-family: 'Scheherazade New', serif;
+    font-size: 1.4rem;
+    color: var(--cream-dim);
+    margin-top: 12px;
+    letter-spacing: 2px;
+    direction: rtl;
+  }
+
+  .header-line {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    justify-content: center;
+  }
+
+  .header-line::before, .header-line::after {
+    content: '';
+    flex: 1;
+    max-width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .diamond {
+    width: 8px;
+    height: 8px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px var(--gold);
+  }
+
+  /* Controls panel */
+  .controls {
+    background: linear-gradient(135deg, var(--parchment-mid) 0%, var(--parchment-light) 100%);
+    border: 1px solid rgba(201,151,44,0.25);
+    border-radius: 2px;
+    padding: 40px;
+    margin-bottom: 40px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(201,151,44,0.1);
+  }
+
+  .controls::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border: 1px solid rgba(201,151,44,0.08);
+    pointer-events: none;
+    border-radius: 1px;
+  }
+
+  /* Corner ornaments */
+  .corner { position: absolute; width: 20px; height: 20px; }
+  .corner::before, .corner::after { content: ''; position: absolute; background: var(--gold); }
+  .corner::before { width: 100%; height: 1.5px; top: 0; }
+  .corner::after { width: 1.5px; height: 100%; top: 0; }
+  .corner.tl { top: 6px; left: 6px; }
+  .corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
+  .corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+  .corner.br { bottom: 6px; right: 6px; transform: scale(-1); }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+
+  @media (max-width: 600px) {
+    .controls-grid { grid-template-columns: 1fr; }
+  }
+
+  .select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  label {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  select {
+    background: rgba(10, 8, 4, 0.7);
+    border: 1px solid rgba(201,151,44,0.4);
+    color: var(--cream);
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    padding: 14px 20px;
+    border-radius: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9972c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 44px;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(201,151,44,0.15), 0 0 20px rgba(201,151,44,0.1);
+  }
+
+  select:hover {
+    border-color: var(--gold-light);
+    background-color: rgba(201,151,44,0.05);
+  }
+
+  option {
+    background: #1a1408;
+    color: var(--cream);
+  }
+
+  /* Maqam description */
+  .maqam-meta {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(201,151,44,0.15);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .maqam-meta { grid-template-columns: 1fr; }
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .meta-label {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  .meta-value {
+    font-family: 'Scheherazade New', serif;
+    font-size: 1.1rem;
+    color: var(--cream-dim);
+    line-height: 1.4;
+  }
+
+  /* Result display */
+  .result-panel {
+    background: linear-gradient(135deg, var(--parchment-mid) 0%, rgba(42,124,122,0.08) 100%);
+    border: 1px solid rgba(201,151,44,0.2);
+    border-top: 2px solid var(--gold);
+    padding: 40px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: panelFadeIn 0.4s ease;
+  }
+
+  @keyframes panelFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .result-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(201,151,44,0.4), transparent);
+  }
+
+  /* Notes display */
+  .notes-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 32px;
+    align-items: center;
+  }
+
+  .note-chip {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .note-bubble {
+    width: 62px;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,8,4,0.8);
+    border: 1px solid rgba(201,151,44,0.3);
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--cream);
+    transition: all 0.3s ease;
+    position: relative;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    animation: noteAppear 0.4s ease backwards;
+  }
+
+  @keyframes noteAppear {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .note-bubble:hover {
+    background: rgba(201,151,44,0.15);
+    border-color: var(--gold);
+    color: var(--gold-light);
+    transform: translateY(-4px) scale(1.05);
+  }
+
+  .note-bubble.root {
+    background: linear-gradient(135deg, rgba(201,151,44,0.3), rgba(201,151,44,0.1));
+    border-color: var(--gold);
+    color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(201,151,44,0.3);
+  }
+
+  .note-bubble.half-flat {
+    border-color: rgba(74,184,181,0.5);
+    color: var(--teal-light);
+  }
+
+  .note-number {
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    color: var(--gold-dim);
+    font-family: 'Josefin Sans', sans-serif;
+  }
+
+  .arrow-sep {
+    color: rgba(201,151,44,0.3);
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+  }
+
+  /* Intervals display */
+  .intervals-section {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(201,151,44,0.1);
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 16px;
+  }
+
+  .intervals-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .interval-badge {
+    padding: 5px 14px;
+    border: 1px solid rgba(201,151,44,0.2);
+    background: rgba(201,151,44,0.05);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--cream-dim);
+    font-family: 'Josefin Sans', sans-serif;
+  }
+
+  .interval-badge.aug { border-color: rgba(192,74,42,0.4); color: var(--accent-light); background: rgba(192,74,42,0.06); }
+  .interval-badge.half { border-color: rgba(74,184,181,0.4); color: var(--teal-light); background: rgba(74,184,181,0.06); }
+
+  /* Jins info */
+  .jins-info {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(10,8,4,0.5);
+    border-left: 2px solid var(--gold-dim);
+    font-size: 0.85rem;
+    color: var(--cream-dim);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  /* Footer ornament */
+  .footer-ornament {
+    text-align: center;
+    margin-top: 60px;
+    color: var(--gold-dim);
+    font-size: 1.4rem;
+    letter-spacing: 12px;
+    opacity: 0.5;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+
+  .tag-quarter {
+    font-size: 0.55rem;
+    letter-spacing: 0;
+    color: var(--teal-light);
+    margin-top: 1px;
+    display: block;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <span class="arabic-ornament">✦ ✧ ✦</span>
+    <h1>MAQAM EXPLORER</h1>
+    <div class="subtitle">مقامات الموسيقى العربية</div>
+    <div class="header-line"><div class="diamond"></div></div>
+  </header>
+
+  <div class="controls">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="controls-grid">
+      <div class="select-group">
+        <label for="maqamSelect">Select Maqam</label>
+        <select id="maqamSelect"></select>
+      </div>
+      <div class="select-group">
+        <label for="keySelect">Root Note / Key</label>
+        <select id="keySelect"></select>
+      </div>
+    </div>
+
+    <div class="maqam-meta" id="maqamMeta">
+      <div class="meta-item">
+        <span class="meta-label">Family</span>
+        <span class="meta-value" id="metaFamily">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Arabic Name</span>
+        <span class="meta-value" id="metaArabic">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Character</span>
+        <span class="meta-value" id="metaChar">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Common Region</span>
+        <span class="meta-value" id="metaRegion">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="result-title">Notes of the Scale</div>
+    <div class="notes-row" id="notesRow"></div>
+    <div class="intervals-section">
+      <div class="section-label">Interval Pattern</div>
+      <div class="intervals-row" id="intervalsRow"></div>
+    </div>
+    <div class="jins-info" id="jinsInfo"></div>
+  </div>
+
+  <div class="footer-ornament">✦ ✦ ✦ ✦ ✦</div>
+</div>
+
+<script>
+// ─── CHROMATIC SCALE ───────────────────────────────────────────────────────
+// We use a 24-step system (quarter-tones) for accurate maqam representation
+// Each step = 50 cents. A semitone = 2 steps.
+
+const CHROMATIC = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT_NAMES = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const ALL_ROOTS = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+
+// Quarter tone labels
+// We'll map intervals: W = whole (2 semitones), H = half (1 semitone),
+// A = augmented 2nd (3 semitones), 3q = 3 quarter tones (1.5 semitones)
+// expressed as semitone counts for chromatic transposition.
+// For quarter-tone notes (3q interval = 1.5 semitones), we mark them as "½♭"
+
+// ─── MAQAM DATABASE ────────────────────────────────────────────────────────
+// Intervals given in semitones. Q = 0.5 (quarter tone flat marker for display)
+// We'll use decimal: 0.5 means a quarter tone (half of a semitone).
+// Note: Quarter-tone flats are displayed with a ½♭ symbol.
+
+const MAQAMAT = {
+  // ─── RAST FAMILY ───────────────────────────────────────────────
+  "Rast": {
+    arabic: "راست",
+    family: "Rast",
+    intervals: [2, 1.5, 0.5, 2, 2, 1.5, 0.5], // W, 3q, q, W, W, 3q, q
+    character: "Balanced, serene, noble",
+    region: "Pan-Arab, Turkey",
+    description: "The most fundamental maqam. Built on two Rast tetrachords. The 3rd and 7th degrees are quarter-tone flat (sikah & awj), giving it a distinctly Middle Eastern colour.",
+    jins: "Rast + Rast"
+  },
+  "Suznak": {
+    arabic: "سوزناك",
+    family: "Rast",
+    intervals: [2, 1.5, 0.5, 2, 1, 2, 0.5],
+    character: "Longing, yearning, passionate",
+    region: "Turkey, Levant",
+    description: "Similar to Rast but with a raised 6th. The augmented step between 5–6 gives it a tense, yearning quality.",
+    jins: "Rast + Hijaz"
+  },
+  "Mahur": {
+    arabic: "ماهور",
+    family: "Rast",
+    intervals: [2, 1.5, 0.5, 2, 2, 2, 1],
+    character: "Bright, dignified, majestic",
+    region: "Iran, Turkey",
+    description: "A Rast variant where the upper tetrachord resembles a major scale. Very bright and stately.",
+    jins: "Rast + Ajam"
+  },
+  "Yakah": {
+    arabic: "يكاه",
+    family: "Rast",
+    intervals: [2, 1.5, 0.5, 2, 2, 1.5, 0.5],
+    character: "Grounded, spacious",
+    region: "Egypt, Levant",
+    description: "Essentially Rast on G. Used as the lower octave foundation in many classical compositions.",
+    jins: "Rast + Rast"
+  },
+  // ─── BAYATI FAMILY ─────────────────────────────────────────────
+  "Bayati": {
+    arabic: "بياتي",
+    family: "Bayati",
+    intervals: [1.5, 0.5, 2, 2, 1.5, 0.5, 2],
+    character: "Deeply expressive, sorrowful, earthy",
+    region: "Pan-Arab, widespread",
+    description: "One of the most used maqamat. Starts with a minor 2nd and a quarter-tone flat 3rd. Extremely emotive and deeply rooted in Arab classical tradition.",
+    jins: "Bayati + Rast"
+  },
+  "Husseini": {
+    arabic: "حسيني",
+    family: "Bayati",
+    intervals: [1.5, 0.5, 2, 2, 2, 0.5, 1.5],
+    character: "Dignified sorrow, introspection",
+    region: "Egypt, Iraq",
+    description: "A Bayati variant with a different upper tetrachord. Named after Hussein, carrying a solemn, dignified quality.",
+    jins: "Bayati + Nahawand"
+  },
+  "Saba": {
+    arabic: "صبا",
+    family: "Bayati",
+    intervals: [1.5, 0.5, 1, 1.5, 1, 2, 1.5],
+    character: "Weeping, grief, lament",
+    region: "Egypt, Levant",
+    description: "Extremely expressive maqam associated with deep grief and lament. Has a uniquely chromatic lower tetrachord.",
+    jins: "Saba + Hijaz"
+  },
+  "Saba Zamzam": {
+    arabic: "صبا زمزم",
+    family: "Bayati",
+    intervals: [1.5, 0.5, 1, 1.5, 1.5, 0.5, 2],
+    character: "Intense sorrow, plaintive",
+    region: "Egypt",
+    description: "A variant of Saba with a different upper structure, even more intensely plaintive.",
+    jins: "Saba + Bayati"
+  },
+  // ─── HIJAZ FAMILY ──────────────────────────────────────────────
+  "Hijaz": {
+    arabic: "حجاز",
+    family: "Hijaz",
+    intervals: [1, 3, 1, 2, 1.5, 0.5, 2],
+    character: "Desert longing, exotic, mysterious",
+    region: "Pan-Arab, Andalusia",
+    description: "The iconic maqam of the desert and pilgrimage. The augmented 2nd (3 semitones) between the 2nd and 3rd degrees creates its signature exotic sound.",
+    jins: "Hijaz + Rast"
+  },
+  "Hijaz Kar": {
+    arabic: "حجاز كار",
+    family: "Hijaz",
+    intervals: [1, 3, 1, 1, 3, 1, 2],
+    character: "Majestic, grand, ceremonial",
+    region: "Turkey, Iran",
+    description: "A double-Hijaz maqam with two augmented 2nds, creating a very symmetrical and majestic sound.",
+    jins: "Hijaz + Hijaz"
+  },
+  "Hijaz Kar Kurd": {
+    arabic: "حجاز كار كرد",
+    family: "Hijaz",
+    intervals: [1, 3, 1, 2, 2, 2, 1],
+    character: "Mysterious grandeur",
+    region: "Turkey",
+    description: "Combines Hijaz with a Kurd-derived upper tetrachord. Rich and layered.",
+    jins: "Hijaz + Ajam"
+  },
+  "Zanjaran": {
+    arabic: "زنجران",
+    family: "Hijaz",
+    intervals: [1, 3, 1, 2, 1, 2, 1],
+    character: "Exotic, adventurous",
+    region: "Egypt, Levant",
+    description: "A Hijaz variant with a symmetrical and adventurous upper structure.",
+    jins: "Hijaz + Kurd variant"
+  },
+  // ─── NAHAWAND FAMILY ───────────────────────────────────────────
+  "Nahawand": {
+    arabic: "نهاوند",
+    family: "Nahawand",
+    intervals: [2, 1, 2, 2, 1, 2, 2],
+    character: "Romantic melancholy, tender",
+    region: "Pan-Arab, Turkey",
+    description: "The Arab equivalent of the Western minor scale. Tender, romantic and melancholic. Very popular in classical and popular Arab music.",
+    jins: "Nahawand + Rast"
+  },
+  "Nahawand Murassah": {
+    arabic: "نهاوند مرصع",
+    family: "Nahawand",
+    intervals: [2, 1, 2, 2, 1, 3, 1],
+    character: "Dramatic, intense",
+    region: "Levant, Egypt",
+    description: "A Nahawand variant with a Hijaz upper tetrachord, adding drama and intensity.",
+    jins: "Nahawand + Hijaz"
+  },
+  "Farahfaza": {
+    arabic: "فرح فزا",
+    family: "Nahawand",
+    intervals: [2, 1, 2, 2, 1.5, 0.5, 2],
+    character: "Joyful sorrow, bittersweet",
+    region: "Egypt, Iraq",
+    description: "A Nahawand variant with an Ajam-influenced upper part. The name means 'joy-bringing' yet retains a bittersweet quality.",
+    jins: "Nahawand + Rast variant"
+  },
+  // ─── AJAM FAMILY ───────────────────────────────────────────────
+  "Ajam": {
+    arabic: "عجم",
+    family: "Ajam",
+    intervals: [2, 2, 1, 2, 2, 2, 1],
+    character: "Bright, cheerful, foreign flavour",
+    region: "Iraq, Persia",
+    description: "Identical to the Western major scale. 'Ajam' means 'foreign' (Persian). Bright and uplifting.",
+    jins: "Ajam + Ajam"
+  },
+  "Ajam Ushayran": {
+    arabic: "عجم عشيران",
+    family: "Ajam",
+    intervals: [2, 2, 1, 2, 2, 2, 1],
+    character: "Noble, bright",
+    region: "Iraq, Egypt",
+    description: "Ajam rooted on Bb (in traditional tuning). Has a full, resonant quality in the lower register.",
+    jins: "Ajam + Ajam"
+  },
+  "Jiharkah": {
+    arabic: "جهاركاه",
+    family: "Ajam",
+    intervals: [2, 2, 1, 2, 1.5, 0.5, 2],
+    character: "Bright with Eastern warmth",
+    region: "Egypt, Levant",
+    description: "A major-flavoured maqam with an Eastern upper tetrachord (Rast on upper), blending Western brightness with Oriental warmth.",
+    jins: "Ajam + Rast"
+  },
+  "Shawq Afza": {
+    arabic: "شوق أفزا",
+    family: "Ajam",
+    intervals: [2, 2, 1, 2, 1, 3, 1],
+    character: "Longing, increasing desire",
+    region: "Egypt",
+    description: "The name means 'increasing longing'. An Ajam base with a Hijaz upper tetrachord creates a blend of brightness and yearning.",
+    jins: "Ajam + Hijaz"
+  },
+  // ─── KURD FAMILY ───────────────────────────────────────────────
+  "Kurd": {
+    arabic: "كرد",
+    family: "Kurd",
+    intervals: [1, 2, 2, 2, 1, 2, 2],
+    character: "Dark, Phrygian-like, raw",
+    region: "Turkey, Levant",
+    description: "Similar to the Western Phrygian mode. Raw and dark. Often called the maqam of grief and rawness.",
+    jins: "Kurd + Rast"
+  },
+  "Kurd Hijaz": {
+    arabic: "كرد حجاز",
+    family: "Kurd",
+    intervals: [1, 2, 2, 2, 1, 3, 1],
+    character: "Dark with exotic tension",
+    region: "Turkey, Levant",
+    description: "Combines the raw Phrygian start of Kurd with a Hijaz upper tetrachord. Very dramatic.",
+    jins: "Kurd + Hijaz"
+  },
+  // ─── SIKAH FAMILY ──────────────────────────────────────────────
+  "Sikah": {
+    arabic: "سيكاه",
+    family: "Sikah",
+    intervals: [1.5, 0.5, 2, 1.5, 0.5, 2, 1.5],
+    character: "Ethereal, floating, mystical",
+    region: "Egypt, Pan-Arab",
+    description: "Built entirely on quarter-tone intervals, Sikah starts and ends on a quarter-tone flat note. Mystical and otherworldly.",
+    jins: "Sikah + Bayati"
+  },
+  "Iraq": {
+    arabic: "عراق",
+    family: "Sikah",
+    intervals: [1.5, 0.5, 2, 1, 1, 2, 1],
+    character: "Nostalgic, ancient",
+    region: "Iraq, Egypt",
+    description: "A Sikah variant with distinct Iraqi flavour. Named after the region. Evokes ancient history.",
+    jins: "Sikah + Kurd variant"
+  },
+  "Bastanikar": {
+    arabic: "بستنكار",
+    family: "Sikah",
+    intervals: [1.5, 0.5, 1, 1.5, 1, 3, 1],
+    character: "Complex, layered",
+    region: "Egypt, Iraq",
+    description: "A complex Sikah variant. Multi-layered and sophisticated with an augmented interval.",
+    jins: "Sikah variant"
+  },
+  // ─── NAWA ATHAR FAMILY ─────────────────────────────────────────
+  "Nawa Athar": {
+    arabic: "نوى أثر",
+    family: "Athar Kurd",
+    intervals: [2, 1, 3, 1, 1, 3, 1],
+    character: "Mysterious, tense, dramatic",
+    region: "Egypt, Levant",
+    description: "Also known as 'Minor Hungarian'. Has two augmented 2nds creating a very tense and mysterious mood.",
+    jins: "Athar Kurd + Hijaz"
+  },
+  "Nikriz": {
+    arabic: "نكريز",
+    family: "Athar Kurd",
+    intervals: [2, 1, 3, 1, 2, 2, 1],
+    character: "Powerful, assertive",
+    region: "Egypt, Turkey",
+    description: "One augmented 2nd in the lower tetrachord (Athar Kurd) then a major upper tetrachord. Very powerful.",
+    jins: "Athar Kurd + Ajam"
+  },
+  "Athar Kurd": {
+    arabic: "أثر كرد",
+    family: "Athar Kurd",
+    intervals: [1, 3, 1, 2, 2, 1.5, 0.5],
+    character: "Dark mystery, suspense",
+    region: "Egypt, Levant",
+    description: "Lower Hijaz starting on a minor 2nd (Kurd), upper Rast. Creates a uniquely dark and suspenseful texture.",
+    jins: "Athar Kurd + Rast"
+  },
+  // ─── ADDITIONAL MAQAMAT ────────────────────────────────────────
+  "Lami": {
+    arabic: "لامي",
+    family: "Ajam",
+    intervals: [1, 2, 2, 2, 2, 1, 2],
+    character: "Reflective, solemn",
+    region: "Iraq, Turkey",
+    description: "A lesser-known maqam with a dark, reflective quality. Rooted in Iraqi tradition.",
+    jins: "Kurd + Ajam variant"
+  },
+  "Mustaar": {
+    arabic: "مستعار",
+    family: "Bayati",
+    intervals: [1.5, 0.5, 2, 2, 1, 2, 1.5],
+    character: "Borrowed longing",
+    region: "Egypt",
+    description: "Name means 'borrowed'. A Bayati variant with a melancholic, wandering quality.",
+    jins: "Bayati + Kurd"
+  },
+  "Shadd Araban": {
+    arabic: "شد عربان",
+    family: "Hijaz",
+    intervals: [2, 1, 3, 1, 1, 2, 2],
+    character: "Powerful, Arab grandeur",
+    region: "Pan-Arab",
+    description: "A powerful maqam blending Nahawand and Hijaz elements. Very grand and assertive.",
+    jins: "Nahawand + Hijaz"
+  },
+  "Suzdalara": {
+    arabic: "سوزدلارا",
+    family: "Rast",
+    intervals: [2, 1.5, 0.5, 2, 1, 3, 1],
+    character: "Burning heart, passion",
+    region: "Turkey",
+    description: "Name means 'burning in the chest'. Combines Rast lower with Hijaz upper. Very passionate.",
+    jins: "Rast + Hijaz"
+  },
+  "Tarz Naw": {
+    arabic: "طرز نو",
+    family: "Rast",
+    intervals: [2, 2, 1.5, 0.5, 2, 1.5, 0.5],
+    character: "New style, fresh",
+    region: "Egypt, Iraq",
+    description: "A newer-style maqam. Bright with an Eastern upper flavour.",
+    jins: "Ajam + Rast"
+  },
+  "Bayati Shuri": {
+    arabic: "بياتي شوري",
+    family: "Bayati",
+    intervals: [1.5, 0.5, 2, 2, 1, 3, 1],
+    character: "Urban sorrow, city blues",
+    region: "Egypt",
+    description: "A Bayati variant popular in Egyptian urban music. Blends deep Bayati sorrow with a Hijaz upper tetrachord.",
+    jins: "Bayati + Hijaz"
+  },
+  "Huzam": {
+    arabic: "هزام",
+    family: "Sikah",
+    intervals: [1.5, 0.5, 1, 1.5, 1, 3, 1],
+    character: "Majestic grief, noble sorrow",
+    region: "Egypt, Pan-Arab",
+    description: "A Sikah variant with a Hijaz upper section. The majestic quality of Hijaz merges with the ethereal Sikah base.",
+    jins: "Sikah + Hijaz"
+  },
+  "Awj Ara": {
+    arabic: "أوج آرا",
+    family: "Sikah",
+    intervals: [1.5, 0.5, 2, 2, 1, 3, 1],
+    character: "Illuminated, expansive",
+    region: "Egypt",
+    description: "Decorated Sikah variant. The name references the high Awj note. Spacious and illuminated.",
+    jins: "Sikah + Hijaz"
+  }
+};
+
+// ─── HELPER FUNCTIONS ──────────────────────────────────────────────────────
+
+function noteIndex(note) {
+  const map = { 'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,
+                'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11 };
+  return map[note];
+}
+
+// Preferred enharmonic names based on root
+function getPreferredName(semitones, rootNote) {
+  const sharps = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const flats  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+  const useFlat = ['F','Bb','Eb','Ab','Db','Gb'].includes(rootNote);
+  return useFlat ? flats[semitones % 12] : sharps[semitones % 12];
+}
+
+function buildScale(rootNote, intervals) {
+  const rootIdx = noteIndex(rootNote);
+  const notes = [];
+  let current = rootIdx;
+  notes.push({ name: rootNote, qt: false, semitones: 0 });
+  let cumulative = 0;
+  for (let i = 0; i < intervals.length - 1; i++) {
+    cumulative += intervals[i];
+    const isQuarter = (cumulative % 1 !== 0);
+    const semiPos = Math.round(rootIdx + cumulative) % 12;
+    const name = getPreferredName((rootIdx + Math.round(cumulative)) % 12, rootNote);
+    notes.push({ name, qt: isQuarter, semitones: cumulative });
+  }
+  return notes;
+}
+
+function intervalLabel(interval) {
+  if (interval === 0.5) return { label: "¼", type: "quarter" };
+  if (interval === 1)   return { label: "H", type: "half" };
+  if (interval === 1.5) return { label: "¾", type: "quarter" };
+  if (interval === 2)   return { label: "W", type: "whole" };
+  if (interval === 3)   return { label: "A2", type: "aug" };
+  return { label: interval + "st", type: "" };
+}
+
+function intervalName(interval) {
+  if (interval === 0.5) return "Quarter Tone";
+  if (interval === 1)   return "Half Step";
+  if (interval === 1.5) return "3 Quarter Tones";
+  if (interval === 2)   return "Whole Step";
+  if (interval === 3)   return "Augmented 2nd";
+  return "";
+}
+
+// ─── UI POPULATION ─────────────────────────────────────────────────────────
+
+const maqamSelect = document.getElementById('maqamSelect');
+const keySelect   = document.getElementById('keySelect');
+
+// Populate maqam dropdown (grouped by family)
+const families = {};
+for (const [name, data] of Object.entries(MAQAMAT)) {
+  if (!families[data.family]) families[data.family] = [];
+  families[data.family].push(name);
+}
+for (const [family, names] of Object.entries(families)) {
+  const grp = document.createElement('optgroup');
+  grp.label = `── ${family} Family`;
+  for (const name of names) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = `${name} — ${MAQAMAT[name].arabic}`;
+    grp.appendChild(opt);
+  }
+  maqamSelect.appendChild(grp);
+}
+
+// Populate key dropdown
+for (const root of ALL_ROOTS) {
+  const opt = document.createElement('option');
+  opt.value = root;
+  opt.textContent = root;
+  keySelect.appendChild(opt);
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+
+function render() {
+  const maqamName = maqamSelect.value;
+  const rootNote  = keySelect.value;
+  const maqam = MAQAMAT[maqamName];
+
+  // Meta
+  document.getElementById('metaFamily').textContent  = maqam.family + ' Family';
+  document.getElementById('metaArabic').textContent  = maqam.arabic;
+  document.getElementById('metaChar').textContent    = maqam.character;
+  document.getElementById('metaRegion').textContent  = maqam.region;
+
+  // Build scale
+  const notes = buildScale(rootNote, maqam.intervals);
+
+  // Notes row
+  const notesRow = document.getElementById('notesRow');
+  notesRow.innerHTML = '';
+  const degree = ['I','II','III','IV','V','VI','VII','VIII'];
+
+  notes.forEach((note, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'note-chip';
+    chip.style.animationDelay = (i * 0.06) + 's';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'note-bubble' + (i === 0 ? ' root' : '') + (note.qt ? ' half-flat' : '');
+    bubble.style.animationDelay = (i * 0.06) + 's';
+
+    bubble.innerHTML = note.name;
+    if (note.qt) {
+      const tag = document.createElement('span');
+      tag.className = 'tag-quarter';
+      tag.textContent = '¼♭';
+      bubble.appendChild(tag);
+    }
+
+    const num = document.createElement('div');
+    num.className = 'note-number';
+    num.textContent = degree[i] || '';
+
+    chip.appendChild(bubble);
+    chip.appendChild(num);
+    notesRow.appendChild(chip);
+
+    // Add arrow between notes (not after last)
+    if (i < notes.length - 1) {
+      const arr = document.createElement('div');
+      arr.className = 'arrow-sep';
+      arr.textContent = '›';
+      notesRow.appendChild(arr);
+    }
+  });
+
+  // Add octave root
+  const chip8 = document.createElement('div');
+  chip8.className = 'note-chip';
+  const bub8 = document.createElement('div');
+  bub8.className = 'note-bubble root';
+  bub8.style.animationDelay = (notes.length * 0.06) + 's';
+  bub8.innerHTML = rootNote + "'";
+  const num8 = document.createElement('div');
+  num8.className = 'note-number';
+  num8.textContent = 'VIII';
+  chip8.appendChild(bub8);
+  chip8.appendChild(num8);
+
+  const arrLast = document.createElement('div');
+  arrLast.className = 'arrow-sep';
+  arrLast.textContent = '›';
+  notesRow.appendChild(arrLast);
+  notesRow.appendChild(chip8);
+
+  // Intervals row
+  const intervalsRow = document.getElementById('intervalsRow');
+  intervalsRow.innerHTML = '';
+  maqam.intervals.forEach((iv, i) => {
+    const { label, type } = intervalLabel(iv);
+    const badge = document.createElement('div');
+    badge.className = 'interval-badge' + (type === 'aug' ? ' aug' : '') + (type === 'quarter' ? ' half' : '');
+    badge.title = intervalName(iv);
+    badge.textContent = label;
+    intervalsRow.appendChild(badge);
+    if (i < maqam.intervals.length - 1) {
+      const sep = document.createElement('span');
+      sep.style.color = 'rgba(201,151,44,0.2)';
+      sep.style.fontSize = '0.7rem';
+      sep.textContent = '·';
+      intervalsRow.appendChild(sep);
+    }
+  });
+
+  // Description
+  document.getElementById('jinsInfo').textContent =
+    maqam.description + (maqam.jins ? ` | Jins: ${maqam.jins}` : '');
+}
+
+maqamSelect.addEventListener('change', render);
+keySelect.addEventListener('change', render);
+render();
+</script>
+</body>
+</html>

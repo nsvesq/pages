@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pick & Play">
+<meta name="theme-color" content="#0a0a0a">
+<title>Pick & Play</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e5191a;
+    --red-dark: #b01213;
+    --red-glow: rgba(229, 25, 26, 0.15);
+    --black: #0a0a0a;
+    --black-2: #111111;
+    --black-3: #1a1a1a;
+    --black-4: #242424;
+    --white: #ffffff;
+    --white-dim: rgba(255,255,255,0.55);
+    --white-faint: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 2.5rem 1.5rem 1.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(229,25,26,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .logo-mark {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 12px var(--red);
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--white);
+  }
+
+  .header h1 span {
+    color: var(--red);
+  }
+
+  .header p {
+    font-size: 0.72rem;
+    color: var(--white-dim);
+    margin-top: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  /* Progress */
+  .progress-bar {
+    display: flex;
+    gap: 3px;
+    padding: 1.25rem 1.5rem 0;
+  }
+
+  .progress-dot {
+    flex: 1;
+    height: 2px;
+    background: var(--black-4);
+    border-radius: 1px;
+    transition: all 0.3s ease;
+  }
+
+  .progress-dot.active { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .progress-dot.done { background: rgba(229,25,26,0.4); }
+
+  /* Steps */
+  .steps-wrapper {
+    flex: 1;
+    padding: 0 1.5rem 2rem;
+  }
+
+  .step { display: none; animation: slideUp 0.35s ease forwards; }
+  .step.active { display: block; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-label {
+    font-size: 0.65rem;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    margin-top: 2rem;
+    margin-bottom: 0.6rem;
+    font-weight: 500;
+  }
+
+  .step-question {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.9rem;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 1.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .option {
+    background: var(--black-3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--red);
+    transform: scaleY(0);
+    transition: transform 0.18s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .option.selected::before { transform: scaleY(1); }
+  .option:active { transform: scale(0.985); }
+
+  .option.selected {
+    border-color: rgba(229,25,26,0.35);
+    background: var(--red-glow);
+  }
+
+  .option-icon {
+    font-size: 1.2rem;
+    width: 1.8rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .option-text { flex: 1; }
+
+  .option-title {
+    font-size: 0.95rem;
+    color: var(--white);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .option-sub {
+    font-size: 0.75rem;
+    color: var(--white-dim);
+    margin-top: 0.1rem;
+    font-weight: 300;
+  }
+
+  .option-check {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+  }
+
+  .option.selected .option-check {
+    background: var(--red);
+    border-color: var(--red);
+    box-shadow: 0 0 8px rgba(229,25,26,0.5);
+  }
+
+  .option.selected .option-check::after {
+    content: '✓';
+    color: white;
+    font-size: 0.6rem;
+    font-weight: bold;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    color: var(--white-dim);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  /* Slider */
+  .slider-container { padding: 0.5rem 0; }
+
+  .slider-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    color: var(--white);
+    text-align: center;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .slider-value span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--red);
+    font-weight: 500;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .slider-label {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--white-dim);
+    margin-bottom: 1.75rem;
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 3px;
+    background: linear-gradient(to right, var(--red) var(--progress, 18%), var(--black-4) var(--progress, 18%));
+    border-radius: 3px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: var(--white);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 0 3px var(--red), 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  .slider-marks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.6rem;
+    font-size: 0.65rem;
+    color: var(--white-dim);
+  }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+  }
+
+  .btn-back {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--white-dim);
+    padding: 0.85rem 1.1rem;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-back:active { background: var(--white-faint); }
+
+  .btn-next {
+    flex: 1;
+    background: var(--red);
+    border: none;
+    color: var(--white);
+    padding: 0.85rem 1.5rem;
+    border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-next::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  }
+
+  .btn-next:disabled { opacity: 0.25; cursor: not-allowed; }
+  .btn-next:not(:disabled):active { transform: scale(0.98); background: var(--red-dark); }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 4rem 1.5rem;
+  }
+
+  .loading-ring {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--black-4);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 0 12px rgba(229,25,26,0.3);
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--white);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .loading p {
+    color: var(--white-dim);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  /* Result */
+  .result-header {
+    text-align: center;
+    padding: 2rem 1.5rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    position: relative;
+  }
+
+  .result-badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    margin-bottom: 0.75rem;
+  }
+
+  .result-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--white);
+    letter-spacing: 0.05em;
+  }
+
+  .result-header p {
+    font-size: 0.75rem;
+    color: var(--white-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 0.25rem;
+  }
+
+  .plan-content { padding: 1.5rem; }
+
+  .plan-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .plan-text h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--red);
+    font-size: 1.25rem;
+    letter-spacing: 0.06em;
+    margin-top: 1.75rem;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid rgba(229,25,26,0.2);
+  }
+
+  .plan-text p { margin-bottom: 0.6rem; }
+
+  .plan-text ul {
+    padding-left: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .plan-text li { margin-bottom: 0.35rem; }
+  .plan-text strong { color: var(--white); font-weight: 600; }
+
+  .result-divider {
+    text-align: center;
+    padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 1.5rem;
+  }
+
+  .result-divider::before,
+  .result-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .result-divider span {
+    width: 6px;
+    height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .btn-restart {
+    display: block;
+    width: calc(100% - 3rem);
+    margin: 0 1.5rem 2.5rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--white-dim);
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: 0.05em;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.18s;
+  }
+
+  .btn-restart:active { background: var(--white-faint); }
+
+  .error-msg {
+    background: rgba(229,25,26,0.1);
+    border: 1px solid rgba(229,25,26,0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 1.5rem;
+    font-size: 0.85rem;
+    color: #ff8080;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo-mark"></div>
+    <h1>PICK <span>&</span> PLAY</h1>
+    <p>Your personal guitar journey</p>
+  </div>
+
+  <div id="onboarding">
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="steps-wrapper">
+
+      <!-- Step 1: Experience -->
+      <div class="step active" data-step="1">
+        <div class="step-label">Question 1 of 5</div>
+        <div class="step-question">How long have you been playing?</div>
+        <div class="options">
+          <div class="option" data-q="1" data-val="less than 1 year — complete beginner">
+            <div class="option-icon">🌱</div>
+            <div class="option-text">
+              <div class="option-title">Just started</div>
+              <div class="option-sub">Less than 1 year</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="1" data-val="1 to 3 years — know the basics, building up">
+            <div class="option-icon">🎸</div>
+            <div class="option-text">
+              <div class="option-title">Finding my feet</div>
+              <div class="option-sub">1–3 years</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="1" data-val="3 to 7 years — comfortable but stuck in a rut">
+            <div class="option-icon">🔥</div>
+            <div class="option-text">
+              <div class="option-title">Comfortable player</div>
+              <div class="option-sub">3–7 years</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="1" data-val="more than 7 years — experienced but want to level up">
+            <div class="option-icon">⚡</div>
+            <div class="option-text">
+              <div class="option-title">Been around a while</div>
+              <div class="option-sub">7+ years</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn-next" id="next1" disabled onclick="nextStep(2)">CONTINUE →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Time -->
+      <div class="step" data-step="2">
+        <div class="step-label">Question 2 of 5</div>
+        <div class="step-question">How many minutes can you practice each day?</div>
+        <div class="slider-container">
+          <div class="slider-value" id="sliderVal">20<span>min</span></div>
+          <div class="slider-label">daily practice time</div>
+          <input type="range" id="timeSlider" min="5" max="90" step="5" value="20"
+            oninput="updateSlider(this.value)">
+          <div class="slider-marks">
+            <span>5</span><span>30</span><span>60</span><span>90</span>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn-back" onclick="prevStep(1)">←</button>
+          <button class="btn-next" onclick="nextStep(3)">CONTINUE →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Style — ALL genres -->
+      <div class="step" data-step="3">
+        <div class="step-label">Question 3 of 5</div>
+        <div class="step-question">What style of music drives you?</div>
+        <p class="hint">Pick up to 2</p>
+        <div class="options">
+          <div class="option" data-q="3" data-val="Blues (Chicago, Delta, Texas blues)">
+            <div class="option-icon">🎷</div>
+            <div class="option-text">
+              <div class="option-title">Blues</div>
+              <div class="option-sub">Chicago, Delta, Texas</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="3" data-val="Rock & Blues-Rock (classic rock, hard rock)">
+            <div class="option-icon">🤘</div>
+            <div class="option-text">
+              <div class="option-title">Rock & Blues-Rock</div>
+              <div class="option-sub">Classic, hard rock, grunge</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="3" data-val="Metal & Heavy (riffs, shredding, heavy rhythm)">
+            <div class="option-icon">⚡</div>
+            <div class="option-text">
+              <div class="option-title">Metal & Heavy</div>
+              <div class="option-sub">Riffs, shredding, heavy rhythm</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="3" data-val="Fingerstyle & Acoustic (folk, classical, fingerpicking)">
+            <div class="option-icon">🌿</div>
+            <div class="option-text">
+              <div class="option-title">Fingerstyle & Acoustic</div>
+              <div class="option-sub">Folk, classical, fingerpicking</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="3" data-val="Jazz & Fusion (chord melody, improvisation, theory)">
+            <div class="option-icon">🎩</div>
+            <div class="option-text">
+              <div class="option-title">Jazz & Fusion</div>
+              <div class="option-sub">Chord melody, improv, theory</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="3" data-val="Country & Americana (chicken picking, twang, storytelling)">
+            <div class="option-icon">🤠</div>
+            <div class="option-text">
+              <div class="option-title">Country & Americana</div>
+              <div class="option-sub">Chicken picking, twang</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="3" data-val="Funk & R&B (groove, rhythm, feel)">
+            <div class="option-icon">🕺</div>
+            <div class="option-text">
+              <div class="option-title">Funk & R&B</div>
+              <div class="option-sub">Groove, rhythm, feel</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn-back" onclick="prevStep(2)">←</button>
+          <button class="btn-next" id="next3" disabled onclick="nextStep(4)">CONTINUE →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Struggle -->
+      <div class="step" data-step="4">
+        <div class="step-label">Question 4 of 5</div>
+        <div class="step-question">What's holding you back right now?</div>
+        <div class="options">
+          <div class="option" data-q="4" data-val="not knowing what to play when improvising — stuck on the same patterns">
+            <div class="option-icon">🎲</div>
+            <div class="option-text">
+              <div class="option-title">Stuck improvising</div>
+              <div class="option-sub">Playing the same thing on repeat</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="4" data-val="technique — speed, accuracy, and clean playing">
+            <div class="option-icon">🎯</div>
+            <div class="option-text">
+              <div class="option-title">Technique</div>
+              <div class="option-sub">Speed, accuracy, clean playing</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="4" data-val="rhythm and timing — staying in the groove">
+            <div class="option-icon">🥁</div>
+            <div class="option-text">
+              <div class="option-title">Rhythm & Timing</div>
+              <div class="option-sub">Staying locked in the groove</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="4" data-val="music theory and understanding the fretboard">
+            <div class="option-icon">🗺️</div>
+            <div class="option-text">
+              <div class="option-title">Theory & Fretboard</div>
+              <div class="option-sub">Knowing what to play and why</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="4" data-val="playing with feel and expression — sounds mechanical">
+            <div class="option-icon">❤️</div>
+            <div class="option-text">
+              <div class="option-title">Feel & Expression</div>
+              <div class="option-sub">It sounds mechanical, not musical</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="4" data-val="not practicing consistently — no structure or motivation">
+            <div class="option-icon">📅</div>
+            <div class="option-text">
+              <div class="option-title">Consistency</div>
+              <div class="option-sub">No structure, losing motivation</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn-back" onclick="prevStep(3)">←</button>
+          <button class="btn-next" id="next4" disabled onclick="nextStep(5)">CONTINUE →</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Goal -->
+      <div class="step" data-step="5">
+        <div class="step-label">Question 5 of 5</div>
+        <div class="step-question">What does winning look like this month?</div>
+        <div class="options">
+          <div class="option" data-q="5" data-val="jamming confidently over a backing track without freezing up">
+            <div class="option-icon">🎯</div>
+            <div class="option-text">
+              <div class="option-title">Jam confidently</div>
+              <div class="option-sub">Over a backing track, no hesitation</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="5" data-val="learning 3 to 5 new licks or techniques I can actually use">
+            <div class="option-icon">🔑</div>
+            <div class="option-text">
+              <div class="option-title">Learn new moves</div>
+              <div class="option-sub">3–5 licks or techniques I'll actually use</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="5" data-val="playing through a full song from start to finish cleanly">
+            <div class="option-icon">🎶</div>
+            <div class="option-text">
+              <div class="option-title">Play a full song</div>
+              <div class="option-sub">Start to finish, cleanly</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="5" data-val="sounding more musical and expressive, less robotic">
+            <div class="option-icon">🌊</div>
+            <div class="option-text">
+              <div class="option-title">Sound more musical</div>
+              <div class="option-sub">Less robotic, more expressive</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+          <div class="option" data-q="5" data-val="building a consistent daily practice habit">
+            <div class="option-icon">🔥</div>
+            <div class="option-text">
+              <div class="option-title">Build the habit</div>
+              <div class="option-sub">Show up every day, no excuses</div>
+            </div>
+            <div class="option-check"></div>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn-back" onclick="prevStep(4)">←</button>
+          <button class="btn-next" id="next5" disabled onclick="generatePlan()">BUILD MY PLAN →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingState" style="display:none; padding: 2rem 1.5rem; flex:1;">
+    <div class="loading">
+      <div class="loading-ring"></div>
+      <h2>BUILDING YOUR PLAN</h2>
+      <p>Tuning in to what you need...</p>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="resultState" style="display:none;">
+    <div class="result-header">
+      <div class="result-badge">✦ Your Plan is Ready</div>
+      <h2>THIS WEEK'S JOURNEY</h2>
+      <p>Personalised · 7 Days</p>
+    </div>
+    <div class="plan-content">
+      <div class="plan-text" id="planOutput"></div>
+    </div>
+    <div class="result-divider"><span></span></div>
+    <button class="btn-restart" onclick="restart()">↺ Start Over</button>
+  </div>
+
+  <div id="errorMsg" class="error-msg" style="display:none;">
+    Something went wrong. Check your connection and try again.
+  </div>
+
+</div>
+
+<script>
+  const answers = { q1: '', q2: 20, q3: [], q4: '', q5: '' };
+  const totalSteps = 5;
+  let currentStep = 1;
+
+  const pb = document.getElementById('progressBar');
+  for (let i = 1; i <= totalSteps; i++) {
+    const d = document.createElement('div');
+    d.className = 'progress-dot' + (i === 1 ? ' active' : '');
+    d.id = 'dot' + i;
+    pb.appendChild(d);
+  }
+
+  function updateProgress(step) {
+    for (let i = 1; i <= totalSteps; i++) {
+      const dot = document.getElementById('dot' + i);
+      dot.className = 'progress-dot' + (i < step ? ' done' : i === step ? ' active' : '');
+    }
+  }
+
+  function nextStep(n) {
+    document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+    currentStep = n;
+    document.querySelector(`[data-step="${n}"]`).classList.add('active');
+    updateProgress(n);
+    window.scrollTo(0, 0);
+  }
+
+  function prevStep(n) {
+    document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+    currentStep = n;
+    document.querySelector(`[data-step="${n}"]`).classList.add('active');
+    updateProgress(n);
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('[data-q="1"], [data-q="4"], [data-q="5"]').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const q = opt.dataset.q;
+      document.querySelectorAll(`[data-q="${q}"]`).forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      if (q === '1') { answers.q1 = opt.dataset.val; document.getElementById('next1').disabled = false; }
+      if (q === '4') { answers.q4 = opt.dataset.val; document.getElementById('next4').disabled = false; }
+      if (q === '5') { answers.q5 = opt.dataset.val; document.getElementById('next5').disabled = false; }
+    });
+  });
+
+  document.querySelectorAll('[data-q="3"]').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.classList.contains('selected')) {
+        opt.classList.remove('selected');
+      } else {
+        const selected = document.querySelectorAll('[data-q="3"].selected');
+        if (selected.length < 2) opt.classList.add('selected');
+      }
+      answers.q3 = [...document.querySelectorAll('[data-q="3"].selected')].map(o => o.dataset.val);
+      document.getElementById('next3').disabled = answers.q3.length === 0;
+    });
+  });
+
+  function updateSlider(val) {
+    answers.q2 = parseInt(val);
+    document.getElementById('sliderVal').innerHTML = val + '<span>min</span>';
+    const pct = ((val - 5) / (90 - 5)) * 100;
+    document.getElementById('timeSlider').style.setProperty('--progress', pct + '%');
+  }
+  updateSlider(20);
+
+  async function generatePlan() {
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('errorMsg').style.display = 'none';
+
+    const prompt = `You are an expert guitar coach with deep knowledge across all styles — blues, rock, metal, jazz, fingerstyle, country, and funk.
+
+A guitarist has shared:
+- Experience: ${answers.q1}
+- Daily practice time available: ${answers.q2} minutes
+- Music style interests: ${answers.q3.join(' and ')}
+- Biggest current struggle: ${answers.q4}
+- Goal for this month: ${answers.q5}
+
+Create a structured, personalized 7-day practice plan tailored specifically to their style and goals.
+
+Format your response using these exact section headers:
+### Your Profile
+### This Week's Focus
+### Daily Practice Schedule
+### Day-by-Day Breakdown
+### Tips for Your Journey
+
+Be specific, practical, and motivating. Reference real techniques, artists, and concepts relevant to their chosen style. Every day must have clear, timed exercises that fit within their ${answers.q2} minutes. Speak directly to them — this is their plan.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || '').join('') || '';
+      if (!text) throw new Error('No response');
+
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('resultState').style.display = 'block';
+      document.getElementById('planOutput').innerHTML = formatPlan(text);
+      window.scrollTo(0, 0);
+
+    } catch (err) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('onboarding').style.display = 'block';
+      document.getElementById('errorMsg').style.display = 'block';
+      console.error(err);
+    }
+  }
+
+  function formatPlan(text) {
+    return text
+      .replace(/### (.+)/g, '<h3>$1</h3>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+      .replace(/\n\n/g, '</p><p>')
+      .split('\n').map(line => {
+        if (!line.startsWith('<')) return line ? `<p>${line}</p>` : '';
+        return line;
+      }).join('');
+  }
+
+  function restart() {
+    answers.q1 = ''; answers.q2 = 20; answers.q3 = []; answers.q4 = ''; answers.q5 = '';
+    currentStep = 1;
+    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    ['next1','next3','next4','next5'].forEach(id => document.getElementById(id).disabled = true);
+    updateSlider(20);
+    document.getElementById('timeSlider').value = 20;
+    document.getElementById('resultState').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('onboarding').style.display = 'block';
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector('[data-step="1"]').classList.add('active');
+    updateProgress(1);
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>

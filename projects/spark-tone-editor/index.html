@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faceplate — Spark 40 Tone Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14100c;
+  --panel:#1e1812;
+  --panel-2:#241c14;
+  --edge:#332a20;
+  --cream:#ede3cc;
+  --cream-dim:#9c8f79;
+  --amber:#f0a63c;
+  --amber-dim:#8a6425;
+  --led:#ff5a36;
+  --led-off:#3c2f24;
+  --radius:10px;
+  --font-display:"Big Shoulders Display",sans-serif;
+  --font-mono:"IBM Plex Mono",monospace;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{
+  font-family:var(--font-body);
+  color:var(--cream);
+  background:
+    radial-gradient(1200px 500px at 50% -200px, rgba(240,166,60,.06), transparent 60%),
+    var(--bg);
+  min-height:100vh;
+  padding-bottom:60px;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* ---------- header faceplate ---------- */
+header{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:14px 20px;
+  background:linear-gradient(180deg,#2a2118,#1a140e);
+  border-bottom:1px solid var(--edge);
+  position:sticky;top:0;z-index:20;
+}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{
+  font-family:var(--font-display);font-weight:800;font-size:28px;
+  letter-spacing:.14em;text-transform:uppercase;line-height:1;
+}
+.brand small{
+  font-family:var(--font-mono);font-size:11px;color:var(--cream-dim);
+  letter-spacing:.06em;
+}
+.amp-id{
+  font-family:var(--font-mono);font-size:11px;color:var(--cream-dim);
+  margin-left:auto;text-align:right;line-height:1.5;
+}
+.conn{display:flex;align-items:center;gap:12px}
+.tube{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--led-off);
+  box-shadow:inset 0 0 3px rgba(0,0,0,.7);
+  transition:background .3s, box-shadow .3s;
+}
+.tube.on{
+  background:var(--amber);
+  box-shadow:0 0 10px 2px rgba(240,166,60,.55), inset 0 0 3px rgba(255,255,255,.5);
+}
+.tube.busy{background:var(--amber-dim);box-shadow:0 0 6px 1px rgba(240,166,60,.3);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.5}}
+.btn{
+  font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:9px 16px;border-radius:6px;
+  border:1px solid var(--edge);
+  background:var(--panel-2);
+  transition:border-color .15s, background .15s;
+}
+.btn:hover{border-color:var(--amber-dim)}
+.btn.primary{background:var(--amber);color:#1a1207;border-color:var(--amber)}
+.btn.primary:hover{background:#f7b657}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* ---------- notice ---------- */
+.notice{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;
+  color:var(--cream-dim);
+  padding:10px 20px;border-bottom:1px solid var(--edge);
+  background:rgba(240,166,60,.04);
+}
+.notice b{color:var(--amber);font-weight:600}
+.notice.hidden{display:none}
+
+/* ---------- preset strip ---------- */
+.presets{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:16px 20px;
+}
+.preset-btns{display:flex;gap:8px}
+.pbtn{
+  width:44px;height:44px;border-radius:8px;
+  border:1px solid var(--edge);
+  background:var(--panel);
+  font-family:var(--font-display);font-weight:800;font-size:20px;
+  color:var(--cream-dim);
+  position:relative;
+  transition:all .15s;
+}
+.pbtn::after{
+  content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;
+  background:var(--led-off);
+}
+.pbtn.active{color:var(--cream);border-color:var(--amber-dim);background:var(--panel-2)}
+.pbtn.active::after{background:var(--led);box-shadow:0 0 6px 1px rgba(255,90,54,.6)}
+.preset-name{
+  font-family:var(--font-display);font-weight:600;font-size:22px;
+  letter-spacing:.04em;
+}
+.preset-tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.preset-tools .btn{padding:7px 12px;font-size:11px}
+
+/* ---------- chain ---------- */
+.chain{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:14px;
+  padding:6px 20px 24px;
+}
+.pedal{
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--edge);
+  border-radius:var(--radius);
+  padding:14px 14px 18px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.pedal.bypassed .knobs{opacity:.35}
+.pedal-head{display:flex;align-items:center;gap:10px}
+.slot-label{
+  font-family:var(--font-mono);font-size:10px;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--cream-dim);
+}
+.stomp{
+  margin-left:auto;
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--edge);
+  background:radial-gradient(circle at 35% 30%, #3a3128, #221b13);
+  position:relative;flex:none;
+  transition:border-color .15s;
+}
+.stomp::after{
+  content:"";position:absolute;inset:9px;border-radius:50%;
+  background:var(--led-off);
+  transition:background .15s, box-shadow .15s;
+}
+.stomp.on{border-color:#5a4a34}
+.stomp.on::after{background:var(--led);box-shadow:0 0 8px 2px rgba(255,90,54,.55)}
+.model-select{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--edge);
+  border-radius:6px;
+  padding:8px 10px;
+  font-family:var(--font-mono);font-size:12.5px;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239c8f79'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.knobs{
+  display:flex;flex-wrap:wrap;gap:14px 10px;justify-content:flex-start;
+  transition:opacity .2s;
+}
+.knob{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:62px;
+  cursor:ns-resize;touch-action:none;user-select:none;
+}
+.knob svg{display:block}
+.knob .kname{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--cream-dim);
+  max-width:64px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.knob .kval{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--amber);
+}
+
+/* ---------- library ---------- */
+.library{
+  margin:8px 20px 20px;
+  border:1px solid var(--edge);
+  border-radius:var(--radius);
+  background:var(--panel);
+  padding:16px;
+}
+.library h2{
+  font-family:var(--font-display);font-weight:800;font-size:18px;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin-bottom:12px;
+}
+.lib-save{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.lib-save input{
+  flex:1;min-width:180px;
+  background:var(--bg);border:1px solid var(--edge);border-radius:6px;
+  padding:8px 12px;font-family:var(--font-mono);font-size:12.5px;
+}
+.lib-save input::placeholder{color:var(--cream-dim)}
+.tone-list{display:flex;flex-direction:column;gap:6px}
+.tone-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:6px;
+  background:var(--panel-2);border:1px solid transparent;
+}
+.tone-row:hover{border-color:var(--edge)}
+.tone-row .tname{font-family:var(--font-mono);font-size:12.5px}
+.tone-row .tmeta{font-family:var(--font-mono);font-size:10.5px;color:var(--cream-dim)}
+.tone-row .spacer{flex:1}
+.tone-row .btn{padding:5px 10px;font-size:10.5px}
+.lib-empty{font-family:var(--font-mono);font-size:11.5px;color:var(--cream-dim)}
+
+/* ---------- log ---------- */
+.log{
+  position:fixed;left:0;right:0;bottom:0;
+  font-family:var(--font-mono);font-size:10.5px;
+  color:var(--cream-dim);
+  background:rgba(20,16,12,.94);
+  border-top:1px solid var(--edge);
+  padding:6px 20px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.log b{color:var(--amber);font-weight:500}
+
+@media (max-width:560px){
+  header{padding:12px 14px}
+  .brand h1{font-size:22px}
+  .amp-id{display:none}
+  .presets,.chain,.library{padding-left:14px;padding-right:14px}
+  .library{margin-left:14px;margin-right:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Faceplate</h1>
+    <small>SPARK&nbsp;40 TONE&nbsp;EDITOR</small>
+  </div>
+  <div class="amp-id" id="ampId">not connected</div>
+  <div class="conn">
+    <div class="tube" id="tube"></div>
+    <button class="btn primary" id="connectBtn">Connect amp</button>
+  </div>
+</header>
+
+<div class="notice" id="notice">
+  <b>Editing offline.</b> Connect over Bluetooth to control the amp — needs <b>Chrome or Edge</b> on desktop or Android, served over HTTPS (or localhost). iOS Safari doesn't support Web Bluetooth.
+</div>
+
+<div class="presets">
+  <div class="preset-btns" id="presetBtns"></div>
+  <div class="preset-name" id="presetName">—</div>
+  <div class="preset-tools">
+    <button class="btn" id="refreshBtn" disabled>Re-read amp</button>
+    <button class="btn" id="storeBtn" disabled>Store to slot…</button>
+  </div>
+</div>
+
+<main class="chain" id="chain"></main>
+
+<section class="library">
+  <h2>Tone library</h2>
+  <div class="lib-save">
+    <input id="toneName" placeholder="Name this tone (e.g. Texas Clean Boost)" maxlength="48">
+    <button class="btn" id="saveTone">Save current</button>
+    <button class="btn" id="exportTones">Export</button>
+    <button class="btn" id="importTones">Import</button>
+    <input type="file" id="importFile" accept=".json" hidden>
+  </div>
+  <div class="tone-list" id="toneList"></div>
+</section>
+
+<div class="log" id="log">ready</div>
+
+<script>
+"use strict";
+/* ================================================================
+   Faceplate — a Web Bluetooth tone editor for the Positive Grid
+   Spark 40. Protocol per Paul Hamshere's reverse-engineered spec
+   (Spark Protocol Description v3.2) and the soundshed (MIT)
+   implementation. Effect catalog derived from soundshed (MIT).
+   ================================================================ */
+
+/* ---------------- Effect catalog ---------------- */
+const CATALOG = {"amp":[{"id":"RolandJC120","name":"Silver 120","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.4,0.3,0.5,0.8]},{"id":"Twin","name":"Blackface Duo","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.4,0.5,0.5,0.8]},{"id":"ADClean","name":"AD Clean","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.6,0.5,0.3,0.7]},{"id":"94MatchDCV2","name":"Match DC","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.4,0.4,0.4,0.7]},{"id":"Bassman","name":"Tweed Bass","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.7,0.5,0.4,0.7]},{"id":"AC Boost","name":"AC Boost","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.5,0.5,0.5,0.5]},{"id":"Checkmate","name":"Checkmate","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.5,0.4,0.5,0.4]},{"id":"TwoStoneSP50","name":"Two Stone SP50","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.5,0.6,0.5,0.7]},{"id":"Deluxe65","name":"American Deluxe","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.4,0.2,0.6,0.7]},{"id":"Plexi","name":"Plexiglas","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.4,0.5,0.6,0.3]},{"id":"OverDrivenJM45","name":"JM45","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.5,0.3,0.6,0.7]},{"id":"OverDrivenLuxVerb","name":"Lux Verb","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.3,0.2,0.3,0.4,0.8]},{"id":"Bogner","name":"RB 101","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.6,0.6,0.4,0.5]},{"id":"OrangeAD30","name":"British 30","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.4,0.4,0.6,0.3]},{"id":"AmericanHighGain","name":"American High Gain","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.4,0.6,0.5,0.8]},{"id":"SLO100","name":"Slo 100","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.4,0.5,0.5,0.5]},{"id":"YJM100","name":"YJM100","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.5,0.4,0.6,0.6]},{"id":"Rectifier","name":"Treadplate","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.6,0.6,0.6,0.8]},{"id":"EVH","name":"Insane","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.7,0.6,0.3,0.9]},{"id":"SwitchAxeLead","name":"SwitchAxe","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.5,0.5,0.6,0.7]},{"id":"Invader","name":"Rocker V","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.5,0.4,0.6,0.6]},{"id":"BE101","name":"BE 101","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.6,0.6,0.4,0.8]},{"id":"Acoustic","name":"Pure Acoustic","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.6,0.5,0.5,0.5,0.5]},{"id":"AcousticAmpV2","name":"Fishboy","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.4,0.4,0.1,0.7,0.8]},{"id":"FatAcousticV2","name":"Jumbo","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.5,0.5,0.7,0.5]},{"id":"FlatAcoustic","name":"Flat Acoustic","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.7,0.4,0.6,0.7,0.5]},{"id":"GK800","name":"RB-800","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.4,0.4,0.6,0.9]},{"id":"Sunny3000","name":"Sunny 3000","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"W600","name":"W600","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.4,0.3,0.6,0.9]},{"id":"Hammer500","name":"Hammer 500","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.5,0.3,0.7,0.8]},{"id":"JCM800","name":"JCM 800","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"MatchlessDC30","name":"Matchless DC30","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"DrZ","name":"Dr. Z","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"Hiwatt103","name":"Hiwatt DR103","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"B15","name":"B-15","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"Acoustic360","name":"Acoustic 360","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"GK700RBII","name":"GK 700 RB II","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"6505Plus","name":"Insane 6508","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"ODS50CN","name":"ODS 50","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"BluesJrTweed","name":"Blues Boy","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"JH.JTM45","name":"Marshall JTM45/100","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[0.5,0.6,0.4,0.5,0.7]},{"id":"JH.SuperLead100","name":"Marshall Super Lead 100","params":["Gain","Treble","Middle","Bass","Master"],"defaults":[1.0,0.6,0.4,0.5,0.7]}],"comp":[{"id":"LA2AComp","name":"LA Comp","params":["Limit/Compress","Gain","Peak Reduction"],"defaults":[0.0,0.7,0.7]},{"id":"BlueComp","name":"Sustainer","params":["Level","Tone","Attack","Sustain"],"defaults":[0.5,0.5,0.5,0.6]},{"id":"Compressor","name":"Red Comp","params":["Output","Sensitivity"],"defaults":[0.4,0.6]},{"id":"BassComp","name":"Bass Comp","params":["Comp","Gain"],"defaults":[0.4,0.5]},{"id":"BBEOpticalComp","name":"Optical Comp","params":["Volume","Comp","Pad"],"defaults":[0.7,0.4,0.0]},{"id":"JH.Vox846","name":"Vox 846 Wah","params":["P1","Mode","P3","P4","P5"],"defaults":[0.5,0.0,0.2,0.5,0.5]}],"delay":[{"id":"DelayMono","name":"Digital Delay","params":["E.Level","F.Back","D.Time","Mode","BPM"],"defaults":[0.4,0.4,0.7,0.6,0.0]},{"id":"DelayEchoFilt","name":"Delay/Echo","params":["Delay","Feedback","Level","Tone","BPM"],"defaults":[0.2,0.5,0.7,0.5,0.0]},{"id":"VintageDelay","name":"Vintage Delay","params":["Repeat Rate","Intensity","Echo","BPM"],"defaults":[0.3,0.6,0.7,1.0]},{"id":"DelayReverse","name":"Reverse Delay","params":["Mix","Decay","Filter","Time","BPM"],"defaults":[0.7,0.4,0.7,0.6,0.0]},{"id":"DelayMultiHead","name":"Multi Head","params":["Repeat Rate","Intensity","Echo Vol","Mode Selector","BPM"],"defaults":[0.6,0.6,0.5,0.6,0.0]},{"id":"DelayRe201","name":"Echo Tape","params":["Sustain","Volume","Tone","Short -> Long","BPM"],"defaults":[0.7,0.6,0.8,0.4,1.0]}],"drive":[{"id":"Booster","name":"Booster","params":["Gain"],"defaults":[0.8]},{"id":"DistortionTS9","name":"Tube Drive","params":["Overdrive","Tone","Level"],"defaults":[0.6,0.5,0.6]},{"id":"Overdrive","name":"Over Drive","params":["Level","Tone","Drive"],"defaults":[0.6,0.7,0.5]},{"id":"Fuzz","name":"Fuzz Face","params":["Volume","Fuzz"],"defaults":[0.4,0.8]},{"id":"ProCoRat","name":"Black Op","params":["Distortion","Filter","Volume"],"defaults":[0.7,0.5,0.7]},{"id":"BassBigMuff","name":"Bass Muff","params":["Volume","Tone","Sustain"],"defaults":[0.3,0.8,0.9]},{"id":"GuitarMuff","name":"Guitar Muff","params":["Volume","Tone","Sustain"],"defaults":[0.5,0.5,0.8]},{"id":"MaestroBassmaster","name":"Bassmaster","params":["Brass Vol","Sensitivity","Bass Vol"],"defaults":[0.4,0.8,0.2]},{"id":"SABdriver","name":"SAB Driver","params":["Volume","Tone","Drive","HP/LP"],"defaults":[0.4,0.5,0.8,0.0]},{"id":"MetalZoneMT2","name":"Metal Zone MT2","params":["Level","EQ Low","EQ Middle","EQ High","EQ Mid Band","Distortion"],"defaults":[0.8,0.6,0.19,0.37,0.59,0.74]},{"id":"TrebleBooster","name":"Treble Booster","params":["P3","P2","P1"],"defaults":[0.3,0.8,0.9]},{"id":"KlonCentaurSilver","name":"Clone Drive","params":["Output","Treble","Gain"],"defaults":[1.0,0.5,0.5]}],"gate":[{"id":"bias.noisegate","name":"Gate","params":["Threshold","Decay"],"defaults":[0.2,0.1]}],"modulation":[{"id":"Tremolo","name":"Tremolo","params":["Speed","Depth","Level"],"defaults":[0.5,0.7,0.6]},{"id":"ChorusAnalog","name":"Digital Chorus","params":["E.Level","Rate","Depth","Tone"],"defaults":[0.8,0.3,0.7,0.6]},{"id":"Flanger","name":"Flanger","params":["Rate","Mix","Depth"],"defaults":[0.4,0.7,0.7]},{"id":"Phaser","name":"Phaser","params":["Speed","Intensity"],"defaults":[0.6,0.6]},{"id":"Vibrato01","name":"Vibrato","params":["Speed","Depth"],"defaults":[0.8,0.5]},{"id":"UniVibe","name":"Vibe","params":["Speed","Chorus / Vibrato","Intensity"],"defaults":[0.5,1.0,0.7]},{"id":"Cloner","name":"Cloner Chorus","params":["Rate","Depth (High / Low)"],"defaults":[0.2,1.0]},{"id":"MiniVibe","name":"Mini Vibe","params":["Speed","Intensity"],"defaults":[0.3,0.3]},{"id":"Tremolator","name":"Tremolator","params":["Depth","Speed","BPM"],"defaults":[0.7,0.5,0.0]},{"id":"TremoloSquare","name":"Tremolo Square","params":["Speed","Depth","Level"],"defaults":[0.5,0.7,0.6]},{"id":"MuTron","name":"MuTron III","params":["Mode","Peak","Depth","Range","Position"],"defaults":[0.3,0.2,0.9,0.0,0.0]},{"id":"GuitarEQ6","name":"Guitar EQ","params":["Level","100","200","400","800","1.6K","3.2K"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"JH.VoodooVibeJr","name":"Voodoo Vibe Junior","params":["Speed","Sweep","Intensity","Chorus/Vibrato"],"defaults":[0.2,0.5,0.7,0.5]}],"reverb":[{"id":"bias.reverb.0","name":"Room Studio A","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.1","name":"Room Studio B","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.2","name":"Chamber","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.3","name":"Hall Natural","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.4","name":"Hall Medium","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.5","name":"Hall Ambient","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.6","name":"Plate Short","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.7","name":"Plate Rich","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]},{"id":"bias.reverb.8","name":"Plate Long","params":["Level","Damping","Low Cut","High Cut","Dwell","Time"],"defaults":[0.5,0.5,0.5,0.5,0.5,0.5]}]};
+
+const SLOTS = [
+  {key:"gate",  label:"Noise gate", list:CATALOG.gate},
+  {key:"comp",  label:"Compressor", list:CATALOG.comp},
+  {key:"drive", label:"Drive",      list:CATALOG.drive},
+  {key:"amp",   label:"Amp",        list:CATALOG.amp},
+  {key:"mod",   label:"Modulation", list:CATALOG.modulation},
+  {key:"delay", label:"Delay",      list:CATALOG.delay},
+  {key:"reverb",label:"Reverb",     list:CATALOG.reverb},
+];
+
+// Reverb is one DSP model ("bias.reverb"); param 6 selects the room type.
+const REVERB_ID = "bias.reverb";
+const isReverbVariant = id => id.startsWith(REVERB_ID);
+const reverbVariantIndex = id => parseInt(id.split(".").pop(), 10) || 0;
+
+function findModel(slotIdx, dspId){
+  const list = SLOTS[slotIdx].list;
+  if (slotIdx === 6 && dspId === REVERB_ID) return list[0];
+  return list.find(m => m.id === dspId) || null;
+}
+
+/* ---------------- App state ---------------- */
+const state = {
+  connected:false,
+  presetNum:0,
+  presetName:"—",
+  // per slot: { dspId, on, params:[floats 0..1] } — reverb keeps 7 params, [6] = type
+  slots:[],
+  ampName:"", firmware:"", serial:"",
+};
+
+function defaultSlots(){
+  // A sensible blues starting point until the amp is read
+  return [
+    {dspId:"bias.noisegate", on:false, params:[0.28,0.30]},
+    {dspId:"Compressor",     on:true,  params:[0.33,0.79]},
+    {dspId:"Booster",        on:false, params:[0.67]},
+    {dspId:"Twin",           on:true,  params:[0.61,0.37,0.45,0.68,0.81]},
+    {dspId:"ChorusAnalog",   on:false, params:[0.19,0.09,0.49,0.57]},
+    {dspId:"DelayMono",      on:false, params:[0.25,0.24,0.45,0.6,1.0]},
+    {dspId:REVERB_ID,        on:true,  params:[0.51,0.32,0.46,0.35,0.34,0.48,0.2]},
+  ];
+}
+
+/* ---------------- Spark protocol: message building ---------------- */
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+class MsgWriter{
+  constructor(){ this.bytes=[]; }
+  raw(arr){ for(const b of arr) this.bytes.push(b & 0xff); return this; }
+  int(v){ // small ints only in our commands
+    if (v < 0x80) this.bytes.push(v); else this.raw([0xcc, v & 0xff]);
+    return this;
+  }
+  prefixedStr(s){ // "alternative short string": len, len+0xa0, chars
+    const b = enc.encode(s);
+    this.bytes.push(b.length, 0xa0 + b.length);
+    this.raw(b); return this;
+  }
+  float(f){
+    const buf = new ArrayBuffer(4);
+    new DataView(buf).setFloat32(0, f, false); // big-endian
+    this.bytes.push(0xca); this.raw(new Uint8Array(buf)); return this;
+  }
+  onoff(on){ this.bytes.push(on ? 0xc3 : 0xc2); return this; }
+}
+
+// Wrap 8-bit payload as a single-chunk block for the amp.
+// Fixed chunk header f0 01 3a 15 (mirrors the known-working implementation).
+function buildBlock(cmd, sub, payload){
+  const data7 = [];
+  for (let i=0;i<payload.length;i+=7){
+    const grp = payload.slice(i, i+7);
+    let bits = 0;
+    grp.forEach((b,j)=>{ if (b & 0x80) bits |= (1<<j); });
+    data7.push(bits, ...grp.map(b=>b & 0x7f));
+  }
+  const blockSize = data7.length + 16 + 6 + 1;
+  return Uint8Array.from([
+    0x01,0xfe,0x00,0x00,0x53,0xfe, blockSize, 0,0,0,0,0,0,0,0,0,
+    0xf0,0x01,0x3a,0x15, cmd, sub,
+    ...data7,
+    0xf7,
+  ]);
+}
+
+const SparkMsg = {
+  changeParam(dspId, idx, val){
+    const w = new MsgWriter().prefixedStr(dspId).int(idx).float(val);
+    return buildBlock(0x01, 0x04, w.bytes);
+  },
+  changeModel(oldId, newId){
+    const w = new MsgWriter().prefixedStr(oldId).prefixedStr(newId);
+    return buildBlock(0x01, 0x06, w.bytes);
+  },
+  setOnOff(dspId, on){
+    const w = new MsgWriter().prefixedStr(dspId).onoff(on);
+    return buildBlock(0x01, 0x15, w.bytes);
+  },
+  changePreset(n){
+    return buildBlock(0x01, 0x38, [0x00, n]);
+  },
+  storeToSlot(n){
+    return buildBlock(0x03, 0x27, [0x00, n]);
+  },
+  getPreset(n){
+    return buildBlock(0x02, 0x01, [0x00, n, 0x00]);
+  },
+  getInfo(sub){ // 0x10 current preset, 0x11 name, 0x23 serial, 0x2f firmware
+    return buildBlock(0x02, sub, [0x00]);
+  },
+};
+
+/* ---------------- Spark protocol: receiving ---------------- */
+let rxBuf = [];
+const presetChunks = {}; // idx -> Uint8Array (decoded, header stripped)
+let presetChunkTotal = 0;
+
+function decode7(data){
+  const out = [];
+  for (let i=0;i<data.length;i+=8){
+    const bits = data[i];
+    const grp = data.slice(i+1, i+8);
+    grp.forEach((b,j)=>{ out.push((b & 0x7f) | ((bits >> j) & 1 ? 0x80 : 0)); });
+  }
+  return Uint8Array.from(out);
+}
+
+function onNotify(ev){
+  const v = new Uint8Array(ev.target.value.buffer);
+  for (const b of v) rxBuf.push(b);
+  // extract complete f0 01 ... f7 chunks
+  for(;;){
+    const start = indexOfPair(rxBuf, 0xf0, 0x01);
+    if (start < 0){ if (rxBuf.length > 4096) rxBuf = []; return; }
+    const end = rxBuf.indexOf(0xf7, start + 2);
+    if (end < 0){ if (start > 0) rxBuf = rxBuf.slice(start); return; }
+    const chunk = rxBuf.slice(start, end + 1);
+    rxBuf = rxBuf.slice(end + 1);
+    handleChunk(chunk);
+  }
+}
+function indexOfPair(arr, a, b){
+  for (let i=0;i<arr.length-1;i++) if (arr[i]===a && arr[i+1]===b) return i;
+  return -1;
+}
+
+function handleChunk(chunk){
+  const cmd = chunk[4], sub = chunk[5];
+  const decoded = decode7(chunk.slice(6, chunk.length - 1));
+
+  if (cmd === 0x04 || cmd === 0x05){ return; } // acks
+
+  if (cmd === 0x03 && sub === 0x01){
+    // preset info — multi-chunk; decoded = [total, idx, size, ...data]
+    const total = decoded[0], idx = decoded[1], size = decoded[2];
+    presetChunkTotal = total;
+    presetChunks[idx] = decoded.slice(3, 3 + size);
+    const have = Object.keys(presetChunks).length;
+    if (have >= total){
+      const parts = [];
+      for (let i=0;i<total;i++) parts.push(presetChunks[i] || new Uint8Array());
+      const all = concatU8(parts);
+      for (const k in presetChunks) delete presetChunks[k];
+      try { applyPresetBytes(all); } catch(e){ log("preset parse failed: " + e.message); }
+    }
+    return;
+  }
+
+  const r = new MsgReader(decoded);
+  try{
+    if (cmd === 0x03 && sub === 0x37){          // amp knob turned
+      const name = r.str(), idx = r.int(), val = r.float();
+      applyRemoteParam(name, idx, val);
+    } else if (cmd === 0x03 && sub === 0x38 || cmd === 0x03 && sub === 0x10){ // preset changed / current preset
+      r.int(); const n = r.int();
+      state.presetNum = n; renderPresetStrip();
+      if (sub === 0x38){ log(`amp switched to preset ${n+1}`); requestPreset(n); }
+    } else if (cmd === 0x03 && sub === 0x06){    // amp model changed on the amp
+      r.str(); const newId = r.str();
+      applyRemoteModel(newId);
+    } else if (cmd === 0x03 && sub === 0x15){    // effect toggled on the amp
+      const name = r.str(); const on = r.bool();
+      applyRemoteOnOff(name, on);
+    } else if (cmd === 0x03 && sub === 0x11){
+      state.ampName = r.str(); renderAmpId();
+    } else if (cmd === 0x03 && sub === 0x23){
+      state.serial = r.str(); renderAmpId();
+    } else if (cmd === 0x03 && sub === 0x2f){
+      const raw = r.int();
+      state.firmware = [raw >> 24 & 255, raw >> 16 & 255, raw >> 8 & 255, raw & 255].slice(1).join(".");
+      renderAmpId();
+    }
+  } catch(e){ /* tolerate partial/unknown messages */ }
+}
+
+function concatU8(parts){
+  const len = parts.reduce((a,p)=>a+p.length,0);
+  const out = new Uint8Array(len); let o=0;
+  for (const p of parts){ out.set(p,o); o+=p.length; }
+  return out;
+}
+
+class MsgReader{
+  constructor(bytes){ this.b = bytes; this.i = 0; }
+  peek(){ return this.b[this.i]; }
+  int(){
+    const t = this.b[this.i];
+    if (t === 0xcc){ this.i += 2; return this.b[this.i-1]; }
+    if (t === 0xce){ // uint32 (firmware)
+      const v = (this.b[this.i+1]<<24)|(this.b[this.i+2]<<16)|(this.b[this.i+3]<<8)|this.b[this.i+4];
+      this.i += 5; return v >>> 0;
+    }
+    this.i++; return t;
+  }
+  str(){
+    let t = this.b[this.i];
+    if (t >= 0x01 && t <= 0x1f && this.b[this.i+1] === 0xa0 + t){ this.i++; t = this.b[this.i]; } // alt short string
+    if (t >= 0xa0 && t <= 0xbf){
+      const n = t - 0xa0; this.i++;
+      const s = dec.decode(Uint8Array.from(this.b.slice(this.i, this.i+n)));
+      this.i += n; return s;
+    }
+    if (t === 0xd9){
+      const n = this.b[this.i+1]; this.i += 2;
+      const s = dec.decode(Uint8Array.from(this.b.slice(this.i, this.i+n)));
+      this.i += n; return s;
+    }
+    throw new Error("expected string at " + this.i);
+  }
+  bool(){ const t = this.b[this.i++]; return t === 0xc3; }
+  float(){
+    if (this.b[this.i] !== 0xca) throw new Error("expected float");
+    const dv = new DataView(Uint8Array.from(this.b.slice(this.i+1, this.i+5)).buffer);
+    this.i += 5; return dv.getFloat32(0, false);
+  }
+  arrayLen(){
+    const t = this.b[this.i];
+    if (t >= 0x90 && t <= 0x9f){ this.i++; return t - 0x90; }
+    throw new Error("expected array at " + this.i);
+  }
+}
+
+function applyPresetBytes(bytes){
+  const r = new MsgReader(Array.from(bytes));
+  r.int(); const pn = r.int();          // location indicator, preset number
+  r.str();                              // uuid
+  const name = r.str();
+  r.str();                              // version
+  try{ r.str(); }catch(e){}             // description (may be empty)
+  r.str();                              // icon
+  r.float();                            // bpm
+  const nfx = r.arrayLen();
+  const slots = [];
+  for (let s=0; s<nfx; s++){
+    const dspId = r.str();
+    const on = r.bool();
+    const np = r.arrayLen();
+    const params = [];
+    for (let p=0; p<np; p++){
+      r.int();            // param index
+      r.arrayLen();       // value wrapper (always 1)
+      params.push(r.float());
+    }
+    slots.push({dspId, on, params});
+  }
+  if (pn <= 3) state.presetNum = pn;
+  state.presetName = name;
+  state.slots = slots;
+  renderAll();
+  log(`loaded "${name}" from amp`);
+}
+
+/* ---------------- Bluetooth ---------------- */
+const SERVICE = "0000ffc0-0000-1000-8000-00805f9b34fb";
+const CHAR_WRITE = 0xffc1, CHAR_NOTIFY = 0xffc2;
+let device = null, writeChar = null;
+let txChain = Promise.resolve();
+
+function send(block, label){
+  if (!state.connected) return Promise.resolve();
+  txChain = txChain.then(async ()=>{
+    try{
+      if (writeChar.writeValueWithoutResponse) await writeChar.writeValueWithoutResponse(block);
+      else await writeChar.writeValue(block);
+      if (label) log(label);
+      await sleep(15); // pace writes; the amp dislikes floods
+    }catch(e){ log("tx failed: " + e.message); }
+  });
+  return txChain;
+}
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+async function connect(){
+  if (!navigator.bluetooth){
+    log("Web Bluetooth unavailable in this browser — editing offline");
+    return;
+  }
+  try{
+    setTube("busy");
+    device = await navigator.bluetooth.requestDevice({
+      filters:[{ services:[SERVICE] }],
+      optionalServices:[SERVICE],
+    });
+    device.addEventListener("gattserverdisconnected", onDisconnect);
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE);
+    writeChar = await service.getCharacteristic(CHAR_WRITE);
+    const notifyChar = await service.getCharacteristic(CHAR_NOTIFY);
+    await notifyChar.startNotifications();
+    notifyChar.addEventListener("characteristicvaluechanged", onNotify);
+
+    state.connected = true;
+    setTube("on");
+    document.getElementById("connectBtn").textContent = "Disconnect";
+    document.getElementById("refreshBtn").disabled = false;
+    document.getElementById("storeBtn").disabled = false;
+    document.getElementById("notice").classList.add("hidden");
+    log("connected to " + (device.name || "Spark 40"));
+
+    // handshake: identity + current state
+    send(SparkMsg.getInfo(0x11));
+    send(SparkMsg.getInfo(0x23));
+    send(SparkMsg.getInfo(0x2f));
+    send(SparkMsg.getInfo(0x10));
+    await sleep(400);
+    requestPreset(state.presetNum);
+  }catch(e){
+    setTube("off");
+    if (e.name !== "NotFoundError") log("connect failed: " + e.message);
+  }
+}
+
+function onDisconnect(){
+  state.connected = false;
+  writeChar = null;
+  setTube("off");
+  document.getElementById("connectBtn").textContent = "Connect amp";
+  document.getElementById("refreshBtn").disabled = true;
+  document.getElementById("storeBtn").disabled = true;
+  document.getElementById("notice").classList.remove("hidden");
+  log("amp disconnected");
+}
+
+function disconnect(){
+  if (device && device.gatt.connected) device.gatt.disconnect();
+  else onDisconnect();
+}
+
+function requestPreset(n){
+  send(SparkMsg.getPreset(n), `reading preset ${n+1}…`);
+}
+
+function setTube(mode){
+  const t = document.getElementById("tube");
+  t.className = "tube" + (mode==="on" ? " on" : mode==="busy" ? " busy" : "");
+}
+
+/* ---------------- Remote (amp-initiated) updates ---------------- */
+function slotIndexForDsp(dspId){
+  if (isReverbVariant(dspId) || dspId === REVERB_ID) return 6;
+  for (let i=0;i<state.slots.length;i++) if (state.slots[i].dspId === dspId) return i;
+  for (let i=0;i<SLOTS.length;i++) if (findModel(i, dspId)) return i;
+  return -1;
+}
+function applyRemoteParam(dspId, idx, val){
+  const s = slotIndexForDsp(dspId);
+  if (s < 0) return;
+  state.slots[s].params[idx] = val;
+  renderSlot(s);
+  log(`amp: ${dspId} p${idx} → ${(val*10).toFixed(1)}`);
+}
+function applyRemoteModel(newId){
+  const s = 3; // 0x0306 is the amp model selector knob
+  const model = findModel(s, newId);
+  if (!model) return;
+  state.slots[s] = {dspId:newId, on:true, params:model.defaults.slice()};
+  renderSlot(s);
+  // the official app answers a model change with the five parameter values
+  model.defaults.forEach((v,i)=> send(SparkMsg.changeParam(newId, i, v)));
+  log(`amp model → ${model.name}`);
+}
+function applyRemoteOnOff(dspId, on){
+  const s = slotIndexForDsp(dspId);
+  if (s < 0) return;
+  state.slots[s].on = on;
+  renderSlot(s);
+}
+
+/* ---------------- Local edits → amp ---------------- */
+const paramTimers = {};
+function editParam(slotIdx, paramIdx, val){
+  const slot = state.slots[slotIdx];
+  slot.params[paramIdx] = val;
+  updateKnobUI(slotIdx, paramIdx);
+  const key = slotIdx + ":" + paramIdx;
+  clearTimeout(paramTimers[key]);
+  paramTimers[key] = setTimeout(()=>{
+    send(SparkMsg.changeParam(slot.dspId, paramIdx, slot.params[paramIdx]));
+  }, 40);
+}
+
+function editModel(slotIdx, newId){
+  const slot = state.slots[slotIdx];
+  if (slotIdx === 6){
+    // reverb: variant change = param 6, model stays bias.reverb
+    const variant = reverbVariantIndex(newId);
+    slot.params[6] = variant / 10;
+    send(SparkMsg.changeParam(REVERB_ID, 6, slot.params[6]));
+    renderSlot(slotIdx);
+    return;
+  }
+  const oldId = slot.dspId;
+  const model = SLOTS[slotIdx].list.find(m=>m.id===newId);
+  if (!model || oldId === newId) return;
+  slot.dspId = newId;
+  slot.params = model.defaults.slice();
+  send(SparkMsg.changeModel(oldId, newId), `→ ${model.name}`);
+  model.defaults.forEach((v,i)=> send(SparkMsg.changeParam(newId, i, v)));
+  renderSlot(slotIdx);
+}
+
+function editOnOff(slotIdx){
+  const slot = state.slots[slotIdx];
+  slot.on = !slot.on;
+  send(SparkMsg.setOnOff(slot.dspId, slot.on));
+  renderSlot(slotIdx);
+}
+
+function selectPreset(n){
+  state.presetNum = n;
+  renderPresetStrip();
+  send(SparkMsg.changePreset(n), `preset ${n+1}`);
+  setTimeout(()=> requestPreset(n), 250);
+}
+
+function storeToSlot(){
+  const raw = prompt("Store the current tone into which amp preset slot? (1–4)");
+  const n = parseInt(raw, 10);
+  if (!(n >= 1 && n <= 4)) return;
+  send(SparkMsg.storeToSlot(n-1), `stored to slot ${n}`);
+}
+
+/* ---------------- Tone library ---------------- */
+const store = (()=>{ // guarded: sandboxed previews may block localStorage
+  let mem = {};
+  try{
+    const t = window.localStorage; t.getItem("_probe");
+    return {
+      get: k => { try{ return t.getItem(k); }catch(e){ return mem[k] || null; } },
+      set: (k,v) => { try{ t.setItem(k,v); }catch(e){ mem[k]=v; } },
+    };
+  }catch(e){
+    return { get: k => mem[k] || null, set:(k,v)=>{ mem[k]=v; } };
+  }
+})();
+
+function loadTones(){ try{ return JSON.parse(store.get("faceplate.tones") || "[]"); }catch(e){ return []; } }
+function saveTones(t){ store.set("faceplate.tones", JSON.stringify(t)); }
+
+function saveCurrentTone(){
+  const nameEl = document.getElementById("toneName");
+  const name = nameEl.value.trim() || state.presetName || "Untitled";
+  const tones = loadTones();
+  tones.unshift({
+    name, saved: new Date().toISOString().slice(0,10),
+    slots: JSON.parse(JSON.stringify(state.slots)),
+  });
+  saveTones(tones);
+  nameEl.value = "";
+  renderLibrary();
+  log(`saved "${name}"`);
+}
+
+async function applyTone(tone){
+  // apply as live edits: model swaps + on/off + every parameter — no
+  // multi-chunk preset upload needed, and the amp stays in sync throughout
+  for (let i=0;i<SLOTS.length;i++){
+    const cur = state.slots[i], next = tone.slots[i];
+    if (!next) continue;
+    if (next.dspId !== cur.dspId){
+      send(SparkMsg.changeModel(cur.dspId, next.dspId));
+    }
+    send(SparkMsg.setOnOff(next.dspId, next.on));
+    next.params.forEach((v,p)=> send(SparkMsg.changeParam(next.dspId, p, v)));
+    state.slots[i] = JSON.parse(JSON.stringify(next));
+  }
+  state.presetName = tone.name;
+  renderAll();
+  log(`applied "${tone.name}"`);
+}
+
+function deleteTone(idx){
+  const tones = loadTones();
+  tones.splice(idx,1);
+  saveTones(tones);
+  renderLibrary();
+}
+
+function exportTones(){
+  const blob = new Blob([JSON.stringify(loadTones(), null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "faceplate-tones.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importTones(file){
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      const incoming = JSON.parse(rd.result);
+      if (!Array.isArray(incoming)) throw new Error("not a tone file");
+      saveTones([...incoming, ...loadTones()]);
+      renderLibrary();
+      log(`imported ${incoming.length} tone${incoming.length===1?"":"s"}`);
+    }catch(e){ log("import failed: " + e.message); }
+  };
+  rd.readAsText(file);
+}
+
+/* ---------------- Rendering ---------------- */
+function renderAmpId(){
+  const el = document.getElementById("ampId");
+  if (!state.connected){ el.textContent = "not connected"; return; }
+  el.innerHTML = [
+    state.ampName || "Spark 40",
+    state.serial ? "SN " + state.serial : "",
+    state.firmware ? "FW " + state.firmware : "",
+  ].filter(Boolean).join("<br>");
+}
+
+function renderPresetStrip(){
+  const wrap = document.getElementById("presetBtns");
+  wrap.innerHTML = "";
+  for (let n=0;n<4;n++){
+    const b = document.createElement("button");
+    b.className = "pbtn" + (n===state.presetNum ? " active" : "");
+    b.textContent = n+1;
+    b.setAttribute("aria-label", `Hardware preset ${n+1}`);
+    b.onclick = ()=> selectPreset(n);
+    wrap.appendChild(b);
+  }
+  document.getElementById("presetName").textContent = state.presetName;
+}
+
+function knobSVG(){
+  return `<svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+    <circle cx="23" cy="23" r="17" fill="#221b13" stroke="#3a3128" stroke-width="1.5"/>
+    <path class="arc" d="" fill="none" stroke="var(--amber)" stroke-width="3" stroke-linecap="round"/>
+    <line class="ptr" x1="23" y1="23" x2="23" y2="9" stroke="var(--cream)" stroke-width="3" stroke-linecap="round"/>
+  </svg>`;
+}
+
+const START = 135, SWEEP = 270; // knob sweep, degrees
+function polar(cx,cy,r,deg){
+  const a = (deg-90) * Math.PI/180;
+  return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+}
+function setKnobVisual(el, val){
+  const deg = START + SWEEP*val;
+  el.querySelector(".ptr").setAttribute("transform", `rotate(${deg} 23 23)`);
+  const arc = el.querySelector(".arc");
+  const [sx,sy] = polar(23,23,21,START);
+  const [ex,ey] = polar(23,23,21,deg);
+  const large = SWEEP*val > 180 ? 1 : 0;
+  arc.setAttribute("d", val<=0.004 ? "" : `M ${sx} ${sy} A 21 21 0 ${large} 1 ${ex} ${ey}`);
+}
+
+function renderSlot(slotIdx){
+  const host = document.getElementById("slot-" + slotIdx);
+  const def = SLOTS[slotIdx];
+  const slot = state.slots[slotIdx];
+  const model = slotIdx===6
+    ? def.list[Math.min(8, Math.round((slot.params[6]||0)*10))]
+    : findModel(slotIdx, slot.dspId);
+  const params = model ? model.params : slot.params.map((_,i)=>"P"+(i+1));
+
+  host.className = "pedal" + (slot.on ? "" : " bypassed");
+  host.innerHTML = `
+    <div class="pedal-head">
+      <span class="slot-label">${def.label}</span>
+      <button class="stomp${slot.on?" on":""}" role="switch" aria-checked="${slot.on}"
+              aria-label="${def.label} ${slot.on?"on":"off"}"></button>
+    </div>
+    <select class="model-select" aria-label="${def.label} model"></select>
+    <div class="knobs"></div>`;
+
+  host.querySelector(".stomp").onclick = ()=> editOnOff(slotIdx);
+
+  const sel = host.querySelector("select");
+  for (const m of def.list){
+    const o = document.createElement("option");
+    o.value = m.id; o.textContent = m.name;
+    sel.appendChild(o);
+  }
+  sel.value = model ? model.id : def.list[0].id;
+  sel.onchange = ()=> editModel(slotIdx, sel.value);
+
+  const knobWrap = host.querySelector(".knobs");
+  const visible = slotIdx===6 ? Math.min(params.length, 6) : params.length;
+  for (let p=0;p<visible;p++){
+    if (slot.params[p] === undefined) slot.params[p] = 0.5;
+    const k = document.createElement("div");
+    k.className = "knob";
+    k.id = `knob-${slotIdx}-${p}`;
+    k.setAttribute("role","slider");
+    k.setAttribute("tabindex","0");
+    k.setAttribute("aria-label", `${def.label} ${params[p]}`);
+    k.setAttribute("aria-valuemin","0");
+    k.setAttribute("aria-valuemax","10");
+    k.innerHTML = knobSVG() +
+      `<span class="kval"></span><span class="kname" title="${params[p]}">${params[p]}</span>`;
+    attachKnob(k, slotIdx, p);
+    knobWrap.appendChild(k);
+    updateKnobUI(slotIdx, p);
+  }
+}
+
+function updateKnobUI(slotIdx, p){
+  const k = document.getElementById(`knob-${slotIdx}-${p}`);
+  if (!k) return;
+  const val = state.slots[slotIdx].params[p];
+  setKnobVisual(k, val);
+  k.querySelector(".kval").textContent = (val*10).toFixed(1);
+  k.setAttribute("aria-valuenow", (val*10).toFixed(1));
+}
+
+function attachKnob(el, slotIdx, p){
+  let dragging = false, startY = 0, startVal = 0;
+  el.addEventListener("pointerdown", e=>{
+    dragging = true; startY = e.clientY;
+    startVal = state.slots[slotIdx].params[p];
+    el.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  el.addEventListener("pointermove", e=>{
+    if (!dragging) return;
+    const fine = e.shiftKey ? 600 : 150;
+    const v = Math.min(1, Math.max(0, startVal + (startY - e.clientY)/fine));
+    editParam(slotIdx, p, v);
+  });
+  el.addEventListener("pointerup", ()=> dragging = false);
+  el.addEventListener("keydown", e=>{
+    const cur = state.slots[slotIdx].params[p];
+    const step = e.shiftKey ? 0.01 : 0.05;
+    if (e.key==="ArrowUp"||e.key==="ArrowRight"){ editParam(slotIdx,p,Math.min(1,cur+step)); e.preventDefault(); }
+    if (e.key==="ArrowDown"||e.key==="ArrowLeft"){ editParam(slotIdx,p,Math.max(0,cur-step)); e.preventDefault(); }
+  });
+  el.addEventListener("dblclick", ()=>{
+    const raw = prompt("Value 0–10:", (state.slots[slotIdx].params[p]*10).toFixed(1));
+    const n = parseFloat(raw);
+    if (!isNaN(n)) editParam(slotIdx, p, Math.min(1, Math.max(0, n/10)));
+  });
+}
+
+function renderChain(){
+  const chain = document.getElementById("chain");
+  chain.innerHTML = "";
+  SLOTS.forEach((_,i)=>{
+    const card = document.createElement("section");
+    card.id = "slot-" + i;
+    chain.appendChild(card);
+    renderSlot(i);
+  });
+}
+
+function renderLibrary(){
+  const list = document.getElementById("toneList");
+  const tones = loadTones();
+  list.innerHTML = "";
+  if (!tones.length){
+    list.innerHTML = `<div class="lib-empty">No saved tones yet. Dial something in and save it.</div>`;
+    return;
+  }
+  tones.forEach((t, i)=>{
+    const ampSlot = t.slots && t.slots[3];
+    const ampModel = ampSlot ? (findModel(3, ampSlot.dspId)||{}).name || ampSlot.dspId : "";
+    const row = document.createElement("div");
+    row.className = "tone-row";
+    row.innerHTML = `
+      <span class="tname">${escapeHtml(t.name)}</span>
+      <span class="tmeta">${ampModel}${t.saved ? " · " + t.saved : ""}</span>
+      <span class="spacer"></span>
+      <button class="btn apply">Apply</button>
+      <button class="btn del" aria-label="Delete ${escapeHtml(t.name)}">✕</button>`;
+    row.querySelector(".apply").onclick = ()=> applyTone(t);
+    row.querySelector(".del").onclick = ()=> deleteTone(i);
+    list.appendChild(row);
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderAll(){
+  renderAmpId();
+  renderPresetStrip();
+  renderChain();
+  renderLibrary();
+}
+
+function log(msg){
+  document.getElementById("log").innerHTML = `<b>›</b> ${escapeHtml(String(msg))}`;
+}
+
+/* ---------------- Boot ---------------- */
+document.getElementById("connectBtn").onclick = ()=> state.connected ? disconnect() : connect();
+document.getElementById("refreshBtn").onclick = ()=> requestPreset(state.presetNum);
+document.getElementById("storeBtn").onclick = storeToSlot;
+document.getElementById("saveTone").onclick = saveCurrentTone;
+document.getElementById("exportTones").onclick = exportTones;
+document.getElementById("importTones").onclick = ()=> document.getElementById("importFile").click();
+document.getElementById("importFile").onchange = e=>{ if (e.target.files[0]) importTones(e.target.files[0]); e.target.value=""; };
+
+state.slots = defaultSlots();
+state.presetName = "Blackface Duo (offline)";
+renderAll();
+if (!navigator.bluetooth){
+  log("This browser has no Web Bluetooth — open in Chrome or Edge to connect the amp");
+}
+</script>
+</body>
+</html>
