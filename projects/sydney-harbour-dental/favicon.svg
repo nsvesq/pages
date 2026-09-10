@@ -1,0 +1,8 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <rect width="100" height="100" fill="#1a5276"/>
+  <!-- Tooth shape -->
+  <path d="M 50 20 L 65 45 L 65 75 Q 65 85 50 85 Q 35 85 35 75 L 35 45 Z" fill="#c9a96e" stroke="#c9a96e" stroke-width="2"/>
+  <!-- Shine -->
+  <ellipse cx="48" cy="35" rx="6" ry="10" fill="#dfc69a" opacity="0.6"/>
+</svg>

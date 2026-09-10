@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sydney Harbour Dental | Dr Mark Killen</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -96,11 +97,13 @@ nav.scrolled {
 .hero {
   height: 100vh;
   min-height: 700px;
-  background: linear-gradient(135deg, var(--navy) 0%, var(--deep-blue) 40%, var(--ocean) 100%);
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1.5s ease-in-out;
 }
 .hero::before {
   content: '';
@@ -115,12 +118,9 @@ nav.scrolled {
 .hero::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 200px;
-  background: linear-gradient(to top, var(--cream), transparent);
-  z-index: 2;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(10,22,40,0.7) 0%, rgba(19,39,68,0.6) 40%, rgba(26,82,118,0.65) 100%);
+  z-index: 1;
 }
 @keyframes float {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -129,7 +129,7 @@ nav.scrolled {
 
 .hero-content {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   padding: 0 8%;
   max-width: 750px;
 }
@@ -219,7 +219,7 @@ nav.scrolled {
   right: 5%;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 3;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -247,6 +247,11 @@ nav.scrolled {
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: 0.3rem;
+}
+a .stat-card:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-4px);
+  border-color: rgba(201,169,110,0.5);
 }
 
 @keyframes fadeUp {
@@ -415,11 +420,12 @@ section {
 }
 .doctor-image {
   width: 100%;
-  aspect-ratio: 3/4;
+  max-width: 280px;
   border-radius: 24px;
   background: linear-gradient(135deg, var(--deep-blue), var(--ocean));
   position: relative;
   overflow: hidden;
+  display: block;
 }
 .doctor-image-placeholder {
   position: relative;
@@ -682,10 +688,12 @@ footer {
       <div class="number">20+</div>
       <div class="label">Years Experience</div>
     </div>
-    <div class="stat-card">
-      <div class="number">5★</div>
-      <div class="label">Patient Rated</div>
-    </div>
+    <a href="https://www.google.com/maps/search/Sydney+Harbour+Dental+Barangaroo/@-33.8650,151.2005,15z?entry=ttu" target="_blank" style="text-decoration:none; cursor:pointer;">
+      <div class="stat-card" style="cursor:pointer; transition: all 0.3s ease;">
+        <div class="number">5★</div>
+        <div class="label">Patient Rated</div>
+      </div>
+    </a>
     <div class="stat-card">
       <div class="number">100%</div>
       <div class="label">Pain-Free Focus</div>
@@ -766,7 +774,7 @@ footer {
   <div class="doctor-layout">
     <div class="doctor-image-wrapper">
       <div class="doctor-image">
-        <img src="./dr-mark-killen.jpg" alt="Dr Mark Killen" style="width:100%; height:100%; object-fit:cover;">
+        <img src="./dr-mark-killen.jpg" alt="Dr Mark Killen" style="width:100%; height:auto; display:block;">
       </div>
       <div class="doctor-accent"></div>
     </div>
@@ -844,6 +852,23 @@ footer {
 </footer>
 
 <script>
+// Hero image carousel
+const images = ['Surgery1a.jpg', 'Reception.jpg', 'KingStreetWharf1.jpg', 'Balcony.jpg'];
+let currentIndex = 0;
+const heroElement = document.querySelector('.hero::before') || document.querySelector('.hero');
+
+function rotateHeroImage() {
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    hero.style.backgroundImage = `linear-gradient(135deg, rgba(10,22,40,0.7) 0%, rgba(19,39,68,0.6) 40%, rgba(26,82,118,0.65) 100%), url('./${images[currentIndex]}')`;
+    hero.style.backgroundSize = 'cover';
+    hero.style.backgroundPosition = 'center';
+    currentIndex = (currentIndex + 1) % images.length;
+  }
+}
+rotateHeroImage();
+setInterval(rotateHeroImage, 6000);
+
 // Nav scroll effect
 window.addEventListener('scroll', () => {
   document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
