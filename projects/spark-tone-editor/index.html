@@ -1022,5 +1022,129 @@ if (!navigator.bluetooth){
   log("This browser has no Web Bluetooth — open in Chrome or Edge to connect the amp");
 }
 </script>
+<!-- YouTube Backing Tracks -->
+<section class="library">
+  <h2>🎸 Backing Tracks</h2>
+  <div class="lib-save">
+    <input id="backingSearch" placeholder="Search YouTube backing tracks (e.g. blues 12 bar)" maxlength="100">
+    <button class="btn" id="searchBtn">Search</button>
+  </div>
+  <div id="playerPanel" style="display:none;margin-top:16px">
+    <div style="position:relative;width:100%;padding-bottom:56.25%;margin-bottom:12px">
+      <iframe id="youtubePlayer" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div style="display:flex;gap:8px;font-size:12px;color:var(--cream-dim)">
+      <span id="trackTitle"></span>
+      <a id="youtubeLink" target="_blank" style="color:var(--amber);text-decoration:none">Open on YouTube →</a>
+    </div>
+  </div>
+  <div id="searchResults" style="margin-top:12px"></div>
+</section>
+
+<!-- Guitar Tuner -->
+<section class="library">
+  <h2>🎛️ Tuner</h2>
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <select id="tunerNote" style="background:var(--bg);border:1px solid var(--edge);border-radius:6px;padding:8px 10px;font-size:12px">
+        <option>E (low)</option>
+        <option selected>A</option>
+        <option>D</option>
+        <option>G</option>
+        <option>B</option>
+        <option>E (high)</option>
+      </select>
+      <button class="btn" id="tunerBtn">Start Listening</button>
+      <span id="tunerStatus" style="font-size:12px;color:var(--cream-dim)">Press "Start Listening" to begin</span>
+    </div>
+    <div id="tunerDisplay" style="display:none;text-align:center;padding:16px;background:var(--panel);border-radius:8px">
+      <div style="font-size:32px;font-weight:bold;color:var(--amber);margin-bottom:8px" id="tunerFreq">440 Hz</div>
+      <div style="position:relative;height:40px;background:var(--edge);border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div id="tunerNeedle" style="position:absolute;left:50%;top:0;width:3px;height:100%;background:var(--led);transform:translateX(-50%);transition:left .05s linear"></div>
+      </div>
+      <div style="font-size:13px;color:var(--cream-dim)" id="tunerNote">Detecting...</div>
+    </div>
+  </div>
+</section>
+
+<script>
+// YouTube Backing Tracks
+document.getElementById('searchBtn').onclick = async ()=>{
+  const query = document.getElementById('backingSearch').value.trim();
+  if (!query) return;
+  const results = document.getElementById('searchResults');
+  results.innerHTML = '<div style="color:var(--cream-dim);font-size:12px">Searching...</div>';
+  try {
+    const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`);
+    const html = await res.text();
+    const match = html.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
+    if (match) {
+      const videoId = match[1];
+      document.getElementById('playerPanel').style.display = 'block';
+      document.getElementById('youtubePlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=0`;
+      document.getElementById('trackTitle').textContent = query;
+      document.getElementById('youtubeLink').href = `https://youtube.com/watch?v=${videoId}`;
+      results.innerHTML = '';
+    } else {
+      results.innerHTML = '<div style="color:var(--cream-dim);font-size:12px">No results found. Try a different search.</div>';
+    }
+  } catch (e) {
+    results.innerHTML = '<div style="color:var(--led);font-size:12px">Error searching. Try manually searching YouTube.</div>';
+  }
+};
+
+// Guitar Tuner
+const targetFreqs = {
+  'E (low)': 82.41, 'A': 110, 'D': 146.83, 'G': 196, 'B': 246.94, 'E (high)': 329.63
+};
+let tunerActive = false, audioContext, analyser;
+
+document.getElementById('tunerBtn').onclick = async ()=>{
+  if (tunerActive) {
+    tunerActive = false;
+    document.getElementById('tunerBtn').textContent = 'Start Listening';
+    document.getElementById('tunerDisplay').style.display = 'none';
+    return;
+  }
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false}});
+    const mic = audioContext.createMediaStreamSource(stream);
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 4096;
+    mic.connect(analyser);
+    tunerActive = true;
+    document.getElementById('tunerBtn').textContent = 'Stop Listening';
+    document.getElementById('tunerDisplay').style.display = 'block';
+    updateTuner();
+  } catch (e) {
+    document.getElementById('tunerStatus').textContent = 'Microphone access denied';
+  }
+};
+
+function updateTuner() {
+  if (!tunerActive) return;
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+  const nyquist = audioContext.sampleRate / 2;
+  let maxIdx = 0, maxVal = 0;
+  for (let i = 10; i < data.length; i++) {
+    if (data[i] > maxVal) { maxVal = data[i]; maxIdx = i; }
+  }
+  const freq = (maxIdx * nyquist) / data.length;
+  if (freq > 50 && freq < 500) {
+    document.getElementById('tunerFreq').textContent = freq.toFixed(1) + ' Hz';
+    const targetNote = document.getElementById('tunerNote').value;
+    const target = targetFreqs[targetNote];
+    const cents = 1200 * Math.log2(freq / target);
+    const needlePos = Math.max(0, Math.min(100, 50 + cents/50));
+    document.getElementById('tunerNeedle').style.left = needlePos + '%';
+    const noteStr = Math.abs(cents) < 5 ? '✓ In tune' : (cents < 0 ? '♭ Flat' : '♯ Sharp');
+    document.getElementById('tunerNote').textContent = noteStr + ' (' + cents.toFixed(0) + ' cents)';
+  }
+  requestAnimationFrame(updateTuner);
+}
+</script>
+
 </body>
 </html>
