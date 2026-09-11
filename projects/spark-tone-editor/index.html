@@ -1026,16 +1026,16 @@ if (!navigator.bluetooth){
 <section class="library">
   <h2>🎸 Backing Tracks</h2>
   <div class="lib-save">
-    <input id="backingSearch" placeholder="Search YouTube backing tracks (e.g. blues 12 bar)" maxlength="100">
+    <input id="backingSearch" placeholder="Search YouTube (e.g. blues 12 bar backing track)" maxlength="100">
     <button class="btn" id="searchBtn">Search</button>
   </div>
   <div id="playerPanel" style="display:none;margin-top:16px">
-    <div style="position:relative;width:100%;padding-bottom:56.25%;margin-bottom:12px">
-      <iframe id="youtubePlayer" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </div>
-    <div style="display:flex;gap:8px;font-size:12px;color:var(--cream-dim)">
-      <span id="trackTitle"></span>
-      <a id="youtubeLink" target="_blank" style="color:var(--amber);text-decoration:none">Open on YouTube →</a>
+    <audio id="audioPlayer" style="width:100%;margin-bottom:12px" controls>
+      <source id="audioSource" type="audio/mpeg">
+    </audio>
+    <div style="font-size:12px;color:var(--cream-dim)">
+      <span id="trackTitle"></span><br>
+      <a id="youtubeLink" target="_blank" style="color:var(--amber);text-decoration:none;font-size:11px">View on YouTube →</a>
     </div>
   </div>
   <div id="searchResults" style="margin-top:12px"></div>
@@ -1069,25 +1069,44 @@ if (!navigator.bluetooth){
 
 <script>
 // YouTube Backing Tracks
-document.getElementById('searchBtn').onclick = ()=>{
+document.getElementById('searchBtn').onclick = async ()=>{
   const query = document.getElementById('backingSearch').value.trim();
   if (!query) return;
   const results = document.getElementById('searchResults');
-  results.innerHTML = '';
-  document.getElementById('playerPanel').style.display = 'none';
-  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query + ' backing track')}`;
-  results.innerHTML = `<div style="font-size:12px"><a href="${youtubeSearchUrl}" target="_blank" style="color:var(--amber);text-decoration:none">Search YouTube for "${escapeHtml(query)}" →</a><br><span style="color:var(--cream-dim);margin-top:8px;display:block">Or paste a YouTube video ID below:</span><input id="videoIdInput" placeholder="e.g. dQw4w9WgXcQ" style="background:var(--bg);border:1px solid var(--edge);border-radius:6px;padding:8px;margin-top:8px;width:200px"><button class="btn" style="margin-top:8px" onclick="const id=document.getElementById('videoIdInput').value;if(id)playYoutubeVideo(id)">Play</button></div>`;
+  results.innerHTML = '<div style="color:var(--cream-dim);font-size:12px">🔍 Searching...</div>';
+
+  try {
+    // Search using Invidious API (privacy-friendly YouTube alternative)
+    const res = await fetch(`https://invidious.io/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
+    const data = await res.json();
+
+    if (!data || !data.length) {
+      results.innerHTML = '<div style="color:var(--cream-dim);font-size:12px">No results found</div>';
+      return;
+    }
+
+    results.innerHTML = '';
+    data.slice(0, 10).forEach(video => {
+      const div = document.createElement('div');
+      div.style.cssText = 'padding:8px;border-bottom:1px solid var(--edge);cursor:pointer;font-size:12px;color:var(--amber);transition:color .2s';
+      div.textContent = video.title;
+      div.onmouseover = ()=> div.style.color = 'var(--cream)';
+      div.onmouseout = ()=> div.style.color = 'var(--amber)';
+      div.onclick = ()=> playYoutubeAudio(video.videoId, video.title);
+      results.appendChild(div);
+    });
+  } catch (e) {
+    results.innerHTML = '<div style="color:var(--led);font-size:12px">Error searching. Check your connection.</div>';
+  }
 };
 
-function playYoutubeVideo(videoId){
+function playYoutubeAudio(videoId, title){
   document.getElementById('playerPanel').style.display = 'block';
-  document.getElementById('youtubePlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-  document.getElementById('trackTitle').textContent = 'Video ID: ' + videoId;
+  document.getElementById('trackTitle').textContent = title;
   document.getElementById('youtubeLink').href = `https://youtube.com/watch?v=${videoId}`;
-  document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('audioSource').src = `https://invidious.io/latest_version?id=${videoId}&itag=251`;
+  document.getElementById('audioPlayer').play();
 }
-
-function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 // Guitar Tuner
 const targetFreqs = {
