@@ -52,11 +52,18 @@ nav.scrolled {
   box-shadow: 0 4px 30px rgba(0,0,0,0.15);
 }
 .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   font-family: 'Playfair Display', serif;
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--white);
   letter-spacing: 0.5px;
+}
+.nav-logo img {
+  height: 50px;
+  width: auto;
 }
 .nav-logo span { color: var(--gold); }
 .nav-links { display: flex; gap: 2rem; align-items: center; }
@@ -659,7 +666,10 @@ footer {
 
 <!-- NAV -->
 <nav id="mainNav">
-  <div class="nav-logo">Sydney Harbour <span>Dental</span></div>
+  <div class="nav-logo">
+    <img src="./sydney-harbour-dental-logo1.gif" alt="Sydney Harbour Dental Logo">
+    <span>Sydney Harbour <span>Dental</span></span>
+  </div>
   <div class="nav-links">
     <a href="#why">Why Us</a>
     <a href="#services">Services</a>
