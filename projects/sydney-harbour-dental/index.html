@@ -564,6 +564,45 @@ section {
 }
 .detail-value a:hover { color: var(--gold); }
 
+/* GETTING HERE */
+.getting-here-section { background: var(--white); }
+.getting-here-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 3.5rem;
+}
+.transport-card {
+  background: var(--cream);
+  border-radius: 20px;
+  padding: 2rem;
+  border-left: 4px solid var(--gold);
+  transition: all 0.4s ease;
+}
+.transport-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(10,22,40,0.08);
+}
+.transport-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+.transport-card p {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+.transport-card a {
+  color: var(--ocean);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+.transport-card a:hover { color: var(--gold); }
+
 /* CONTACT CTA */
 .cta-section {
   background: linear-gradient(135deg, var(--navy), var(--deep-blue));
@@ -686,6 +725,7 @@ footer {
     <a href="#why">Why Us</a>
     <a href="#services">Services</a>
     <a href="#location">Location</a>
+    <a href="#getting-here">Getting Here</a>
     <a href="#contact" class="nav-cta">Book Now</a>
   </div>
   <div class="hamburger" onclick="document.querySelector('.nav-links').style.display = document.querySelector('.nav-links').style.display === 'flex' ? 'none' : 'flex'">
@@ -849,6 +889,45 @@ footer {
           <span class="hours-day">Sunday</span><span class="hours-time">Closed</span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- GETTING HERE -->
+<section class="getting-here-section" id="getting-here">
+  <div class="section-label">Visit Us</div>
+  <div class="section-title">How to get here</div>
+  <div class="section-subtitle">Multiple convenient transport options to reach our Barangaroo location.</div>
+  <div class="getting-here-grid">
+    <div class="transport-card">
+      <h3>🚗 Driving</h3>
+      <p>Navigate to 5 Lime Street, Barangaroo. Street parking available in the area, or use nearby car parks.</p>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=5+Lime+Street+Barangaroo+Sydney" target="_blank">Get Directions →</a>
+    </div>
+    <div class="transport-card">
+      <h3>🅿️ Parking</h3>
+      <p>We're near several car parks. King Street Wharf car park is just steps away with competitive hourly rates.</p>
+      <a href="https://www.parkwhiz.com.au/en/search?location=King%20Street%20Wharf%20Sydney" target="_blank">Find Parking →</a>
+    </div>
+    <div class="transport-card">
+      <h3>🚇 Train</h3>
+      <p>Wynyard Station is just 5 minutes walk away. Easy access via the City Circle line and other major routes.</p>
+      <a href="https://transportnsw.info/stations/wynyard" target="_blank">Trip Planner →</a>
+    </div>
+    <div class="transport-card">
+      <h3>🚌 Bus</h3>
+      <p>Multiple bus routes service the Barangaroo area. Check Transport NSW for real-time arrivals and routes.</p>
+      <a href="https://transportnsw.info/" target="_blank">View Bus Routes →</a>
+    </div>
+    <div class="transport-card">
+      <h3>⛴️ Ferry</h3>
+      <p>Barangaroo is a ferry terminal with connections across Sydney Harbour. Walk to our practice from the wharf.</p>
+      <a href="https://transportnsw.info/stations/barangaroo-ferry" target="_blank">Ferry Timetables →</a>
+    </div>
+    <div class="transport-card">
+      <h3>🚶 Walking</h3>
+      <p>Easily walkable from Wynyard and nearby attractions. Scenic harbour side location makes for a pleasant walk.</p>
+      <a href="https://www.google.com/maps/search/5+Lime+Street+Barangaroo/@-33.8650,151.2005,15z" target="_blank">View Area →</a>
     </div>
   </div>
 </section>
