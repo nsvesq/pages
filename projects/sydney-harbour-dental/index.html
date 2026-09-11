@@ -222,7 +222,7 @@ nav.scrolled {
 
 .hero-visual {
   position: absolute;
-  right: 5%;
+  right: 8%;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
@@ -231,15 +231,17 @@ nav.scrolled {
   gap: 1rem;
   animation: fadeUp 1s ease 0.8s forwards;
   opacity: 0;
+  max-width: 160px;
 }
 .stat-card {
   background: var(--glass);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.1);
-  padding: 1.5rem 2rem;
+  padding: 1.2rem 1.5rem;
   border-radius: 16px;
   text-align: center;
-  min-width: 180px;
+  min-width: 140px;
+  width: 100%;
 }
 .stat-card .number {
   font-family: 'Playfair Display', serif;
