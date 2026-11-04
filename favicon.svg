@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="t"><rect width="64" height="64" rx="14"/></clipPath>
+  </defs>
+  <g clip-path="url(#t)">
+    <!-- red lacquer with black and white tape stripes -->
+    <rect width="64" height="64" fill="#d4221c"/>
+    <polygon points="-8,22 40,-8 54,-8 -8,34" fill="#0a0a0a"/>
+    <polygon points="-8,27 46,-8 49,-8 -8,30" fill="#f4efe6"/>
+    <polygon points="18,72 72,34 72,48 32,72" fill="#0a0a0a"/>
+    <polygon points="24,72 72,39 72,42 28,72" fill="#f4efe6"/>
+  </g>
+  <!-- d20 -->
+  <polygon points="32,9 52,20.5 52,43.5 32,55 12,43.5 12,20.5" fill="#0a0a0a" stroke="#f4efe6" stroke-width="3.5" stroke-linejoin="round"/>
+  <polygon points="32,19 43,38 21,38" fill="none" stroke="#d9a441" stroke-width="3" stroke-linejoin="round"/>
+</svg>
