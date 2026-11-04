@@ -4,53 +4,705 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>nsvesq - Projects</title>
+    <meta name="description" content="nsvesq's projects: guitar tools, a tape echo VST and other things built while learning to code.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;800&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #0f0b0a;
+            --stone: #1b1514;
+            --stone-2: #241c1a;
+            --red: #d4221c;
+            --red-deep: #8f130f;
+            --white: #f4efe6;
+            --black: #0a0a0a;
+            --gold: #d9a441;
+            --gold-soft: #b8893a;
+            --parchment: #e9dcbc;
+            --ink: #2b1d12;
+            --muted: #a99a86;
+
+            --common: #a7a39c;
+            --uncommon: #3fbf6a;
+            --rare: #3f8cff;
+            --veryrare: #b05cff;
+            --legendary: #ff9a1f;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            margin: 0;
+            background:
+                radial-gradient(ellipse at 50% -10%, rgba(212, 34, 28, 0.18), transparent 60%),
+                radial-gradient(ellipse at 50% 120%, rgba(217, 164, 65, 0.08), transparent 55%),
+                var(--bg);
+            color: var(--white);
+            font-family: "Alegreya", Georgia, serif;
+            font-size: 18px;
+            line-height: 1.55;
+            overflow-x: hidden;
         }
+
+        a { color: inherit; }
+
+        /* ---------- HERO: striped guitar-body banner ---------- */
+        .hero {
+            position: relative;
+            min-height: 420px;
+            display: grid;
+            place-items: center;
+            padding: 56px 16px 72px;
+            overflow: hidden;
+            isolation: isolate;
+            clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
+        }
+
+        .hero svg.stripes {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .hero::after {
+            /* worn lacquer + vignette */
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%),
+                repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 5px);
+        }
+
+        .plate {
+            text-align: center;
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0.88), rgba(10, 10, 10, 0.78));
+            border: 2px solid var(--gold);
+            outline: 1px solid rgba(217, 164, 65, 0.4);
+            outline-offset: 6px;
+            padding: 28px 36px 24px;
+            max-width: 680px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        .plate::before, .plate::after {
+            content: "✦";
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            font-size: 18px;
+        }
+        .plate::before { left: -30px; }
+        .plate::after  { right: -30px; }
+
+        .eyebrow {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            letter-spacing: 0.35em;
+            font-size: 12px;
+            color: var(--gold);
+            margin: 0 0 6px;
+            text-transform: uppercase;
+        }
+
         h1 {
-            color: #333;
+            font-family: "Cinzel Decorative", serif;
+            font-weight: 900;
+            font-size: clamp(44px, 10vw, 84px);
+            line-height: 1;
+            margin: 0;
+            color: var(--white);
+            text-shadow:
+                3px 3px 0 var(--red),
+                6px 6px 0 var(--black);
+            letter-spacing: 0.02em;
         }
-        .project-list {
+
+        .tagline {
+            margin: 14px 0 0;
+            font-style: italic;
+            color: var(--parchment);
+            font-size: 19px;
+        }
+
+        /* ---------- layout ---------- */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 8px 16px 64px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: clamp(20px, 4vw, 28px);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin: 48px 0 20px;
+        }
+        .section-title::before, .section-title::after {
+            content: "";
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+        }
+
+        /* ---------- character sheet ---------- */
+        .sheet {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr);
+            gap: 20px;
+            background:
+                linear-gradient(180deg, rgba(233, 220, 188, 0.97), rgba(214, 196, 158, 0.97));
+            color: var(--ink);
+            border-radius: 6px;
+            padding: 22px;
+            box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--gold-soft), 0 18px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .sheet .who h2 {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            margin: 0 0 6px;
+            font-size: 26px;
+        }
+
+        .sheet dl {
+            margin: 0;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 14px;
+            font-size: 16px;
+        }
+        .sheet dt {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            align-self: center;
+            color: var(--red-deep);
+        }
+        .sheet dd { margin: 0; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 10px;
+            align-content: center;
+        }
+
+        .stat {
+            text-align: center;
+            border: 2px solid var(--ink);
+            border-radius: 10px 10px 40% 40% / 10px 10px 22% 22%;
+            padding: 8px 4px 12px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .stat .name {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+        }
+        .stat .score {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 30px;
+            line-height: 1.1;
+        }
+        .stat .mod {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1.5px solid var(--ink);
+            border-radius: 999px;
+            padding: 0 8px;
+            background: var(--parchment);
+        }
+
+        /* ---------- roll for a quest ---------- */
+        .roller {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 18px 28px;
+            margin: 36px 0 8px;
+            text-align: center;
+        }
+
+        .roll-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: linear-gradient(180deg, var(--red), var(--red-deep));
+            border: 2px solid var(--black);
+            box-shadow: 0 0 0 2px var(--white), 0 6px 0 var(--black), 0 10px 24px rgba(212, 34, 28, 0.35);
+            padding: 12px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        .roll-btn:hover  { transform: translateY(-2px); }
+        .roll-btn:active { transform: translateY(3px); box-shadow: 0 0 0 2px var(--white), 0 2px 0 var(--black); }
+        .roll-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; }
+
+        .d20 {
+            width: 56px;
+            height: 56px;
+            flex: none;
+        }
+        .d20.rolling { animation: tumble 0.9s cubic-bezier(.2,.7,.3,1); }
+        @keyframes tumble {
+            0%   { transform: rotate(0) scale(1); }
+            50%  { transform: rotate(540deg) scale(1.25); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+
+        .roll-result {
+            min-height: 1.6em;
+            font-style: italic;
+            color: var(--parchment);
+            max-width: 420px;
+        }
+        .roll-result strong { color: var(--gold); font-style: normal; }
+        .roll-result a { color: var(--gold); }
+
+        /* ---------- quest board ---------- */
+        .board {
             list-style: none;
             padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+            gap: 22px;
         }
-        .project-list li {
-            background: white;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        .card {
+            --rarity: var(--common);
+            position: relative;
+            height: 100%;
         }
-        .project-list a {
-            color: #0066cc;
+
+        .card a {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             text-decoration: none;
-            font-weight: bold;
+            background:
+                linear-gradient(180deg, var(--stone-2), var(--stone));
+            border: 1px solid color-mix(in srgb, var(--rarity) 55%, transparent);
+            border-radius: 10px;
+            padding: 0 20px 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         }
-        .project-list a:hover {
-            text-decoration: underline;
+
+        .card a::before {
+            /* stripe strip across the top of every card */
+            content: "";
+            display: block;
+            height: 10px;
+            margin: 0 -20px 16px;
+            background:
+                repeating-linear-gradient(-55deg,
+                    var(--red) 0 14px,
+                    var(--black) 14px 22px,
+                    var(--white) 22px 26px,
+                    var(--red) 26px 40px,
+                    var(--white) 40px 43px,
+                    var(--black) 43px 50px);
+        }
+
+        .card a:hover, .card a:focus-visible {
+            transform: translateY(-5px) rotate(-0.4deg);
+            border-color: var(--rarity);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 26px color-mix(in srgb, var(--rarity) 35%, transparent);
+            outline: none;
+        }
+
+        .card.highlight a {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px var(--gold), 0 0 40px rgba(217, 164, 65, 0.5);
+            animation: glow 1.2s ease-in-out 3;
+        }
+        @keyframes glow {
+            50% { box-shadow: 0 0 0 3px var(--gold), 0 0 70px rgba(217, 164, 65, 0.85); }
+        }
+
+        .rarity {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--rarity);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rarity::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            background: var(--rarity);
+            transform: rotate(45deg);
+            box-shadow: 0 0 8px var(--rarity);
+        }
+
+        .card h3 {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 22px;
+            line-height: 1.2;
+            margin: 8px 0 4px;
+            color: var(--white);
+        }
+
+        .flavor {
+            font-style: italic;
+            color: var(--gold);
+            font-size: 16px;
+            margin: 0 0 10px;
+        }
+
+        .desc {
+            margin: 0 0 16px;
+            color: #d7cdbf;
+            font-size: 17px;
+        }
+
+        .meta {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tags span {
+            font-family: "Cinzel", serif;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(244, 239, 230, 0.25);
+            color: var(--muted);
+        }
+
+        .enter {
+            font-family: "Cinzel", serif;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            color: var(--red);
+            white-space: nowrap;
+        }
+        .card a:hover .enter { color: var(--white); }
+
+        .card.common    { --rarity: var(--common); }
+        .card.uncommon  { --rarity: var(--uncommon); }
+        .card.rare      { --rarity: var(--rare); }
+        .card.veryrare  { --rarity: var(--veryrare); }
+        .card.legendary { --rarity: var(--legendary); }
+
+        .card.legendary a {
+            background:
+                radial-gradient(ellipse at 100% 0%, rgba(255, 154, 31, 0.14), transparent 55%),
+                linear-gradient(180deg, var(--stone-2), var(--stone));
+        }
+
+        /* ---------- footer ---------- */
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 15px;
+            padding: 24px 16px 48px;
+        }
+        footer .rule {
+            height: 8px;
+            max-width: 320px;
+            margin: 0 auto 18px;
+            border-radius: 2px;
+            background:
+                repeating-linear-gradient(-55deg,
+                    var(--red) 0 12px, var(--black) 12px 19px, var(--white) 19px 23px);
+        }
+
+        /* ---------- responsive ---------- */
+        @media (max-width: 760px) {
+            body { font-size: 17px; }
+            .sheet { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .plate { padding: 22px 18px 20px; }
+            .plate::before, .plate::after { display: none; }
+            .hero { min-height: 340px; padding: 40px 16px 64px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            html { scroll-behavior: auto; }
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to nsvesq's Projects</h1>
-    <p>Learning Python and building stuff.</p>
+    <header class="hero">
+        <!-- Striped guitar-body banner: red lacquer with black and white tape stripes -->
+        <svg class="stripes" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <rect width="1200" height="420" fill="#d4221c"/>
+            <g fill="#0a0a0a">
+                <polygon points="-60,120 640,-60 700,-10 -20,190"/>
+                <polygon points="380,460 1260,90 1260,190 470,470"/>
+                <polygon points="-40,330 520,470 420,470 -40,400"/>
+                <polygon points="760,-40 860,-40 1260,330 1260,420"/>
+            </g>
+            <g fill="#f4efe6">
+                <polygon points="-60,150 660,-40 668,-18 -50,176"/>
+                <polygon points="-60,210 520,40 526,58 -56,230"/>
+                <polygon points="400,470 1260,120 1260,140 420,470"/>
+                <polygon points="300,470 1260,40 1260,56 318,470"/>
+                <polygon points="790,-40 812,-40 1260,370 1260,392"/>
+                <polygon points="-40,350 470,470 448,470 -40,366"/>
+                <polygon points="120,-40 136,-40 40,470 24,470"/>
+            </g>
+            <g fill="#0a0a0a" opacity="0.9">
+                <polygon points="1000,-40 1040,-40 880,470 840,470"/>
+                <polygon points="180,-40 200,-40 110,470 90,470"/>
+            </g>
+        </svg>
 
-    <h2>Projects</h2>
-    <ul class="project-list">
-        <li><a href="projects/hello/">Hello Project</a> - My first Python project</li>
-        <li><a href="projects/sydney-harbour-dental/">Sydney Harbour Dental</a> - Professional dental practice website</li>
-        <li><a href="projects/blues-explorer/">Blues Guitar Explorer</a> - Interactive guide to blues scales, chords & licks</li>
-        <li><a href="projects/maqam-explorer/">Maqam Explorer</a> - Middle Eastern music scale explorer</li>
-        <li><a href="projects/blues-practice-coach/">Blues Practice Coach</a> - Interactive blues practice tool</li>
-        <li><a href="projects/pick-and-play/">Pick and Play</a> - Music learning application</li>
-        <li><a href="projects/nail-designer/">Nail Designer</a> - Design and visualize nail art</li>
-        <li><a href="projects/spark-tone-editor/">Spark Tone Editor</a> - Audio tone editor</li>
-        <li><a href="projects/mura-echo/">Mura Echo</a> - Tape echo &amp; spring reverb VST3 plugin</li>
-    </ul>
+        <div class="plate">
+            <p class="eyebrow">Shred &amp; Sorcery · Codex of Projects</p>
+            <h1>nsvesq</h1>
+            <p class="tagline">Learning Python and building stuff: guitar tools, amp sounds, and the odd side quest.</p>
+        </div>
+    </header>
+
+    <main>
+        <h2 class="section-title">Character Sheet</h2>
+
+        <section class="sheet" aria-label="Character sheet">
+            <div class="who">
+                <h2>nsvesq</h2>
+                <dl>
+                    <dt>Class</dt>     <dd>Bard / Artificer</dd>
+                    <dt>Level</dt>     <dd id="level">9</dd>
+                    <dt>Alignment</dt> <dd>Chaotic Good</dd>
+                    <dt>Weapon</dt>    <dd>Striped six-string, +2 to tone</dd>
+                    <dt>Spells</dt>    <dd>Python, HTML, C++ &amp; JUCE</dd>
+                </dl>
+            </div>
+
+            <div class="stats">
+                <div class="stat"><div class="name">SHRED</div><div class="score">18</div><span class="mod">+4</span></div>
+                <div class="stat"><div class="name">TONE</div><div class="score">17</div><span class="mod">+3</span></div>
+                <div class="stat"><div class="name">CODE</div><div class="score">14</div><span class="mod">+2</span></div>
+                <div class="stat"><div class="name">BLUES</div><div class="score">16</div><span class="mod">+3</span></div>
+                <div class="stat"><div class="name">WIS</div><div class="score">12</div><span class="mod">+1</span></div>
+                <div class="stat"><div class="name">CHA</div><div class="score">15</div><span class="mod">+2</span></div>
+            </div>
+        </section>
+
+        <div class="roller">
+            <button class="roll-btn" id="roll" type="button" aria-describedby="roll-result">
+                <svg class="d20" id="d20" viewBox="0 0 100 100" aria-hidden="true">
+                    <polygon points="50,4 92,28 92,72 50,96 8,72 8,28" fill="#0a0a0a" stroke="#f4efe6" stroke-width="3"/>
+                    <polygon points="50,24 76,66 24,66" fill="#d4221c" stroke="#f4efe6" stroke-width="2.5"/>
+                    <g stroke="#f4efe6" stroke-width="2" fill="none" opacity="0.8">
+                        <line x1="50" y1="4"  x2="50" y2="24"/>
+                        <line x1="92" y1="28" x2="76" y2="66"/>
+                        <line x1="8"  y1="28" x2="24" y2="66"/>
+                        <line x1="92" y1="72" x2="76" y2="66"/>
+                        <line x1="8"  y1="72" x2="24" y2="66"/>
+                        <line x1="50" y1="96" x2="24" y2="66"/>
+                        <line x1="50" y1="96" x2="76" y2="66"/>
+                        <line x1="8"  y1="28" x2="50" y2="24"/>
+                        <line x1="92" y1="28" x2="50" y2="24"/>
+                    </g>
+                    <text id="d20-num" x="50" y="58" text-anchor="middle" font-family="Cinzel, serif" font-weight="800" font-size="20" fill="#f4efe6">20</text>
+                </svg>
+                Roll for a quest
+            </button>
+            <p class="roll-result" id="roll-result" aria-live="polite">Can't decide? Let the d20 pick a project for you.</p>
+        </div>
+
+        <h2 class="section-title">Quest Board</h2>
+
+        <ul class="board" id="board">
+            <li class="card legendary">
+                <a href="projects/mura-echo/">
+                    <span class="rarity">Legendary</span>
+                    <h3>Mura Echo</h3>
+                    <p class="flavor">An enchanted amp that remembers every note you play.</p>
+                    <p class="desc">Tape echo &amp; spring reverb VST3 plugin, styled like a tweed combo amp.</p>
+                    <div class="meta"><div class="tags"><span>C++</span><span>JUCE</span><span>Audio</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card legendary">
+                <a href="projects/spark-tone-editor/">
+                    <span class="rarity">Legendary</span>
+                    <h3>Spark Tone Editor</h3>
+                    <p class="flavor">Bind your amp by Bluetooth and bend its voice to your will.</p>
+                    <p class="desc">Tone editor for the Spark amp, with a tone library, backing tracks and a tuner.</p>
+                    <div class="meta"><div class="tags"><span>Web Bluetooth</span><span>Audio</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card veryrare">
+                <a href="projects/blues-explorer/">
+                    <span class="rarity">Very Rare</span>
+                    <h3>Blues Guitar Explorer</h3>
+                    <p class="flavor">A map of the fretboard, drawn in the old blues tongue.</p>
+                    <p class="desc">Interactive guide to blues scales, chords and licks, with a cello drone.</p>
+                    <div class="meta"><div class="tags"><span>Guitar</span><span>Theory</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card veryrare">
+                <a href="projects/maqam-explorer/">
+                    <span class="rarity">Very Rare</span>
+                    <h3>Maqam Explorer</h3>
+                    <p class="flavor">Ancient scales from distant lands, revealed on the oud.</p>
+                    <p class="desc">Middle Eastern maqam explorer with an oud fretboard and drones.</p>
+                    <div class="meta"><div class="tags"><span>Oud</span><span>Theory</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card rare">
+                <a href="projects/blues-practice-coach/">
+                    <span class="rarity">Rare</span>
+                    <h3>Blues Practice Coach</h3>
+                    <p class="flavor">A wise mentor who sets your daily training.</p>
+                    <p class="desc">Answer five questions and get a personal blues practice plan.</p>
+                    <div class="meta"><div class="tags"><span>Guitar</span><span>Practice</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card rare">
+                <a href="projects/pick-and-play/">
+                    <span class="rarity">Rare</span>
+                    <h3>Pick and Play</h3>
+                    <p class="flavor">Choose your path, adventurer.</p>
+                    <p class="desc">Music learning app that builds a guitar journey around your style.</p>
+                    <div class="meta"><div class="tags"><span>Guitar</span><span>Learning</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card uncommon">
+                <a href="projects/nail-designer/">
+                    <span class="rarity">Uncommon</span>
+                    <h3>Nail Designer</h3>
+                    <p class="flavor">A charm of glamour, cast ten times over.</p>
+                    <p class="desc">Design and visualise nail art: shape, palette and inspiration.</p>
+                    <div class="meta"><div class="tags"><span>Design</span><span>Web</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card uncommon">
+                <a href="projects/sydney-harbour-dental/">
+                    <span class="rarity">Uncommon</span>
+                    <h3>Sydney Harbour Dental</h3>
+                    <p class="flavor">A healer's guildhall overlooking the harbour.</p>
+                    <p class="desc">Professional website for a dental practice.</p>
+                    <div class="meta"><div class="tags"><span>Website</span><span>Business</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+            <li class="card common">
+                <a href="projects/hello/">
+                    <span class="rarity">Common</span>
+                    <h3>Hello Project</h3>
+                    <p class="flavor">Every hero's first scroll: <em>print("Hello")</em>.</p>
+                    <p class="desc">My first Python project: variables and the print() function.</p>
+                    <div class="meta"><div class="tags"><span>Python</span></div><span class="enter">Enter →</span></div>
+                </a>
+            </li>
+        </ul>
+    </main>
+
+    <footer>
+        <div class="rule" aria-hidden="true"></div>
+        Forged by nsvesq · Roll high, play loud.
+    </footer>
+
+    <script>
+        (function () {
+            const cards  = Array.from(document.querySelectorAll('#board .card'));
+            const button = document.getElementById('roll');
+            const die    = document.getElementById('d20');
+            const num    = document.getElementById('d20-num');
+            const result = document.getElementById('roll-result');
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Level = number of projects on the board
+            document.getElementById('level').textContent = cards.length;
+
+            function flavourFor(roll) {
+                if (roll === 20) return 'Natural 20! A legendary pick.';
+                if (roll === 1)  return 'Critical fail, but the quest still awaits.';
+                if (roll >= 15)  return 'A mighty roll.';
+                if (roll >= 8)   return 'Fortune smiles.';
+                return 'The dice are fickle, but the path is set.';
+            }
+
+            button.addEventListener('click', function () {
+                const roll = Math.floor(Math.random() * 20) + 1;
+                const pick = cards[Math.floor(Math.random() * cards.length)];
+                const link = pick.querySelector('a');
+                const name = pick.querySelector('h3').textContent;
+
+                cards.forEach(c => c.classList.remove('highlight'));
+                button.disabled = true;
+
+                // Flicker numbers while the die tumbles
+                let ticks = 0;
+                const flicker = setInterval(() => {
+                    num.textContent = Math.floor(Math.random() * 20) + 1;
+                    if (++ticks > 8) clearInterval(flicker);
+                }, 90);
+
+                die.classList.remove('rolling');
+                void die.getBoundingClientRect();
+                die.classList.add('rolling');
+
+                setTimeout(() => {
+                    clearInterval(flicker);
+                    num.textContent = roll;
+                    button.disabled = false;
+
+                    result.innerHTML = '';
+                    const strong = document.createElement('strong');
+                    strong.textContent = 'You rolled ' + roll + '. ';
+                    const a = document.createElement('a');
+                    a.href = link.getAttribute('href');
+                    a.textContent = name;
+                    result.append(strong, flavourFor(roll) + ' Your quest: ', a, '.');
+
+                    pick.classList.add('highlight');
+                    pick.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+                }, reduce ? 0 : 950);
+            });
+        })();
+    </script>
 </body>
 </html>
