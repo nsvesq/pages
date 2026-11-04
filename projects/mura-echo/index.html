@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mura Echo — Tape Echo &amp; Spring Reverb VST3</title>
+    <meta name="description" content="Mura Echo: a valve-driven tape echo into a spring tank. VST3 plugin and standalone app built with JUCE 8.">
+    <style>
+        :root {
+            --tweed: #2a2119;
+            --tweed-light: #3a2e22;
+            --cream: #eee3c8;
+            --piping: #cdb88e;
+            --muted: #b9ab8c;
+            --red: #d8402a;
+            --oxblood: #4e1c18;
+            --chrome: #d6d1c6;
+            --ink: #2e2a22;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--cream);
+            background-color: var(--tweed);
+            background-image:
+                repeating-linear-gradient(45deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 6px),
+                repeating-linear-gradient(-45deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 6px);
+            line-height: 1.6;
+        }
+
+        .wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 32px 16px 64px;
+        }
+
+        a { color: var(--piping); }
+        a:hover { color: #fff; }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 24px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        header { margin-bottom: 28px; }
+
+        .logo {
+            margin: 0;
+            font-size: clamp(48px, 10vw, 76px);
+            font-style: italic;
+            font-weight: bold;
+            line-height: 1;
+            background: linear-gradient(180deg, #fbf8f1 0%, #d8d3c8 48%, #9e998e 54%, #8c877c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.6));
+        }
+
+        .tagline {
+            margin: 10px 0 0;
+            letter-spacing: 0.3em;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--piping);
+            text-transform: uppercase;
+        }
+
+        .lede {
+            font-size: 18px;
+            max-width: 640px;
+            color: var(--cream);
+        }
+
+        .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .badge {
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.08em;
+            padding: 4px 10px;
+            border: 1px solid var(--piping);
+            border-radius: 999px;
+            color: var(--piping);
+        }
+
+        .shot {
+            margin: 32px 0;
+            padding: 10px;
+            background: #15110d;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        }
+        .shot img { display: block; width: 100%; height: auto; border-radius: 8px; }
+        .shot figcaption { font-size: 13px; color: var(--muted); padding: 8px 4px 0; }
+
+        section {
+            margin: 40px 0;
+        }
+
+        h2 {
+            font-size: 14px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--piping);
+            border-bottom: 1px solid rgba(205,184,142,0.35);
+            padding-bottom: 8px;
+        }
+
+        .chain {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .chain span.step {
+            background: linear-gradient(180deg, #e9e6df, #a6a196);
+            color: var(--ink);
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+        }
+        .chain span.arrow { color: var(--red); }
+
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(205,184,142,0.18);
+            vertical-align: top;
+        }
+        th {
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        td:first-child { font-weight: bold; white-space: nowrap; }
+        td:nth-child(2) { white-space: nowrap; color: var(--muted); }
+
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            padding: 0;
+            list-style: none;
+        }
+        .presets li {
+            background: var(--oxblood);
+            background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 4px);
+            border: 2px solid var(--piping);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-weight: bold;
+        }
+
+        .notes { padding-left: 20px; }
+        .notes li { margin: 8px 0; }
+
+        .download {
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed var(--piping);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+
+        code {
+            font-family: Consolas, Menlo, monospace;
+            font-size: 0.92em;
+            background: rgba(0,0,0,0.35);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        footer { margin-top: 56px; font-size: 13px; color: var(--muted); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <a class="back" href="../../">← Back to projects</a>
+
+        <header>
+            <h1 class="logo">Mura</h1>
+            <p class="tagline">Echo · Tape Echo &amp; Spring Reverb</p>
+            <p class="lede">A valve-driven tape echo into a spring tank, voiced for mid-fifties blues:
+                short slapback, a bit of dirt, tape wobble and a boingy reverb.
+                Built as a VST3 plugin and a standalone app.</p>
+            <div class="badges">
+                <span class="badge">VST3</span>
+                <span class="badge">Standalone</span>
+                <span class="badge">Windows</span>
+                <span class="badge">C++ / JUCE 8</span>
+                <span class="badge">v0.2.0</span>
+            </div>
+        </header>
+
+        <figure class="shot">
+            <img src="mura-echo-ui.png" width="780" height="497"
+                 alt="Mura Echo plugin window styled like a tweed combo amp: chrome control panel with nine numbered knobs, red pilot jewel, and a red grille cloth with a chrome Mura logo">
+            <figcaption>The plugin window, styled like a tweed combo amp.</figcaption>
+        </figure>
+
+        <section>
+            <h2>Signal path</h2>
+            <div class="chain">
+                <span class="step">Input</span><span class="arrow">→</span>
+                <span class="step">Valve drive</span><span class="arrow">→</span>
+                <span class="step">Tape echo</span><span class="arrow">→</span>
+                <span class="step">Spring tank</span><span class="arrow">→</span>
+                <span class="step">Tone</span><span class="arrow">→</span>
+                <span class="step">Output</span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Controls</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Knob</th><th>Range</th><th>What it does</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Drive</td><td>0–100 %</td><td>Asymmetric soft clip, 2× oversampled. Grit rather than fuzz.</td></tr>
+                        <tr><td>Time</td><td>40–800 ms</td><td>Smoothed, so sweeping it pitch-bends like real tape. 90–140 ms is slapback.</td></tr>
+                        <tr><td>Repeats</td><td>0–110 %</td><td>Feedback. Past 100 % it self-oscillates into saturation instead of blowing up.</td></tr>
+                        <tr><td>Echo</td><td>0–100 %</td><td>How loud the repeats sit under the dry signal.</td></tr>
+                        <tr><td>Age</td><td>0–100 %</td><td>The vintage knob: wobble depth, how fast repeats darken, and tape hiss.</td></tr>
+                        <tr><td>Reverb</td><td>0–100 %</td><td>Spring tank mix.</td></tr>
+                        <tr><td>Dwell</td><td>0–100 %</td><td>How long and how dark the spring rings.</td></tr>
+                        <tr><td>Tone</td><td>0–100 %</td><td>Output low-pass, 1.5–15 kHz.</td></tr>
+                        <tr><td>Output</td><td>−24 to +12 dB</td><td>Make-up gain.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2>Factory presets</h2>
+            <ul class="presets">
+                <li>Sun Slapback</li>
+                <li>Chicago Grit</li>
+                <li>Delta Spring</li>
+                <li>Surf Twang</li>
+                <li>Texas Shuffle</li>
+                <li>Smoky Room</li>
+                <li>Runaway Tape</li>
+                <li>Clean Ambience</li>
+            </ul>
+            <p>Save your own settings from the preset bar. They're stored as small XML files, so they're easy to back up or share.</p>
+        </section>
+
+        <section>
+            <h2>How it works</h2>
+            <ul class="notes">
+                <li>The echo's tone shaping sits <strong>inside</strong> the feedback loop (a low head bump, plus filters
+                    that close down with Age), so each repeat comes back darker and thinner than the last, like real tape.</li>
+                <li>The spring is 8 cascaded all-pass filters for the "boing", feeding 3 damped comb filters,
+                    band-limited to 140 Hz–4.2 kHz like a real tank.</li>
+                <li>Tested offline at 48 kHz: even at full Repeats with every knob maxed, it self-oscillates but stays bounded, with no NaNs.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Download</h2>
+            <div class="download">
+                <p><strong>Coming soon.</strong> Mura Echo is still in development. A Windows installer will be posted here when it's ready.</p>
+            </div>
+        </section>
+
+        <footer>
+            Mura Echo · NV Audio · built with JUCE 8 and C++
+        </footer>
+    </div>
+</body>
+</html>
