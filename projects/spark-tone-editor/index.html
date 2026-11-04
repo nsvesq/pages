@@ -100,7 +100,22 @@ header{
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
   padding:16px 20px;
 }
-.preset-btns{display:flex;gap:8px}
+.preset-btns{display:flex;gap:8px;align-items:center}
+.model-pick{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--cream-dim);display:flex;align-items:center;gap:8px;
+}
+.model-pick select{
+  background:var(--panel);border:1px solid var(--edge);border-radius:6px;
+  padding:6px 8px;font-size:12px;letter-spacing:.04em;text-transform:none;color:var(--cream);
+}
+.bank{display:flex;flex-direction:column;gap:4px;margin-right:4px}
+.bbtn{
+  font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;
+  width:34px;height:20px;border-radius:5px;
+  border:1px solid var(--edge);background:var(--panel);color:var(--cream-dim);
+}
+.bbtn.active{color:#1a1207;background:var(--amber);border-color:var(--amber)}
 .pbtn{
   width:44px;height:44px;border-radius:8px;
   border:1px solid var(--edge);
@@ -250,8 +265,14 @@ header{
 <header>
   <div class="brand">
     <h1>Faceplate</h1>
-    <small>SPARK&nbsp;40 TONE&nbsp;EDITOR</small>
+    <small id="brandSub">SPARK&nbsp;40 TONE&nbsp;EDITOR</small>
   </div>
+  <label class="model-pick">Amp
+    <select id="modelSelect" aria-label="Which Spark amp">
+      <option value="spark40">Spark 40</option>
+      <option value="spark2">Spark 2 · 50 W</option>
+    </select>
+  </label>
   <div class="amp-id" id="ampId">not connected</div>
   <div class="conn">
     <div class="tube" id="tube"></div>
@@ -292,9 +313,11 @@ header{
 "use strict";
 /* ================================================================
    Faceplate — a Web Bluetooth tone editor for the Positive Grid
-   Spark 40. Protocol per Paul Hamshere's reverse-engineered spec
-   (Spark Protocol Description v3.2) and the soundshed (MIT)
-   implementation. Effect catalog derived from soundshed (MIT).
+   Spark 40 and Spark 2 (50 W). Protocol per Paul Hamshere's
+   reverse-engineered spec (Spark Protocol Description v3.2), the
+   soundshed (MIT) implementation, and community Spark 2 notes
+   (paulhamsh/SparkIO6 issue #1, firmware 2.7.2.200).
+   Effect catalog derived from soundshed (MIT).
    ================================================================ */
 
 /* ---------------- Effect catalog ---------------- */
@@ -321,9 +344,23 @@ function findModel(slotIdx, dspId){
   return list.find(m => m.id === dspId) || null;
 }
 
+/* ---------------- Amp models ---------------- */
+// Spark 40: 4 hardware presets. Spark 2: 8 presets in two banks (A1-A4, B1-B4),
+// numbered 0-7 on the wire.
+const AMPS = {
+  spark40:{ label:"Spark 40",       sub:"SPARK&nbsp;40 TONE&nbsp;EDITOR",      presets:4, banks:1 },
+  spark2: { label:"Spark 2 · 50 W", sub:"SPARK&nbsp;2 · 50W TONE&nbsp;EDITOR", presets:8, banks:2 },
+};
+const amp = () => AMPS[state.model] || AMPS.spark40;
+function presetLabel(n){
+  return amp().banks > 1 ? "AB"[n >> 2] + ((n & 3) + 1) : String(n + 1);
+}
+
 /* ---------------- App state ---------------- */
 const state = {
   connected:false,
+  model:"spark40",
+  bank:0,           // bank shown in the preset strip (Spark 2)
   presetNum:0,
   presetName:"—",
   // per slot: { dspId, on, params:[floats 0..1] } — reverb keeps 7 params, [6] = type
@@ -390,6 +427,7 @@ function buildBlock(cmd, sub, payload){
 const SparkMsg = {
   changeParam(dspId, idx, val){
     const w = new MsgWriter().prefixedStr(dspId).int(idx).float(val);
+    if (state.model === "spark2") w.int(0); // Spark 2 ignores 01 04 without the input byte (0 = input 1)
     return buildBlock(0x01, 0x04, w.bytes);
   },
   changeModel(oldId, newId){
@@ -477,8 +515,9 @@ function handleChunk(chunk){
       applyRemoteParam(name, idx, val);
     } else if (cmd === 0x03 && sub === 0x38 || cmd === 0x03 && sub === 0x10){ // preset changed / current preset
       r.int(); const n = r.int();
-      state.presetNum = n; renderPresetStrip();
-      if (sub === 0x38){ log(`amp switched to preset ${n+1}`); requestPreset(n); }
+      if (n < amp().presets){ state.presetNum = n; state.bank = n >> 2; }
+      renderPresetStrip();
+      if (sub === 0x38){ log(`amp switched to preset ${presetLabel(n)}`); requestPreset(n); }
     } else if (cmd === 0x03 && sub === 0x06){    // amp model changed on the amp
       r.str(); const newId = r.str();
       applyRemoteModel(newId);
@@ -486,7 +525,9 @@ function handleChunk(chunk){
       const name = r.str(); const on = r.bool();
       applyRemoteOnOff(name, on);
     } else if (cmd === 0x03 && sub === 0x11){
-      state.ampName = r.str(); renderAmpId();
+      state.ampName = r.str();
+      detectModel(state.ampName);
+      renderAmpId();
     } else if (cmd === 0x03 && sub === 0x23){
       state.serial = r.str(); renderAmpId();
     } else if (cmd === 0x03 && sub === 0x2f){
@@ -567,7 +608,7 @@ function applyPresetBytes(bytes){
     }
     slots.push({dspId, on, params});
   }
-  if (pn <= 3) state.presetNum = pn;
+  if (pn < amp().presets){ state.presetNum = pn; state.bank = pn >> 2; }
   state.presetName = name;
   state.slots = slots;
   renderAll();
@@ -619,7 +660,8 @@ async function connect(){
     document.getElementById("refreshBtn").disabled = false;
     document.getElementById("storeBtn").disabled = false;
     document.getElementById("notice").classList.add("hidden");
-    log("connected to " + (device.name || "Spark 40"));
+    detectModel(device.name || "");
+    log("connected to " + (device.name || amp().label));
 
     // handshake: identity + current state
     send(SparkMsg.getInfo(0x11));
@@ -651,7 +693,7 @@ function disconnect(){
 }
 
 function requestPreset(n){
-  send(SparkMsg.getPreset(n), `reading preset ${n+1}…`);
+  send(SparkMsg.getPreset(n), `reading preset ${presetLabel(n)}…`);
 }
 
 function setTube(mode){
@@ -733,15 +775,43 @@ function editOnOff(slotIdx){
 function selectPreset(n){
   state.presetNum = n;
   renderPresetStrip();
-  send(SparkMsg.changePreset(n), `preset ${n+1}`);
+  send(SparkMsg.changePreset(n), `preset ${presetLabel(n)}`);
   setTimeout(()=> requestPreset(n), 250);
 }
 
-function storeToSlot(){
-  const raw = prompt("Store the current tone into which amp preset slot? (1–4)");
+function parseSlot(raw){
+  // accepts "3", or on Spark 2 "A3" / "B2" (and 1-8)
+  raw = String(raw || "").trim().toUpperCase();
+  const m = raw.match(/^([AB])\s*([1-4])$/);
+  if (m && amp().banks > 1) return (m[1] === "B" ? 4 : 0) + (+m[2] - 1);
   const n = parseInt(raw, 10);
-  if (!(n >= 1 && n <= 4)) return;
-  send(SparkMsg.storeToSlot(n-1), `stored to slot ${n}`);
+  return n >= 1 && n <= amp().presets ? n - 1 : -1;
+}
+function storeToSlot(){
+  const ask = amp().banks > 1
+    ? "Store the current tone into which amp preset? (A1–A4 or B1–B4)"
+    : "Store the current tone into which amp preset slot? (1–4)";
+  const n = parseSlot(prompt(ask, presetLabel(state.presetNum)));
+  if (n < 0) return;
+  send(SparkMsg.storeToSlot(n), `stored to preset ${presetLabel(n)}`);
+}
+
+/* ---------------- Amp model selection ---------------- */
+function setModel(model, why){
+  if (!AMPS[model] || model === state.model) return;
+  state.model = model;
+  store.set("faceplate.model", model);
+  if (state.presetNum >= amp().presets) state.presetNum = 0;
+  state.bank = state.presetNum >> 2;
+  document.getElementById("modelSelect").value = model;
+  document.getElementById("brandSub").innerHTML = amp().sub;
+  renderAmpId();
+  renderPresetStrip();
+  if (why) log(why);
+}
+function detectModel(name){
+  if (/spark\s*(2|50)\b/i.test(name)) setModel("spark2", `detected ${name}: 8 presets in banks A and B`);
+  else if (/spark\s*40\b/i.test(name)) setModel("spark40", `detected ${name}`);
 }
 
 /* ---------------- Tone library ---------------- */
@@ -828,7 +898,7 @@ function renderAmpId(){
   const el = document.getElementById("ampId");
   if (!state.connected){ el.textContent = "not connected"; return; }
   el.innerHTML = [
-    state.ampName || "Spark 40",
+    state.ampName || amp().label,
     state.serial ? "SN " + state.serial : "",
     state.firmware ? "FW " + state.firmware : "",
   ].filter(Boolean).join("<br>");
@@ -837,11 +907,29 @@ function renderAmpId(){
 function renderPresetStrip(){
   const wrap = document.getElementById("presetBtns");
   wrap.innerHTML = "";
-  for (let n=0;n<4;n++){
+  const a = amp();
+  if (a.banks > 1){
+    const bank = document.createElement("div");
+    bank.className = "bank";
+    bank.setAttribute("role", "group");
+    bank.setAttribute("aria-label", "Preset bank");
+    ["A","B"].forEach((L,i)=>{
+      const b = document.createElement("button");
+      b.className = "bbtn" + (i===state.bank ? " active" : "");
+      b.textContent = L;
+      b.setAttribute("aria-pressed", i===state.bank);
+      b.setAttribute("aria-label", `Bank ${L}`);
+      b.onclick = ()=>{ state.bank = i; renderPresetStrip(); };
+      bank.appendChild(b);
+    });
+    wrap.appendChild(bank);
+  }
+  const first = a.banks > 1 ? state.bank * 4 : 0;
+  for (let n=first;n<first+4;n++){
     const b = document.createElement("button");
     b.className = "pbtn" + (n===state.presetNum ? " active" : "");
-    b.textContent = n+1;
-    b.setAttribute("aria-label", `Hardware preset ${n+1}`);
+    b.textContent = a.banks > 1 ? (n & 3) + 1 : n + 1;
+    b.setAttribute("aria-label", `Hardware preset ${presetLabel(n)}`);
     b.onclick = ()=> selectPreset(n);
     wrap.appendChild(b);
   }
@@ -1015,6 +1103,14 @@ document.getElementById("exportTones").onclick = exportTones;
 document.getElementById("importTones").onclick = ()=> document.getElementById("importFile").click();
 document.getElementById("importFile").onchange = e=>{ if (e.target.files[0]) importTones(e.target.files[0]); e.target.value=""; };
 
+{
+  const saved = store.get("faceplate.model");
+  const sel = document.getElementById("modelSelect");
+  if (saved && AMPS[saved]) state.model = saved;
+  sel.value = state.model;
+  document.getElementById("brandSub").innerHTML = amp().sub;
+  sel.onchange = ()=> setModel(sel.value, `set to ${amp().label}: ${amp().presets} presets`);
+}
 state.slots = defaultSlots();
 state.presetName = "Blackface Duo (offline)";
 renderAll();
