@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e1812">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Faceplate">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Faceplate — Spark Tone Editor</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -337,6 +343,35 @@ header{
   .presets,.chain,.library{padding-left:14px;padding-right:14px}
   .library{margin-left:14px;margin-right:14px}
 }
+/* ---------- app view (phones / installed app) ---------- */
+.tabbar{display:none}
+.install-btn[hidden]{display:none}
+@media (max-width:700px){
+  body.app-tabs{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  body.app-tabs [data-tab]:not(.tab-on){display:none!important}
+  body.app-tabs .library{margin-top:14px}
+  header{padding-top:calc(12px + env(safe-area-inset-top))}
+  .conn{margin-left:auto}
+  .tabbar{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:linear-gradient(180deg,#221a12,#15100b);
+    border-top:1px solid var(--edge);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .tab{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    height:60px;color:var(--cream-dim);
+    font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  }
+  .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tab.on{color:var(--amber)}
+  .tab.on svg{filter:drop-shadow(0 0 6px rgba(240,166,60,.45))}
+  .log{bottom:calc(60px + env(safe-area-inset-bottom));padding:5px 14px}
+  .tn-note{font-size:88px}
+  .tn-bar{height:38px}
+  .pbtn{width:52px;height:52px}
+}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
 }
@@ -357,16 +392,17 @@ header{
   </label>
   <div class="amp-id" id="ampId">not connected</div>
   <div class="conn">
+    <button class="btn install-btn" id="installBtn" type="button" hidden>Install app</button>
     <div class="tube" id="tube"></div>
     <button class="btn primary" id="connectBtn">Connect amp</button>
   </div>
 </header>
 
-<div class="notice" id="notice">
+<div class="notice" id="notice" data-tab="amp">
   <b>Editing offline.</b> Connect over Bluetooth to control the amp — needs <b>Chrome or Edge</b> on desktop or Android, served over HTTPS (or localhost). iOS Safari doesn't support Web Bluetooth.
 </div>
 
-<div class="presets">
+<div class="presets" data-tab="amp">
   <div class="preset-btns" id="presetBtns"></div>
   <div class="preset-name" id="presetName">—</div>
   <div class="preset-tools">
@@ -375,9 +411,9 @@ header{
   </div>
 </div>
 
-<main class="chain" id="chain"></main>
+<main class="chain" id="chain" data-tab="amp"></main>
 
-<section class="library">
+<section class="library" id="tones" data-tab="tones">
   <h2>Tone library</h2>
   <div class="lib-save">
     <input id="toneName" placeholder="Name this tone (e.g. Texas Clean Boost)" maxlength="48">
@@ -390,6 +426,17 @@ header{
 </section>
 
 <div class="log" id="log">ready</div>
+
+<nav class="tabbar" id="tabbar" aria-label="Sections">
+  <button type="button" class="tab" data-go="amp" aria-label="Amp">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="12" r="2.2"/><circle cx="16" cy="12" r="2.2"/><path d="M3 9h18"/></svg>Amp</button>
+  <button type="button" class="tab" data-go="tones" aria-label="Tones">
+    <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>Tones</button>
+  <button type="button" class="tab" data-go="tracks" aria-label="Backing tracks">
+    <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>Tracks</button>
+  <button type="button" class="tab" data-go="tuner" aria-label="Tuner">
+    <svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 0 1 16 0"/><path d="M12 16l4-6"/><path d="M4 20h16"/></svg>Tuner</button>
+</nav>
 
 <script>
 "use strict";
@@ -1217,7 +1264,7 @@ if (!navigator.bluetooth){
 }
 </script>
 <!-- YouTube Backing Tracks -->
-<section class="library">
+<section class="library" id="tracks" data-tab="tracks">
   <h2>🎸 Backing Tracks</h2>
   <form class="lib-save" id="backingForm">
     <input id="backingSearch" type="search" placeholder="Search YouTube (e.g. slow blues backing track in A)" maxlength="100" aria-label="Search backing tracks">
@@ -1245,7 +1292,7 @@ if (!navigator.bluetooth){
 </section>
 
 <!-- Guitar Tuner -->
-<section class="library tuner" id="tuner">
+<section class="library tuner" id="tuner" data-tab="tuner">
   <h2>🎛️ Tuner</h2>
   <div class="tn-top">
     <div class="tn-modes" role="radiogroup" aria-label="Tuner source">
@@ -1253,7 +1300,7 @@ if (!navigator.bluetooth){
       <button type="button" class="tn-mode active" id="tnModeMic" role="radio" aria-checked="true">Mic</button>
     </div>
     <button class="btn primary" id="tunerBtn" type="button">Start tuner</button>
-    <span class="tn-hint" id="tnHint">Mic mode listens through your computer's microphone.</span>
+    <span class="tn-hint" id="tnHint">Mic mode listens through your device's microphone.</span>
   </div>
 
   <div class="tn-display" id="tnDisplay" aria-live="polite">
@@ -1552,7 +1599,7 @@ const tuner = (()=>{
   function hint(){
     $("tnHint").textContent = mode === "amp"
       ? (state.connected ? "Uses the amp's own tuner on your guitar cable. The amp mutes while tuning." : "Connect the amp first. Amp mode uses its built-in tuner.")
-      : "Mic mode listens through your computer's microphone.";
+      : "Mic mode listens through your device's microphone.";
     $("tunerBtn").disabled = mode === "amp" && !state.connected;
   }
   function setRunning(on){
@@ -1707,6 +1754,50 @@ const tuner = (()=>{
   $("tnRefBtn").onclick = playRef;
   setMode(state.connected ? "amp" : "mic");
   return { setMode, detect, show };
+})();
+</script>
+
+<script>
+/* ---------------- App view: bottom tabs on phones, install button, offline worker ---------------- */
+(()=>{
+  const phone = window.matchMedia("(max-width:700px)");
+  const TABS = ["amp","tones","tracks","tuner"];
+  let current = (location.hash || "").slice(1);
+  if (!TABS.includes(current)) current = store.get("faceplate.tab") || "amp";
+  if (!TABS.includes(current)) current = "amp";
+
+  function go(tab, push){
+    current = tab;
+    store.set("faceplate.tab", tab);
+    document.querySelectorAll("[data-tab]").forEach(el=> el.classList.toggle("tab-on", el.dataset.tab === tab));
+    document.querySelectorAll(".tab").forEach(b=>{
+      const on = b.dataset.go === tab;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    if (push && phone.matches){ history.replaceState(null, "", "#" + tab); window.scrollTo(0, 0); }
+  }
+  function applyLayout(){ document.body.classList.toggle("app-tabs", phone.matches); go(current, false); }
+  document.querySelectorAll(".tab").forEach(b=> b.onclick = ()=> go(b.dataset.go, true));
+  (phone.addEventListener ? phone.addEventListener("change", applyLayout) : phone.addListener(applyLayout));
+  applyLayout();
+
+  // Install button (Chrome/Edge on Android and desktop offer this once the page qualifies)
+  let deferred = null;
+  const btn = document.getElementById("installBtn");
+  window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); deferred = e; btn.hidden = false; });
+  btn.onclick = async ()=>{
+    if (!deferred) return;
+    deferred.prompt();
+    const choice = await deferred.userChoice.catch(()=>null);
+    deferred = null; btn.hidden = true;
+    if (choice && choice.outcome === "accepted") log("Faceplate installed. Open it from your home screen.");
+  };
+  window.addEventListener("appinstalled", ()=>{ btn.hidden = true; });
+
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  }
 })();
 </script>
 
