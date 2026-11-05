@@ -1166,7 +1166,7 @@ if (!navigator.bluetooth){
   </form>
   <div class="bt-chips" id="btChips"></div>
   <div class="bt-key" id="ytKeyPanel" hidden>
-    <p>Paste your <b>YouTube Data API v3</b> key. It's saved only in this browser and isn't in the page's code.</p>
+    <p>Search uses a built-in key. To use your own <b>YouTube Data API v3</b> key instead, paste it here. It's saved only in this browser.</p>
     <div class="lib-save">
       <input id="ytKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…" aria-label="YouTube API key">
       <button class="btn" id="ytKeySave" type="button">Save key</button>
@@ -1217,9 +1217,13 @@ if (!navigator.bluetooth){
    Playback uses YouTube's embedded IFrame player, as YouTube's terms require. */
 const bt = (()=>{
   const KEY_STORE = "faceplate.ytKey";
+  // Owner's key, restricted in Google Cloud to this site's address and to YouTube Data API v3 only.
+  // A key saved with the Key button in this browser takes priority.
+  const BUILT_IN_KEY = "AIzaSyDK_adgs3iCWziPVWEDfy-InhFxDnbagmI";
   const $ = id => document.getElementById(id);
   const status = (msg, err) => { const s = $("btStatus"); s.className = "bt-status" + (err ? " err" : ""); s.innerHTML = msg; };
-  const getKey = () => (store.get(KEY_STORE) || "").trim();
+  const savedKey = () => (store.get(KEY_STORE) || "").trim();
+  const getKey = () => savedKey() || BUILT_IN_KEY;
   const ytSearchUrl = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
   const decodeEntities = s => new DOMParser().parseFromString(s, "text/html").documentElement.textContent;
 
@@ -1240,7 +1244,7 @@ const bt = (()=>{
 
   function showKeyPanel(show){
     $("ytKeyPanel").hidden = !show;
-    if (show){ $("ytKeyInput").value = ""; $("ytKeyInput").placeholder = getKey() ? "key saved: paste to replace" : "AIza…"; $("ytKeyInput").focus(); }
+    if (show){ $("ytKeyInput").value = ""; $("ytKeyInput").placeholder = savedKey() ? "your key is saved: paste to replace" : "optional: your own key (AIza…)"; $("ytKeyInput").focus(); }
   }
   $("ytKeyBtn").onclick = ()=> showKeyPanel($("ytKeyPanel").hidden);
   $("ytKeySave").onclick = ()=>{
@@ -1250,7 +1254,7 @@ const bt = (()=>{
     status("Key saved in this browser.");
     const q = $("backingSearch").value.trim(); if (q) search(q);
   };
-  $("ytKeyClear").onclick = ()=>{ store.set(KEY_STORE, ""); $("ytKeyInput").value = ""; status("Key removed from this browser."); };
+  $("ytKeyClear").onclick = ()=>{ store.set(KEY_STORE, ""); $("ytKeyInput").value = ""; status("Your saved key was removed. Using the built-in key."); };
 
   async function search(q){
     q = (q || "").trim();
@@ -1337,7 +1341,7 @@ const bt = (()=>{
   }
 
   $("backingForm").onsubmit = e=>{ e.preventDefault(); search($("backingSearch").value); };
-  if (!getKey()) status("Search needs your free YouTube API key. Click <b>Key</b> to add it.");
+  if (!getKey()) status("Search needs a free YouTube API key. Click <b>Key</b> to add it.");
   return { search, play };
 })();
 
