@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#1e1812">
+<meta name="theme-color" content="#2e251c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,16 +17,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#14100c;
-  --panel:#1e1812;
-  --panel-2:#241c14;
-  --edge:#332a20;
-  --cream:#ede3cc;
-  --cream-dim:#9c8f79;
+  --bg:#221b15;
+  --panel:#2e251c;
+  --panel-2:#382d22;
+  --edge:#55463a;
+  --cream:#f6efdf;
+  --cream-dim:#cbbca2;
   --amber:#f0a63c;
-  --amber-dim:#8a6425;
+  --amber-dim:#a87a33;
   --led:#ff5a36;
-  --led-off:#3c2f24;
+  --led-off:#5a4838;
   --radius:10px;
   --font-display:"Big Shoulders Display",sans-serif;
   --font-mono:"IBM Plex Mono",monospace;
@@ -51,7 +51,7 @@ select,input{font:inherit;color:inherit}
 header{
   display:flex;align-items:center;gap:16px;flex-wrap:wrap;
   padding:14px 20px;
-  background:linear-gradient(180deg,#2a2118,#1a140e);
+  background:linear-gradient(180deg,#3d3126,#2b2219);
   border-bottom:1px solid var(--edge);
   position:sticky;top:0;z-index:20;
 }
@@ -161,7 +161,7 @@ header{
   padding:14px 14px 18px;
   display:flex;flex-direction:column;gap:12px;
 }
-.pedal.bypassed .knobs{opacity:.35}
+.pedal.bypassed .knobs{opacity:.5}
 .pedal-head{display:flex;align-items:center;gap:10px}
 .slot-label{
   font-family:var(--font-mono);font-size:10px;font-weight:600;
@@ -171,7 +171,7 @@ header{
   margin-left:auto;
   width:32px;height:32px;border-radius:50%;
   border:2px solid var(--edge);
-  background:radial-gradient(circle at 35% 30%, #3a3128, #221b13);
+  background:radial-gradient(circle at 35% 30%, #5b4b3b, #33291f);
   position:relative;flex:none;
   transition:border-color .15s;
 }
@@ -180,7 +180,7 @@ header{
   background:var(--led-off);
   transition:background .15s, box-shadow .15s;
 }
-.stomp.on{border-color:#5a4a34}
+.stomp.on{border-color:#7a6448}
 .stomp.on::after{background:var(--led);box-shadow:0 0 8px 2px rgba(255,90,54,.55)}
 .model-select{
   width:100%;
@@ -190,7 +190,7 @@ header{
   padding:8px 10px;
   font-family:var(--font-mono);font-size:12.5px;
   appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239c8f79'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23cbbca2'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center;
 }
 .knobs{
@@ -198,18 +198,18 @@ header{
   transition:opacity .2s;
 }
 .knob{
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  width:62px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  width:70px;
   cursor:ns-resize;touch-action:none;user-select:none;
 }
 .knob svg{display:block}
 .knob .kname{
-  font-family:var(--font-mono);font-size:9px;letter-spacing:.06em;
+  font-family:var(--font-mono);font-size:10.5px;font-weight:500;letter-spacing:.05em;
   text-transform:uppercase;color:var(--cream-dim);
-  max-width:64px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:72px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .knob .kval{
-  font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--amber);
+  font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--amber);
 }
 
 /* ---------- library ---------- */
@@ -329,7 +329,7 @@ header{
   position:fixed;left:0;right:0;bottom:0;
   font-family:var(--font-mono);font-size:10.5px;
   color:var(--cream-dim);
-  background:rgba(20,16,12,.94);
+  background:rgba(38,31,24,.96);
   border-top:1px solid var(--edge);
   padding:6px 20px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -355,7 +355,7 @@ header{
   .tabbar{
     display:grid;grid-template-columns:repeat(4,1fr);
     position:fixed;left:0;right:0;bottom:0;z-index:30;
-    background:linear-gradient(180deg,#221a12,#15100b);
+    background:linear-gradient(180deg,#3a2f24,#2a2119);
     border-top:1px solid var(--edge);
     padding-bottom:env(safe-area-inset-bottom);
   }
@@ -1081,28 +1081,39 @@ function renderPresetStrip(){
   document.getElementById("presetName").textContent = state.presetName;
 }
 
-function knobSVG(){
-  return `<svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
-    <circle cx="23" cy="23" r="17" fill="#221b13" stroke="#3a3128" stroke-width="1.5"/>
-    <path class="arc" d="" fill="none" stroke="var(--amber)" stroke-width="3" stroke-linecap="round"/>
-    <line class="ptr" x1="23" y1="23" x2="23" y2="9" stroke="var(--cream)" stroke-width="3" stroke-linecap="round"/>
-  </svg>`;
-}
-
-const START = 135, SWEEP = 270; // knob sweep, degrees
+// Amp-style dial: 0 at 7 o'clock, 5 straight up, 10 at 5 o'clock (degrees clockwise from 12)
+const START = 225, SWEEP = 270, KC = 28, ARC_R = 25;
 function polar(cx,cy,r,deg){
   const a = (deg-90) * Math.PI/180;
   return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
 }
+function arcPath(r, from, to){
+  const [sx,sy] = polar(KC,KC,r,from), [ex,ey] = polar(KC,KC,r,to);
+  return `M ${sx.toFixed(2)} ${sy.toFixed(2)} A ${r} ${r} 0 ${to - from > 180 ? 1 : 0} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}`;
+}
+const KNOB_TICKS = Array.from({length:11}, (_,i)=>{
+  const d = START + SWEEP * i / 10, [x1,y1] = polar(KC,KC,i % 5 ? 22.2 : 21.4,d), [x2,y2] = polar(KC,KC,19.6,d);
+  return `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+}).join("");
+function knobSVG(){
+  return `<svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+    <path d="${arcPath(ARC_R, START, START + SWEEP)}" fill="none" stroke="#5a4a3b" stroke-width="4" stroke-linecap="round"/>
+    <path class="arc" d="" fill="none" stroke="var(--amber)" stroke-width="4" stroke-linecap="round"/>
+    <g stroke="#a8977c" stroke-width="1.2" stroke-linecap="round">${KNOB_TICKS}</g>
+    <circle cx="${KC}" cy="${KC}" r="17" fill="url(#knobFace)" stroke="#857058" stroke-width="1.5"/>
+    <circle cx="${KC}" cy="${KC}" r="13" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+    <line class="ptr" x1="${KC}" y1="${KC - 4}" x2="${KC}" y2="${KC - 15}" stroke="var(--cream)" stroke-width="3.2" stroke-linecap="round"/>
+  </svg>`;
+}
 function setKnobVisual(el, val){
   const deg = START + SWEEP*val;
-  el.querySelector(".ptr").setAttribute("transform", `rotate(${deg} 23 23)`);
-  const arc = el.querySelector(".arc");
-  const [sx,sy] = polar(23,23,21,START);
-  const [ex,ey] = polar(23,23,21,deg);
-  const large = SWEEP*val > 180 ? 1 : 0;
-  arc.setAttribute("d", val<=0.004 ? "" : `M ${sx} ${sy} A 21 21 0 ${large} 1 ${ex} ${ey}`);
+  el.querySelector(".ptr").setAttribute("transform", `rotate(${deg % 360} ${KC} ${KC})`);
+  el.querySelector(".arc").setAttribute("d", val <= 0.004 ? "" : arcPath(ARC_R, START, deg));
 }
+// one shared gradient for every knob face
+document.body.insertAdjacentHTML("afterbegin", `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <radialGradient id="knobFace" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#6e5c48"/><stop offset=".6" stop-color="#4a3c2e"/><stop offset="1" stop-color="#352a20"/></radialGradient>
+</defs></svg>`);
 
 function renderSlot(slotIdx){
   const host = document.getElementById("slot-" + slotIdx);

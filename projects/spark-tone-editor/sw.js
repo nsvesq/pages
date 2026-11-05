@@ -1,7 +1,7 @@
 // Faceplate service worker: makes the editor installable and lets it open without a connection.
 // The page itself is network-first (so updates show up straight away), falling back to the cached copy offline.
 // Fonts and icons are cache-first. YouTube and Google API requests are never cached.
-const CACHE = "faceplate-v1";
+const CACHE = "faceplate-v2";
 const SHELL = ["./", "./manifest.webmanifest", "./favicon.svg", "./favicon.ico", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
