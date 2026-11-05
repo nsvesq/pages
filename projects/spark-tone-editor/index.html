@@ -239,6 +239,41 @@ header{
 .tone-row .btn{padding:5px 10px;font-size:10.5px}
 .lib-empty{font-family:var(--font-mono);font-size:11.5px;color:var(--cream-dim)}
 
+/* ---------- backing tracks ---------- */
+.lib-save input[type=search]{flex:1;min-width:0}
+.bt-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.bt-chip{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;
+  padding:5px 10px;border-radius:999px;border:1px solid var(--edge);
+  background:var(--panel);color:var(--cream-dim);
+}
+.bt-chip:hover{border-color:var(--amber-dim);color:var(--cream)}
+.bt-key{
+  font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--cream-dim);
+  border:1px dashed var(--edge);border-radius:8px;padding:12px;margin-bottom:12px;
+}
+.bt-key b{color:var(--amber);font-weight:600}
+.bt-key p{margin-bottom:10px}
+.bt-key .lib-save{margin-bottom:0}
+.bt-player{margin-bottom:12px}
+.bt-frame{position:relative;width:100%;max-width:640px;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden}
+.bt-frame iframe,.bt-frame #ytPlayer{position:absolute;inset:0;width:100%;height:100%;border:0}
+.bt-now{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-top:8px;font-family:var(--font-mono);font-size:12px}
+.bt-now a{color:var(--amber);text-decoration:none;font-size:11px}
+.bt-status{font-family:var(--font-mono);font-size:11.5px;color:var(--cream-dim);min-height:1em}
+.bt-status.err{color:var(--led)}
+.bt-status a{color:var(--amber)}
+.bt-results{display:grid;gap:6px;margin-top:8px}
+.bt-row{
+  display:flex;gap:12px;align-items:center;text-align:left;width:100%;
+  padding:6px;border-radius:8px;border:1px solid transparent;background:none;
+}
+.bt-row:hover,.bt-row.playing{border-color:var(--edge);background:var(--panel)}
+.bt-row img{width:96px;height:54px;object-fit:cover;border-radius:5px;flex:none;background:#000}
+.bt-row .bt-t{font-family:var(--font-mono);font-size:12px;color:var(--cream);line-height:1.4}
+.bt-row .bt-c{font-family:var(--font-mono);font-size:10.5px;color:var(--cream-dim);margin-top:2px}
+.bt-row.playing .bt-t{color:var(--amber)}
+
 /* ---------- log ---------- */
 .log{
   position:fixed;left:0;right:0;bottom:0;
@@ -268,11 +303,11 @@ header{
 <header>
   <div class="brand">
     <h1>Faceplate</h1>
-    <small id="brandSub">SPARK&nbsp;40 TONE&nbsp;EDITOR</small>
+    <small id="brandSub">SPARK TONE&nbsp;EDITOR</small>
   </div>
   <label class="model-pick">Amp
     <select id="modelSelect" aria-label="Which Spark amp">
-      <option value="spark40">Spark 40</option>
+      <option value="spark40">Spark amps</option>
       <option value="spark2">Spark 2 · 50 W</option>
     </select>
   </label>
@@ -316,7 +351,7 @@ header{
 "use strict";
 /* ================================================================
    Faceplate — a Web Bluetooth tone editor for the Positive Grid
-   Spark 40 and Spark 2 (50 W). Protocol per Paul Hamshere's
+   Spark amps (40, Mini, GO) and Spark 2 (50 W). Protocol per Paul Hamshere's
    reverse-engineered spec (Spark Protocol Description v3.2), the
    soundshed (MIT) implementation, and community Spark 2 notes
    (paulhamsh/SparkIO6 issue #1, firmware 2.7.2.200).
@@ -348,10 +383,10 @@ function findModel(slotIdx, dspId){
 }
 
 /* ---------------- Amp models ---------------- */
-// Spark 40: 4 hardware presets. Spark 2: 8 presets in two banks (A1-A4, B1-B4),
+// Spark amps (40 / Mini / GO): 4 hardware presets. Spark 2: 8 presets in two banks (A1-A4, B1-B4),
 // numbered 0-7 on the wire.
 const AMPS = {
-  spark40:{ label:"Spark 40",       sub:"SPARK&nbsp;40 TONE&nbsp;EDITOR",      presets:4, banks:1 },
+  spark40:{ label:"Spark amps",     sub:"SPARK TONE&nbsp;EDITOR",                presets:4, banks:1 },
   spark2: { label:"Spark 2 · 50 W", sub:"SPARK&nbsp;2 · 50W TONE&nbsp;EDITOR", presets:8, banks:2 },
 };
 const amp = () => AMPS[state.model] || AMPS.spark40;
@@ -814,7 +849,7 @@ function setModel(model, why){
 }
 function detectModel(name){
   if (/spark\s*(2|50)\b/i.test(name)) setModel("spark2", `detected ${name}: 8 presets in banks A and B`);
-  else if (/spark\s*40\b/i.test(name)) setModel("spark40", `detected ${name}`);
+  else if (/spark\s*(40|mini|go)\b/i.test(name)) setModel("spark40", `detected ${name}`);
 }
 
 /* ---------------- Tone library ---------------- */
@@ -1124,20 +1159,29 @@ if (!navigator.bluetooth){
 <!-- YouTube Backing Tracks -->
 <section class="library">
   <h2>🎸 Backing Tracks</h2>
-  <div class="lib-save">
-    <input id="backingSearch" placeholder="Search YouTube (e.g. blues 12 bar backing track)" maxlength="100">
-    <button class="btn" id="searchBtn">Search</button>
-  </div>
-  <div id="playerPanel" style="display:none;margin-top:16px">
-    <audio id="audioPlayer" style="width:100%;margin-bottom:12px" controls>
-      <source id="audioSource" type="audio/mpeg">
-    </audio>
-    <div style="font-size:12px;color:var(--cream-dim)">
-      <span id="trackTitle"></span><br>
-      <a id="youtubeLink" target="_blank" style="color:var(--amber);text-decoration:none;font-size:11px">View on YouTube →</a>
+  <form class="lib-save" id="backingForm">
+    <input id="backingSearch" type="search" placeholder="Search YouTube (e.g. slow blues backing track in A)" maxlength="100" aria-label="Search backing tracks">
+    <button class="btn" id="searchBtn" type="submit">Search</button>
+    <button class="btn" id="ytKeyBtn" type="button" title="YouTube API key">Key</button>
+  </form>
+  <div class="bt-chips" id="btChips"></div>
+  <div class="bt-key" id="ytKeyPanel" hidden>
+    <p>Paste your <b>YouTube Data API v3</b> key. It's saved only in this browser and isn't in the page's code.</p>
+    <div class="lib-save">
+      <input id="ytKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…" aria-label="YouTube API key">
+      <button class="btn" id="ytKeySave" type="button">Save key</button>
+      <button class="btn" id="ytKeyClear" type="button">Forget</button>
     </div>
   </div>
-  <div id="searchResults" style="margin-top:12px"></div>
+  <div class="bt-player" id="playerPanel" hidden>
+    <div class="bt-frame"><div id="ytPlayer"></div></div>
+    <div class="bt-now">
+      <span id="trackTitle"></span>
+      <a id="youtubeLink" target="_blank" rel="noopener">Open on YouTube →</a>
+    </div>
+  </div>
+  <div class="bt-status" id="btStatus" role="status" aria-live="polite"></div>
+  <div class="bt-results" id="searchResults"></div>
 </section>
 
 <!-- Guitar Tuner -->
@@ -1167,45 +1211,135 @@ if (!navigator.bluetooth){
 </section>
 
 <script>
-// YouTube Backing Tracks
-document.getElementById('searchBtn').onclick = async ()=>{
-  const query = document.getElementById('backingSearch').value.trim();
-  if (!query) return;
-  const results = document.getElementById('searchResults');
-  results.innerHTML = '<div style="color:var(--cream-dim);font-size:12px">🔍 Searching...</div>';
+/* ---------------- Backing tracks (YouTube Data API v3 + official player) ----------------
+   Search: GET youtube/v3/search (100 quota units each; free quota is 10,000 units a day ≈ 100 searches).
+   The API key is the user's own, kept in this browser's storage only — never in the page source.
+   Playback uses YouTube's embedded IFrame player, as YouTube's terms require. */
+const bt = (()=>{
+  const KEY_STORE = "faceplate.ytKey";
+  const $ = id => document.getElementById(id);
+  const status = (msg, err) => { const s = $("btStatus"); s.className = "bt-status" + (err ? " err" : ""); s.innerHTML = msg; };
+  const getKey = () => (store.get(KEY_STORE) || "").trim();
+  const ytSearchUrl = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+  const decodeEntities = s => new DOMParser().parseFromString(s, "text/html").documentElement.textContent;
 
-  try {
-    // Search using Invidious API (privacy-friendly YouTube alternative)
-    const res = await fetch(`https://invidious.io/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
-    const data = await res.json();
+  const CHIPS = [
+    "slow blues backing track in A",
+    "blues shuffle backing track in E",
+    "Texas blues backing track in G",
+    "Chicago blues jam track in C",
+    "minor blues backing track in A minor",
+    "12 bar blues backing track 120 bpm",
+  ];
+  CHIPS.forEach(q=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "bt-chip"; b.textContent = q.replace(/ backing track| jam track/,"");
+    b.onclick = ()=>{ $("backingSearch").value = q; search(q); };
+    $("btChips").appendChild(b);
+  });
 
-    if (!data || !data.length) {
-      results.innerHTML = '<div style="color:var(--cream-dim);font-size:12px">No results found</div>';
+  function showKeyPanel(show){
+    $("ytKeyPanel").hidden = !show;
+    if (show){ $("ytKeyInput").value = ""; $("ytKeyInput").placeholder = getKey() ? "key saved: paste to replace" : "AIza…"; $("ytKeyInput").focus(); }
+  }
+  $("ytKeyBtn").onclick = ()=> showKeyPanel($("ytKeyPanel").hidden);
+  $("ytKeySave").onclick = ()=>{
+    const k = $("ytKeyInput").value.trim();
+    if (!k) return;
+    store.set(KEY_STORE, k); $("ytKeyInput").value = ""; showKeyPanel(false);
+    status("Key saved in this browser.");
+    const q = $("backingSearch").value.trim(); if (q) search(q);
+  };
+  $("ytKeyClear").onclick = ()=>{ store.set(KEY_STORE, ""); $("ytKeyInput").value = ""; status("Key removed from this browser."); };
+
+  async function search(q){
+    q = (q || "").trim();
+    if (!q) return;
+    const key = getKey();
+    const results = $("searchResults");
+    if (!key){
+      results.innerHTML = "";
+      showKeyPanel(true);
+      status(`Add your YouTube API key to search here, or <a href="${ytSearchUrl(q)}" target="_blank" rel="noopener">search on YouTube →</a>`);
       return;
     }
-
-    results.innerHTML = '';
-    data.slice(0, 10).forEach(video => {
-      const div = document.createElement('div');
-      div.style.cssText = 'padding:8px;border-bottom:1px solid var(--edge);cursor:pointer;font-size:12px;color:var(--amber);transition:color .2s';
-      div.textContent = video.title;
-      div.onmouseover = ()=> div.style.color = 'var(--cream)';
-      div.onmouseout = ()=> div.style.color = 'var(--amber)';
-      div.onclick = ()=> playYoutubeAudio(video.videoId, video.title);
-      results.appendChild(div);
+    status("Searching…");
+    const url = "https://www.googleapis.com/youtube/v3/search?" + new URLSearchParams({
+      part:"snippet", type:"video", maxResults:"12", videoEmbeddable:"true", videoSyndicated:"true",
+      safeSearch:"moderate", q, key,
     });
-  } catch (e) {
-    results.innerHTML = '<div style="color:var(--led);font-size:12px">Error searching. Check your connection.</div>';
+    try{
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok){
+        const reason = data && data.error && data.error.errors && data.error.errors[0] && data.error.errors[0].reason;
+        const msg = {
+          quotaExceeded:"Today's free YouTube search quota is used up (about 100 searches a day). It resets at midnight Pacific time.",
+          keyInvalid:"That API key isn't valid. Click Key to paste it again.",
+          badRequest:"That API key isn't valid. Click Key to paste it again.",
+          forbidden:"This key isn't allowed here. Check its website restrictions and that YouTube Data API v3 is enabled.",
+          accessNotConfigured:"YouTube Data API v3 isn't enabled for this key's Google Cloud project.",
+        }[reason] || ("YouTube said: " + escapeHtml((data && data.error && data.error.message) || res.status));
+        results.innerHTML = "";
+        status(`${msg} <a href="${ytSearchUrl(q)}" target="_blank" rel="noopener">Search on YouTube →</a>`, true);
+        return;
+      }
+      const items = (data.items || []).filter(v => v.id && v.id.videoId);
+      if (!items.length){ results.innerHTML = ""; status("No results found."); return; }
+      status(`${items.length} results for “${escapeHtml(q)}”`);
+      results.innerHTML = "";
+      items.forEach(v=>{
+        const sn = v.snippet || {};
+        const row = document.createElement("button");
+        row.type = "button"; row.className = "bt-row"; row.dataset.id = v.id.videoId;
+        const thumb = (sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails.default) || {}).url || "";
+        row.innerHTML = `<img src="${escapeHtml(thumb)}" alt="" loading="lazy">
+          <span><div class="bt-t"></div><div class="bt-c"></div></span>`;
+        // titles arrive HTML-entity-encoded; decode them as plain text, never as markup
+        row.querySelector(".bt-t").textContent = decodeEntities(sn.title || "");
+        row.querySelector(".bt-c").textContent = decodeEntities(sn.channelTitle || "");
+        row.onclick = ()=> play(v.id.videoId, row.querySelector(".bt-t").textContent);
+        results.appendChild(row);
+      });
+    }catch(e){
+      results.innerHTML = "";
+      status(`Couldn't reach YouTube. Check your connection. <a href="${ytSearchUrl(q)}" target="_blank" rel="noopener">Search on YouTube →</a>`, true);
+    }
   }
-};
 
-function playYoutubeAudio(videoId, title){
-  document.getElementById('playerPanel').style.display = 'block';
-  document.getElementById('trackTitle').textContent = title;
-  document.getElementById('youtubeLink').href = `https://youtube.com/watch?v=${videoId}`;
-  document.getElementById('audioSource').src = `https://invidious.io/latest_version?id=${videoId}&itag=251`;
-  document.getElementById('audioPlayer').play();
-}
+  // Official YouTube IFrame Player API, loaded on first play
+  let player = null, apiReady = null;
+  function loadApi(){
+    if (apiReady) return apiReady;
+    apiReady = new Promise(resolve=>{
+      window.onYouTubeIframeAPIReady = resolve;
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      s.onerror = ()=>{ apiReady = null; status("Couldn't load the YouTube player.", true); };
+      document.head.appendChild(s);
+    });
+    return apiReady;
+  }
+  async function play(id, title){
+    $("playerPanel").hidden = false;
+    $("trackTitle").textContent = title;
+    $("youtubeLink").href = "https://www.youtube.com/watch?v=" + id;
+    document.querySelectorAll(".bt-row").forEach(r=> r.classList.toggle("playing", r.dataset.id === id));
+    await loadApi();
+    if (player && player.loadVideoById){ player.loadVideoById(id); return; }
+    player = new YT.Player("ytPlayer", {
+      videoId:id,
+      playerVars:{ autoplay:1, rel:0, modestbranding:1, playsinline:1 },
+      events:{ onError:e=> status(e.data === 101 || e.data === 150
+        ? "The owner doesn't allow this video to play on other sites. Use Open on YouTube."
+        : "That video couldn't play.", true) },
+    });
+  }
+
+  $("backingForm").onsubmit = e=>{ e.preventDefault(); search($("backingSearch").value); };
+  if (!getKey()) status("Search needs your free YouTube API key. Click <b>Key</b> to add it.");
+  return { search, play };
+})();
 
 // Guitar Tuner
 const targetFreqs = {
