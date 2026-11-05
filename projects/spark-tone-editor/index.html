@@ -274,6 +274,50 @@ header{
 .bt-row .bt-c{font-family:var(--font-mono);font-size:10.5px;color:var(--cream-dim);margin-top:2px}
 .bt-row.playing .bt-t{color:var(--amber)}
 
+/* ---------- tuner ---------- */
+.tn-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.tn-modes{display:inline-flex;border:1px solid var(--edge);border-radius:8px;overflow:hidden}
+.tn-mode{
+  font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  padding:8px 14px;color:var(--cream-dim);background:var(--panel);
+}
+.tn-mode + .tn-mode{border-left:1px solid var(--edge)}
+.tn-mode.active{background:var(--amber);color:#1a1207}
+.tn-hint{font-family:var(--font-mono);font-size:11px;color:var(--cream-dim);flex:1;min-width:180px}
+.tn-display{
+  background:var(--panel);border:1px solid var(--edge);border-radius:var(--radius);
+  padding:18px 16px 14px;text-align:center;transition:border-color .2s;
+}
+.tn-display.live.ok{border-color:#3fbf6a}
+.tn-note{font-family:var(--font-display);font-weight:800;font-size:72px;line-height:1;color:var(--cream-dim);margin-bottom:10px}
+.tn-note sub{font-size:24px;vertical-align:baseline;margin-left:4px;color:var(--cream-dim)}
+.tn-display.live .tn-note{color:var(--amber)}
+.tn-display.live.ok .tn-note{color:#3fbf6a}
+.tn-meter{max-width:520px;margin:0 auto 10px}
+.tn-scale{position:relative;height:14px;font-family:var(--font-mono);font-size:9.5px;color:var(--cream-dim)}
+.tn-scale span{position:absolute;transform:translateX(-50%)}
+.tn-bar{position:relative;height:30px;border-radius:6px;background:linear-gradient(90deg,rgba(255,90,54,.25),rgba(240,166,60,.12) 40%,rgba(63,191,106,.25) 50%,rgba(240,166,60,.12) 60%,rgba(255,90,54,.25));overflow:hidden}
+.tn-zone{position:absolute;left:45%;width:10%;top:0;bottom:0;background:rgba(63,191,106,.25)}
+.tn-center{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--cream);opacity:.6;transform:translateX(-50%)}
+.tn-needle{position:absolute;left:50%;top:3px;bottom:3px;width:5px;border-radius:3px;background:var(--led);transform:translateX(-50%);transition:left .08s linear;box-shadow:0 0 8px rgba(255,90,54,.6)}
+.tn-display.live.ok .tn-needle{background:#3fbf6a;box-shadow:0 0 8px rgba(63,191,106,.7)}
+.tn-display:not(.live) .tn-needle{opacity:.3}
+.tn-read{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;font-family:var(--font-mono);font-size:12.5px;color:var(--cream)}
+.tn-read #tnCents,.tn-read #tnFreq{color:var(--cream-dim)}
+.tn-strings{display:flex;justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap}
+.tn-str{font-family:var(--font-mono);font-size:10.5px;padding:3px 8px;border-radius:999px;border:1px solid var(--edge);color:var(--cream-dim)}
+.tn-str.near{border-color:var(--amber);color:var(--amber)}
+.tn-str.on{border-color:#3fbf6a;color:#3fbf6a;background:rgba(63,191,106,.12)}
+.tn-raw{font-family:var(--font-mono);font-size:10px;color:var(--cream-dim);margin-top:10px;opacity:.8}
+.tn-ref{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.tn-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-dim)}
+.tn-ref select,.tn-ref input{background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:7px 9px;font-size:12px;color:var(--cream)}
+.tn-ref input{width:64px;font-family:var(--font-mono)}
+.tn-ref + .tn-ref{margin-top:10px}
+.tn-acc{font-size:15px;padding:4px 12px;letter-spacing:0}
+.tn-target{font-family:var(--font-mono);font-size:11px;color:var(--cream-dim);margin-top:8px;min-height:1.2em}
+@media (max-width:520px){ .tn-note{font-size:56px} }
+
 /* ---------- log ---------- */
 .log{
   position:fixed;left:0;right:0;bottom:0;
@@ -485,6 +529,9 @@ const SparkMsg = {
   getPreset(n){
     return buildBlock(0x02, 0x01, [0x00, n, 0x00]);
   },
+  tuner(on){ // 01 65: amp tuner on/off; amp then streams 03 64 readings, 03 65 when it ends
+    return buildBlock(0x01, 0x65, new MsgWriter().onoff(on).bytes);
+  },
   getInfo(sub){ // 0x10 current preset, 0x11 name, 0x23 serial, 0x2f firmware
     return buildBlock(0x02, sub, [0x00]);
   },
@@ -528,7 +575,18 @@ function handleChunk(chunk){
   const cmd = chunk[4], sub = chunk[5];
   const decoded = decode7(chunk.slice(6, chunk.length - 1));
 
+  if (cmd === 0x04 && sub === 0x65){ if (window.onAmpTuner) window.onAmpTuner({ack:true}); return; }
   if (cmd === 0x04 || cmd === 0x05){ return; } // acks
+
+  if (cmd === 0x03 && (sub === 0x64 || sub === 0x65)){
+    // 03 64: tuner reading [note byte, float offset]; 03 65: tuner ended on the amp
+    try{
+      const r = new MsgReader(decoded);
+      if (sub === 0x64){ const note = r.int(); const val = r.float(); if (window.onAmpTuner) window.onAmpTuner({note, val}); }
+      else if (window.onAmpTuner) window.onAmpTuner({off:true});
+    }catch(e){ if (window.onAmpTuner) window.onAmpTuner({raw:Array.from(decoded)}); }
+    return;
+  }
 
   if (cmd === 0x03 && sub === 0x01){
     // preset info — multi-chunk; decoded = [total, idx, size, ...data]
@@ -694,6 +752,7 @@ async function connect(){
 
     state.connected = true;
     setTube("on");
+    if (window.onAmpTuner) window.onAmpTuner({connected:true});
     document.getElementById("connectBtn").textContent = "Disconnect";
     document.getElementById("refreshBtn").disabled = false;
     document.getElementById("storeBtn").disabled = false;
@@ -723,6 +782,7 @@ function onDisconnect(){
   document.getElementById("storeBtn").disabled = true;
   document.getElementById("notice").classList.remove("hidden");
   log("amp disconnected");
+  if (window.onAmpTuner) window.onAmpTuner({disconnected:true});
 }
 
 function disconnect(){
@@ -1185,28 +1245,54 @@ if (!navigator.bluetooth){
 </section>
 
 <!-- Guitar Tuner -->
-<section class="library">
+<section class="library tuner" id="tuner">
   <h2>🎛️ Tuner</h2>
-  <div style="display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <select id="tunerNote" style="background:var(--bg);border:1px solid var(--edge);border-radius:6px;padding:8px 10px;font-size:12px">
-        <option>E (low)</option>
-        <option selected>A</option>
-        <option>D</option>
-        <option>G</option>
-        <option>B</option>
-        <option>E (high)</option>
-      </select>
-      <button class="btn" id="tunerBtn">Start Listening</button>
-      <span id="tunerStatus" style="font-size:12px;color:var(--cream-dim)">Press "Start Listening" to begin</span>
+  <div class="tn-top">
+    <div class="tn-modes" role="radiogroup" aria-label="Tuner source">
+      <button type="button" class="tn-mode" id="tnModeAmp" role="radio" aria-checked="false">Amp</button>
+      <button type="button" class="tn-mode active" id="tnModeMic" role="radio" aria-checked="true">Mic</button>
     </div>
-    <div id="tunerDisplay" style="display:none;text-align:center;padding:16px;background:var(--panel);border-radius:8px">
-      <div style="font-size:32px;font-weight:bold;color:var(--amber);margin-bottom:8px" id="tunerFreq">440 Hz</div>
-      <div style="position:relative;height:40px;background:var(--edge);border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div id="tunerNeedle" style="position:absolute;left:50%;top:0;width:3px;height:100%;background:var(--led);transform:translateX(-50%);transition:left .05s linear"></div>
+    <button class="btn primary" id="tunerBtn" type="button">Start tuner</button>
+    <span class="tn-hint" id="tnHint">Mic mode listens through your computer's microphone.</span>
+  </div>
+
+  <div class="tn-display" id="tnDisplay" aria-live="polite">
+    <div class="tn-note"><span id="tnNote">–</span><sub id="tnOct"></sub></div>
+    <div class="tn-meter" aria-hidden="true">
+      <div class="tn-scale">
+        <span style="left:0%">-50</span><span style="left:25%">-25</span><span style="left:50%">0</span><span style="left:75%">+25</span><span style="left:100%">+50</span>
       </div>
-      <div style="font-size:13px;color:var(--cream-dim)" id="tunerStatus">Detecting...</div>
+      <div class="tn-bar">
+        <div class="tn-zone"></div>
+        <div class="tn-center"></div>
+        <div class="tn-needle" id="tnNeedle"></div>
+      </div>
     </div>
+    <div class="tn-read">
+      <span id="tnState">Not listening</span>
+      <span id="tnCents"></span>
+      <span id="tnFreq"></span>
+    </div>
+    <div class="tn-strings" id="tnStrings" aria-label="Strings for this tuning"></div>
+    <div class="tn-target" id="tnTarget"></div>
+    <div class="tn-raw" id="tnRaw" hidden></div>
+  </div>
+
+  <div class="tn-ref">
+    <span class="tn-label">Tuning</span>
+    <select id="tnTuning" aria-label="Tuning"></select>
+    <span class="tn-label">Names</span>
+    <div class="tn-modes" role="radiogroup" aria-label="Note names">
+      <button type="button" class="tn-mode tn-acc" id="tnSharp" role="radio">♯</button>
+      <button type="button" class="tn-mode tn-acc" id="tnFlat" role="radio">♭</button>
+    </div>
+    <span class="tn-label">A4</span>
+    <input id="tnA4" type="number" min="415" max="466" step="1" value="440" aria-label="Reference pitch A4 in Hz"><span class="tn-label">Hz</span>
+  </div>
+  <div class="tn-ref">
+    <span class="tn-label">Reference tone</span>
+    <select id="tunerNote" aria-label="Reference note"></select>
+    <button class="btn" id="tnRefBtn" type="button">Play tone</button>
   </div>
 </section>
 
@@ -1345,80 +1431,283 @@ const bt = (()=>{
   return { search, play };
 })();
 
-// Guitar Tuner
-const targetFreqs = {
-  'E (low)': 82.41, 'A': 110, 'D': 146.83, 'G': 196, 'B': 246.94, 'E (high)': 329.63
-};
-let tunerActive = false, audioContext, analyser, micSource, refOsc, refGain;
+/* ---------------- Tuner ----------------
+   Amp mode: asks the Spark to enter its own tuner (01 65 on). The amp mutes and streams 03 64
+   readings [note byte, float offset] from the guitar cable; 03 65 when it leaves tuner mode.
+   Reading layout per community protocol notes — note assumed 0-11 from C, offset 0..1 with 0.5 in tune.
+   Mic mode: autocorrelation pitch detection (YIN-style) on the microphone, chromatic. */
+const tuner = (()=>{
+  const $ = id => document.getElementById(id);
+  const SHARPS = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+  const FLATS  = ["C","D♭","D","E♭","E","F","G♭","G","A♭","A","B♭","B"];
+  // MIDI note numbers, low string first. flats: name notes with ♭ by default
+  const TUNINGS = {
+    chromatic:{ name:"Chromatic (any note)", strings:null },
+    standard: { name:"Standard  E A D G B E",          strings:[40,45,50,55,59,64] },
+    halfdown: { name:"Half step down  E♭ A♭ D♭ G♭ B♭ E♭", strings:[39,44,49,54,58,63], flats:true },
+    fulldown: { name:"Full step down  D G C F A D",     strings:[38,43,48,53,57,62] },
+    dropD:    { name:"Drop D  D A D G B E",             strings:[38,45,50,55,59,64] },
+    dropDb:   { name:"Drop D♭  D♭ A♭ D♭ G♭ B♭ E♭",      strings:[37,44,49,54,58,63], flats:true },
+    dropC:    { name:"Drop C  C G C F A D",             strings:[36,43,48,53,57,62] },
+    openG:    { name:"Open G  D G D G B D",             strings:[38,43,50,55,59,62] },
+    openD:    { name:"Open D  D A D F♯ A D",            strings:[38,45,50,54,57,62] },
+    openE:    { name:"Open E  E B E G♯ B E",            strings:[40,47,52,56,59,64] },
+    dadgad:   { name:"DADGAD",                          strings:[38,45,50,55,57,62] },
+  };
+  const IN_TUNE = 5; // cents
+  let mode = "mic", running = false;
+  let tuningKey = store.get("faceplate.tuning") || "halfdown";
+  if (!TUNINGS[tuningKey]) tuningKey = "halfdown";
+  let accidental = store.get("faceplate.accidental") || "";   // "" = follow the tuning
+  let A4 = parseFloat(store.get("faceplate.a4")) || 440;
+  const tuning = () => TUNINGS[tuningKey];
+  const useFlats = () => accidental ? accidental === "flat" : !!tuning().flats;
+  const nameOf = pc => (useFlats() ? FLATS : SHARPS)[((pc % 12) + 12) % 12];
+  const label = midi => nameOf(midi) + (Math.floor(midi / 12) - 1);
+  const hz = midi => A4 * Math.pow(2, (midi - 69) / 12);
 
-document.getElementById('tunerBtn').onclick = async ()=>{
-  if (tunerActive) {
-    tunerActive = false;
-    document.getElementById('tunerBtn').textContent = 'Start Listening';
-    document.getElementById('tunerDisplay').style.display = 'none';
-    if (refOsc) refOsc.stop();
-    return;
+  // tuning picker, string chips and reference-tone list follow the chosen tuning
+  Object.entries(TUNINGS).forEach(([k,t])=>{ const o = document.createElement("option"); o.value = k; o.textContent = t.name; $("tnTuning").appendChild(o); });
+  function buildStrings(){
+    const box = $("tnStrings"); box.innerHTML = "";
+    const st = tuning().strings;
+    box.hidden = !st;
+    (st || []).forEach((m,i)=>{
+      const s = document.createElement("span"); s.className = "tn-str"; s.dataset.midi = m;
+      s.textContent = label(m); s.title = "String " + (st.length - i);
+      box.appendChild(s);
+    });
+    const sel = $("tunerNote"), prev = sel.selectedIndex;
+    sel.innerHTML = "";
+    const list = st ? st.map((m,i)=>[m, label(m) + "  (string " + (st.length - i) + ")"])
+                    : Array.from({length:12}, (_,i)=> [52 + i, label(52 + i)]); // E3–D♯4 for chromatic
+    list.forEach(([m,txt])=>{ const o = document.createElement("option"); o.value = m; o.textContent = txt; sel.appendChild(o); });
+    sel.selectedIndex = prev >= 0 && prev < list.length ? prev : Math.min(1, list.length - 1);
+    $("tnSharp").classList.toggle("active", !useFlats()); $("tnSharp").setAttribute("aria-checked", !useFlats());
+    $("tnFlat").classList.toggle("active", useFlats());   $("tnFlat").setAttribute("aria-checked", useFlats());
   }
-  try {
-    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-    const stream = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: false, noiseSuppression: false}});
-    micSource = audioContext.createMediaStreamSource(stream);
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 4096;
+  $("tnTuning").value = tuningKey;
+  $("tnTuning").onchange = ()=>{ tuningKey = $("tnTuning").value; store.set("faceplate.tuning", tuningKey); accidental = ""; store.set("faceplate.accidental", ""); buildStrings(); };
+  $("tnSharp").onclick = ()=>{ accidental = "sharp"; store.set("faceplate.accidental", accidental); buildStrings(); };
+  $("tnFlat").onclick  = ()=>{ accidental = "flat";  store.set("faceplate.accidental", accidental); buildStrings(); };
+  $("tnA4").value = A4;
+  $("tnA4").onchange = ()=>{
+    const v = parseFloat($("tnA4").value);
+    A4 = v >= 415 && v <= 466 ? v : 440; $("tnA4").value = A4; store.set("faceplate.a4", A4);
+    if (ref) ref.o.frequency.setTargetAtTime(hz(+$("tunerNote").value), ref.ctx.currentTime, 0.01);
+  };
+  buildStrings();
 
-    // Create reference tone oscillator
-    refOsc = audioContext.createOscillator();
-    refGain = audioContext.createGain();
-    refGain.gain.value = 0.1;
-    refOsc.connect(refGain);
-    refGain.connect(audioContext.destination);
-
-    // Play reference tone for selected string
-    const targetNote = document.getElementById('tunerNote').value;
-    refOsc.frequency.value = targetFreqs[targetNote];
-    refOsc.start();
-
-    // Connect microphone for detection
-    micSource.connect(analyser);
-
-    tunerActive = true;
-    document.getElementById('tunerBtn').textContent = 'Stop Listening';
-    document.getElementById('tunerDisplay').style.display = 'block';
-    updateTuner();
-  } catch (e) {
-    document.getElementById('tunerStatus').textContent = 'Microphone access denied';
+  // midiF: exact pitch as a fractional MIDI number (mic mode), for the nearest-string readout
+  function show(noteIdx, octave, cents, freq, midiF){
+    if (noteIdx == null){
+      $("tnNote").textContent = "–"; $("tnOct").textContent = ""; $("tnCents").textContent = ""; $("tnFreq").textContent = "";
+      $("tnNeedle").style.left = "50%"; $("tnDisplay").className = "tn-display"; $("tnTarget").textContent = "";
+      document.querySelectorAll(".tn-str").forEach(s=> s.classList.remove("on","near"));
+      return;
+    }
+    const c = Math.max(-50, Math.min(50, cents));
+    $("tnNote").textContent = nameOf(noteIdx);
+    $("tnOct").textContent = octave == null ? "" : octave;
+    $("tnNeedle").style.left = (50 + c) + "%";
+    $("tnCents").textContent = (cents > 0 ? "+" : "") + Math.round(cents) + " cents";
+    $("tnFreq").textContent = freq ? freq.toFixed(1) + " Hz" : "";
+    const ok = Math.abs(cents) <= IN_TUNE;
+    $("tnState").textContent = ok ? "In tune" : cents < 0 ? "♭ Flat: tune up" : "♯ Sharp: tune down";
+    $("tnDisplay").className = "tn-display live " + (ok ? "ok" : "off");
+    // chromatic first: the big note is always the nearest semitone. The tuning only adds hints.
+    const midi = octave == null ? null : (octave + 1) * 12 + noteIdx;
+    const st = tuning().strings;
+    const chips = [...document.querySelectorAll(".tn-str")];
+    chips.forEach(s=> s.classList.remove("on","near"));
+    $("tnTarget").textContent = "";
+    if (!st) return;
+    if (midiF == null){ // amp mode: pitch class only
+      chips.forEach(s=> s.classList.toggle("on", ((+s.dataset.midi) % 12) === noteIdx));
+      return;
+    }
+    let bi = 0; st.forEach((m,i)=>{ if (Math.abs(midiF - m) < Math.abs(midiF - st[bi])) bi = i; });
+    const off = (midiF - st[bi]) * 100;
+    if (Math.abs(off) > 350) return;           // not near any string: just chromatic
+    const chip = chips[bi];
+    chip.classList.add(Math.abs(off) <= IN_TUNE ? "on" : "near");
+    if (midi !== st[bi]){
+      $("tnTarget").textContent = `Nearest string: ${label(st[bi])} (string ${st.length - bi}), ` +
+        `${Math.abs(Math.round(off))} cents ${off > 0 ? "sharp: tune down" : "flat: tune up"}`;
+    } else {
+      $("tnTarget").textContent = `String ${st.length - bi} · ${label(st[bi])}`;
+    }
   }
-};
+  function idle(msg){ show(null); $("tnState").textContent = msg; }
 
-document.getElementById('tunerNote').onchange = ()=>{
-  if (tunerActive && refOsc) {
-    const targetNote = document.getElementById('tunerNote').value;
-    refOsc.frequency.setTargetAtTime(targetFreqs[targetNote], audioContext.currentTime, 0.01);
+  function setMode(m){
+    if (running) stop();
+    mode = m;
+    $("tnModeAmp").classList.toggle("active", m === "amp"); $("tnModeAmp").setAttribute("aria-checked", m === "amp");
+    $("tnModeMic").classList.toggle("active", m === "mic"); $("tnModeMic").setAttribute("aria-checked", m === "mic");
+    $("tnRaw").hidden = m !== "amp";
+    hint();
+    idle("Not listening");
   }
-};
+  function hint(){
+    $("tnHint").textContent = mode === "amp"
+      ? (state.connected ? "Uses the amp's own tuner on your guitar cable. The amp mutes while tuning." : "Connect the amp first. Amp mode uses its built-in tuner.")
+      : "Mic mode listens through your computer's microphone.";
+    $("tunerBtn").disabled = mode === "amp" && !state.connected;
+  }
+  function setRunning(on){
+    running = on;
+    $("tunerBtn").textContent = on ? "Stop tuner" : "Start tuner";
+    $("tunerBtn").classList.toggle("primary", !on);
+  }
 
-function updateTuner() {
-  if (!tunerActive) return;
-  const data = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(data);
-  const nyquist = audioContext.sampleRate / 2;
-  let maxIdx = 0, maxVal = 0;
-  for (let i = 10; i < data.length; i++) {
-    if (data[i] > maxVal) { maxVal = data[i]; maxIdx = i; }
+  /* ---- amp mode ---- */
+  let ampTimer = null;
+  function ampStart(){
+    if (!state.connected){ hint(); return; }
+    stopRef();
+    send(SparkMsg.tuner(true), "amp tuner on");
+    setRunning(true);
+    idle("Play a string…");
+    $("tnRaw").textContent = "Waiting for the amp…";
+    clearTimeout(ampTimer);
+    ampTimer = setTimeout(()=>{ if (running && mode === "amp" && $("tnRaw").textContent.startsWith("Waiting"))
+      $("tnRaw").textContent = "No readings from the amp yet. Pluck a string, or check the amp's tuner turned on."; }, 6000);
   }
-  const freq = (maxIdx * nyquist) / data.length;
-  if (freq > 50 && freq < 500) {
-    document.getElementById('tunerFreq').textContent = freq.toFixed(1) + ' Hz';
-    const targetNote = document.getElementById('tunerNote').value;
-    const target = targetFreqs[targetNote];
-    const cents = 1200 * Math.log2(freq / target);
-    const needlePos = Math.max(0, Math.min(100, 50 + cents/50));
-    document.getElementById('tunerNeedle').style.left = needlePos + '%';
-    const noteStr = Math.abs(cents) < 5 ? '✓ In tune' : (cents < 0 ? '♭ Flat' : '♯ Sharp');
-    document.getElementById('tunerStatus').textContent = noteStr + ' (' + cents.toFixed(0) + ' cents)';
+  function ampStop(){
+    clearTimeout(ampTimer);
+    if (state.connected) send(SparkMsg.tuner(false), "amp tuner off");
+    setRunning(false); idle("Not listening");
   }
-  requestAnimationFrame(updateTuner);
-}
+  window.onAmpTuner = ev=>{
+    if (ev.connected || ev.disconnected){ if (ev.disconnected && mode === "amp" && running){ setRunning(false); idle("Amp disconnected"); } hint(); return; }
+    if (ev.ack) return;
+    if (ev.off){ if (mode === "amp" && running){ setRunning(false); idle("Tuner turned off on the amp"); } return; }
+    if (ev.raw){ $("tnRaw").textContent = "amp sent: " + ev.raw.map(b=>b.toString(16).padStart(2,"0")).join(" "); return; }
+    if (mode !== "amp"){ setMode("amp"); }
+    if (!running) setRunning(true); // tuner started from the amp itself
+    const n = ev.note, v = ev.val;
+    $("tnRaw").textContent = `amp: note ${n}, offset ${v.toFixed(3)}`;
+    if (!(n >= 0 && n < 12)){ idle("No note"); return; }
+    // offset 0..1 → ±50 cents around 0.5; if the amp sends cents-like values instead, use them directly
+    const cents = v >= 0 && v <= 1 ? (v - 0.5) * 100 : Math.max(-50, Math.min(50, v));
+    show(n, null, cents, null);
+  };
+
+  /* ---- mic mode ---- */
+  let ctx = null, stream = null, analyser = null, buf = null, raf = 0, hist = [];
+  async function micStart(){
+    stopRef();
+    try{
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      await ctx.resume();
+      stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+      const src = ctx.createMediaStreamSource(stream);
+      analyser = ctx.createAnalyser(); analyser.fftSize = 4096;
+      src.connect(analyser);
+      buf = new Float32Array(analyser.fftSize);
+      hist = [];
+      setRunning(true); idle("Play a string…");
+      loop();
+    }catch(e){
+      setRunning(false);
+      idle(e && e.name === "NotAllowedError" ? "Microphone access was blocked. Allow it in the address bar." : "Couldn't open the microphone.");
+    }
+  }
+  function micStop(){
+    cancelAnimationFrame(raf);
+    if (stream) stream.getTracks().forEach(t=> t.stop());
+    stream = null; analyser = null;
+    setRunning(false); idle("Not listening");
+  }
+  // YIN-style pitch detector; returns Hz or 0
+  function detect(x, sr){
+    let rms = 0; for (let i=0;i<x.length;i++) rms += x[i]*x[i];
+    rms = Math.sqrt(rms / x.length);
+    if (rms < 0.008) return 0;                       // too quiet
+    const minLag = Math.max(2, Math.floor(sr / 1100));          // up to ~1100 Hz
+    const maxLag = Math.min(Math.floor(sr / 60), x.length - 1025); // down to 60 Hz
+    const W = Math.min(2048, x.length - maxLag - 1);
+    // difference function d(lag), then cumulative-mean-normalised cm(lag) (YIN steps 2-3)
+    const cm = new Float32Array(maxLag + 2);
+    cm[0] = 1;
+    let run = 0;
+    for (let lag=1; lag<=maxLag+1; lag++){
+      let s = 0;
+      for (let i=0;i<W;i++){ const t = x[i] - x[i+lag]; s += t*t; }
+      run += s;
+      cm[lag] = run ? s * lag / run : 1;
+    }
+    let best = -1;
+    // first dip under the threshold, then walk down to its local minimum (YIN step 4)
+    for (let lag=minLag; lag<=maxLag; lag++){
+      if (cm[lag] < 0.15){
+        while (lag + 1 <= maxLag && cm[lag+1] < cm[lag]) lag++;
+        best = lag; break;
+      }
+    }
+    if (best < 0){ // fall back to global minimum if clear enough
+      let m = Infinity; for (let lag=minLag; lag<=maxLag; lag++) if (cm[lag] < m){ m = cm[lag]; best = lag; }
+      if (m > 0.35) return 0;
+    }
+    // parabolic interpolation for sub-sample accuracy
+    const a = cm[best-1], b = cm[best], c = cm[best+1];
+    const den = a + c - 2*b;
+    const shift = den ? 0.5 * (a - c) / den : 0;
+    return sr / (best + shift);
+  }
+  let lastT = 0;
+  function loop(t){
+    if (!analyser) return;
+    raf = requestAnimationFrame(loop);
+    if (t && t - lastT < 33) return; // ~30 readings a second is plenty
+    lastT = t || 0;
+    analyser.getFloatTimeDomainData(buf);
+    const f = detect(buf, ctx.sampleRate);
+    if (f){
+      hist.push(f); if (hist.length > 5) hist.shift();
+      const med = hist.slice().sort((p,q)=>p-q)[hist.length >> 1];
+      const midiF = 69 + 12 * Math.log2(med / A4);
+      const midi = Math.round(midiF);
+      show(((midi % 12) + 12) % 12, Math.floor(midi / 12) - 1, (midiF - midi) * 100, med, midiF);
+    } else if (hist.length){
+      hist = []; $("tnState").textContent = "Play a string…"; $("tnDisplay").className = "tn-display";
+    }
+  }
+
+  /* ---- reference tone (never plays while the tuner listens) ---- */
+  let ref = null;
+  function stopRef(){
+    if (!ref) return;
+    try{ ref.g.gain.setTargetAtTime(0, ref.ctx.currentTime, 0.05); ref.o.stop(ref.ctx.currentTime + 0.3); }catch(e){}
+    ref = null; $("tnRefBtn").textContent = "Play tone";
+  }
+  async function playRef(){
+    if (ref){ stopRef(); return; }
+    if (running) stop();
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    o.type = "sawtooth"; o.frequency.value = hz(+$("tunerNote").value);
+    lp.type = "lowpass"; lp.frequency.value = 1800;
+    g.gain.value = 0; g.gain.setTargetAtTime(0.08, ctx.currentTime, 0.02);
+    o.connect(lp); lp.connect(g); g.connect(ctx.destination); o.start();
+    ref = {o, g, ctx};
+    $("tnRefBtn").textContent = "Stop tone";
+    setTimeout(()=>{ if (ref && ref.o === o) stopRef(); }, 4000);
+  }
+  $("tunerNote").onchange = ()=>{ if (ref) ref.o.frequency.setTargetAtTime(hz(+$("tunerNote").value), ref.ctx.currentTime, 0.01); };
+
+  function start(){ mode === "amp" ? ampStart() : micStart(); }
+  function stop(){ mode === "amp" ? ampStop() : micStop(); }
+
+  $("tunerBtn").onclick = ()=> running ? stop() : start();
+  $("tnModeAmp").onclick = ()=> setMode("amp");
+  $("tnModeMic").onclick = ()=> setMode("mic");
+  $("tnRefBtn").onclick = playRef;
+  setMode(state.connected ? "amp" : "mic");
+  return { setMode, detect, show };
+})();
 </script>
 
 </body>
