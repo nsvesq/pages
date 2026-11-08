@@ -210,6 +210,151 @@ input[type=range].vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;h
 /* Description box */
 .jins{background:var(--off)!important;border-left:3px solid var(--navy)!important;color:var(--text)!important;}
 
+/* Jins breakdown */
+.ar-inline{font-family:'Scheherazade New',serif;font-size:.95rem;letter-spacing:0;text-transform:none;}
+.jmap{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px 4px;margin-bottom:20px;}
+.jm-note{grid-row:1;text-align:center;padding:8px 0 6px;border:1px solid var(--border);background:var(--off);font-weight:600;font-size:.92rem;line-height:1.15;}
+.jm-note small{display:block;font-size:.55rem;letter-spacing:1px;color:var(--muted);font-weight:400;margin-top:2px;}
+.jm-note .q{color:var(--teal);font-size:.62rem;}
+.jm-note.root{background:var(--navy);border-color:var(--navy);color:var(--white);}
+.jm-note.root small{color:rgba(255,255,255,.7);}
+.jm-note.gh{box-shadow:inset 0 -3px 0 var(--gold);}
+.jm-bar{height:26px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--white);border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;cursor:default;transition:filter .15s;}
+.jm-bar.c0{background:var(--navy);}
+.jm-bar.c1{background:var(--teal);}
+.jm-bar.c2{background:var(--gold);}
+.jm-bar:hover,.jm-bar.hl{filter:brightness(1.2);}
+.jcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+.jcard{border:1px solid var(--border);border-left:4px solid var(--navy);background:var(--white);padding:14px 16px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s;}
+.jcard.c1{border-left-color:var(--teal);}
+.jcard.c2{border-left-color:var(--gold);}
+.jcard.hl{box-shadow:0 2px 14px var(--shadow);}
+.jc-role{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.jc-name{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.jc-name b{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--navy);}
+.jc-name span{font-family:'Scheherazade New',serif;font-size:1.25rem;color:var(--navy-l);}
+.jc-notes{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-weight:600;font-size:.9rem;}
+.jc-notes i{font-style:normal;padding:2px 8px;border:1px solid var(--border);background:var(--off);}
+.jc-notes i.qt{border-color:var(--teal);color:var(--teal);}
+.jc-notes em{font-style:normal;font-size:.62rem;color:var(--muted);letter-spacing:1px;}
+.jc-desc{font-size:.82rem;color:var(--muted);line-height:1.5;}
+/* Playable notes & alternatives */
+.nb,.jm-note,.jc-notes i,.jm-bar{cursor:pointer;}
+.nb.sounding{background:var(--gold)!important;border-color:var(--gold)!important;color:var(--white)!important;transform:scale(1.08);}
+.jm-note.sounding,.jc-notes i.sounding{background:var(--gold)!important;border-color:var(--gold)!important;color:var(--white)!important;}
+.jm-note.below{background:transparent;border-style:dashed;color:var(--muted);}
+.jm-note.below small{font-style:italic;}
+.jc-size{font-family:'Source Sans 3',sans-serif;font-size:.7rem;color:var(--muted);font-weight:400;}
+.jc-play{margin-left:auto;background:var(--white);border:1px solid var(--navy);color:var(--navy);font-family:'Source Sans 3',sans-serif;font-size:.66rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;cursor:pointer;border-radius:2px;font-style:normal;}
+.jc-play:hover{background:var(--navy);color:var(--white);}
+.rtitle .jc-play.big{order:2;margin-left:0;font-size:.68rem;padding:6px 12px;letter-spacing:2px;}
+.rtitle .jc-play.big + *{order:3;}
+.tap-hint{font-size:.75rem;color:var(--muted);margin:-14px 0 16px;}
+.jc-alts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:8px;border-top:1px dashed var(--border);}
+.jc-alts span{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-right:2px;}
+.jc-alt{background:var(--off);border:1px solid var(--border);color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:.78rem;padding:3px 10px;cursor:pointer;border-radius:12px;}
+.jc-alt:hover{border-color:var(--navy);}
+.jc-alt.on{background:var(--navy);border-color:var(--navy);color:var(--white);}
+@media(max-width:500px){.panel{padding:24px 16px!important}.jm-note{font-size:.78rem;padding:6px 0 4px}.jm-bar{font-size:.56rem;letter-spacing:.5px;padding:0 2px}}
+
+/* Listen to examples */
+.examples{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--accent);box-shadow:0 2px 16px var(--shadow);padding:28px 32px;margin-bottom:24px;}
+.examples .rtitle{margin-bottom:18px;}
+.ex-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+.ex-item{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--off);border:1px solid var(--border);padding:10px;cursor:pointer;font-family:inherit;color:inherit;transition:border-color .15s,box-shadow .15s;}
+.ex-item:hover{border-color:var(--navy);box-shadow:0 2px 10px var(--shadow);}
+.ex-item.on{border-color:var(--accent);background:var(--white);box-shadow:inset 3px 0 0 var(--accent);}
+.ex-thumb{position:relative;flex:0 0 112px;height:63px;background:#ddd;overflow:hidden;border-radius:2px;}
+.ex-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.ex-thumb i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-size:1.1rem;background:rgba(14,26,48,.25);transition:background .15s;}
+.ex-item:hover .ex-thumb i{background:rgba(14,26,48,.45);}
+.ex-info{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.ex-info b{font-size:.88rem;line-height:1.3;color:var(--navy);}
+.ex-info small{font-size:.75rem;color:var(--muted);}
+.ex-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+.ex-tags em{font-style:normal;font-size:.58rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:9px;background:rgba(42,124,122,.12);color:var(--teal);}
+.ex-tags em.alt{background:rgba(184,150,42,.16);color:#7a600e;}
+.ex-tags em.note{background:var(--paper);color:var(--muted);}
+.ex-empty{font-size:.88rem;color:var(--muted);}
+.ex-empty a{color:var(--teal);}
+.ex-player{margin-top:18px;padding-top:18px;border-top:1px solid var(--border);display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:20px;align-items:center;}
+.ex-player[hidden]{display:none;}
+.ex-video{position:relative;width:100%;aspect-ratio:16/9;min-height:200px;background:#000;border-radius:2px;overflow:hidden;}
+.ex-video iframe,.ex-video #exPlayer{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.ex-ctrl{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.ex-now b{display:block;font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--navy);line-height:1.3;}
+.ex-now small{font-size:.78rem;color:var(--muted);}
+.ex-buttons{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.ex-btn{background:var(--white);border:1px solid var(--navy);color:var(--navy);font-family:'Source Sans 3',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 12px;cursor:pointer;border-radius:2px;}
+.ex-btn:hover{background:var(--off);}
+.ex-btn.main{background:var(--navy);color:var(--white);min-width:96px;}
+.ex-btn.main:hover{background:var(--navy-l);}
+.ex-rate{display:flex;align-items:center;gap:6px;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-left:auto;}
+.ex-rate select{padding:6px 8px;border:1px solid var(--border);background:var(--white);color:var(--text);font:inherit;letter-spacing:0;}
+.ex-seek{display:flex;align-items:center;gap:10px;font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--muted);}
+.ex-seek input{flex:1;accent-color:var(--accent);}
+.ex-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);}
+.ex-foot a{color:var(--teal);text-decoration:none;}
+.ex-foot a:hover{text-decoration:underline;}
+@media(max-width:640px){.ex-player{grid-template-columns:1fr}.ex-rate{margin-left:0}}
+@media(max-width:500px){.examples{padding:22px 16px}.ex-thumb{flex-basis:96px;height:54px}}
+
+/* Listen & Identify */
+.ls-jump{display:inline-block;margin-top:18px;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--teal);text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:2px;}
+.ls-jump:hover{color:var(--navy);}
+.listen{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--gold);box-shadow:0 2px 16px var(--shadow);padding:32px;margin-top:24px;scroll-margin-top:16px;}
+.ls-intro{color:var(--muted);font-size:.92rem;line-height:1.55;margin:-8px 0 18px;}
+.ls-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.ls-btn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:var(--white);border:1px solid var(--navy);font-family:'Source Sans 3',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:11px 18px;cursor:pointer;border-radius:2px;transition:background .15s;}
+.ls-btn:hover{background:var(--navy-l);}
+.ls-btn.ghost{background:var(--white);color:var(--navy);}
+.ls-btn.ghost:hover{background:var(--off);}
+.ls-btn.rec{background:var(--accent);border-color:var(--accent);}
+.ls-btn.rec.on{animation:lsPulse 1.2s ease-in-out infinite;}
+@keyframes lsPulse{50%{opacity:.65}}
+.ls-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ls-timer{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600;}
+.ls-src{margin-top:18px;padding-top:18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:12px;}
+.ls-src[hidden],.ls-result[hidden]{display:none;}
+.ls-srcname{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.ls-src audio{width:100%;}
+.ls-range{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.85rem;color:var(--muted);}
+.ls-range input[type=range]{flex:1;min-width:120px;accent-color:var(--navy);}
+.ls-range select{padding:6px 8px;border:1px solid var(--border);background:var(--white);color:var(--text);font:inherit;}
+.ls-status{margin-top:12px;font-size:.84rem;color:var(--muted);min-height:1.2em;}
+.ls-result{margin-top:8px;padding-top:20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:22px;}
+.ls-best{border-left:4px solid var(--navy);background:var(--off);padding:18px 20px;display:flex;flex-direction:column;gap:8px;}
+.ls-kicker{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.ls-name{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.ls-name b{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--navy);}
+.ls-name span{font-family:'Scheherazade New',serif;font-size:1.6rem;color:var(--navy-l);}
+.ls-line{font-size:.92rem;}
+.ls-conf{display:inline-block;padding:2px 10px;font-size:.66rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;border-radius:10px;margin-left:6px;vertical-align:1px;}
+.ls-conf.hi{background:rgba(42,124,122,.14);color:var(--teal);}
+.ls-conf.mid{background:rgba(184,150,42,.18);color:#7a600e;}
+.ls-conf.lo{background:rgba(192,74,42,.12);color:var(--accent);}
+.ls-why{font-size:.86rem;color:var(--muted);line-height:1.55;}
+.ls-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+.ls-rank{display:flex;flex-direction:column;gap:4px;}
+.ls-row{display:grid;grid-template-columns:minmax(0,1.5fr) 2fr 44px;gap:10px;align-items:center;padding:7px 8px;border:1px solid transparent;cursor:pointer;font-size:.88rem;background:none;text-align:left;font-family:inherit;color:inherit;}
+.ls-row:hover{background:var(--off);}
+.ls-row.sel{border-color:var(--navy);background:var(--off);}
+.ls-row small{color:var(--muted);}
+.ls-bar{height:8px;background:var(--paper);border-radius:4px;overflow:hidden;}
+.ls-bar i{display:block;height:100%;background:var(--teal);border-radius:4px;}
+.ls-pct{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;}
+.ls-hist{display:flex;align-items:flex-end;gap:4px;height:120px;}
+.ls-hcol{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;}
+.ls-hcol i{display:block;width:100%;max-width:34px;min-height:2px;background:var(--teal);border-radius:2px 2px 0 0;}
+.ls-hcol.out i{background:var(--accent);}
+.ls-hcol.ton i{background:var(--navy);}
+.ls-hcol span{font-size:.68rem;font-weight:600;white-space:nowrap;}
+.ls-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.72rem;color:var(--muted);margin-top:8px;}
+.ls-legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+#lsTrace{width:100%;display:block;border:1px solid var(--border);}
+.ls-meta{font-size:.78rem;color:var(--muted);line-height:1.6;}
+@media(max-width:500px){.listen{padding:22px 16px}.ls-row{grid-template-columns:minmax(0,1.4fr) 1fr 40px}.ls-name b{font-size:1.5rem}}
+
 /* Fretboard panel */
 .fret-panel{background:var(--white)!important;border:1px solid var(--border)!important;border-top:3px solid var(--teal)!important;box-shadow:0 2px 16px var(--shadow)!important;}
 .fret-panel .rtitle{color:var(--teal)!important;}
@@ -244,6 +389,7 @@ input[type=range].vol::-webkit-slider-thumb{background:var(--navy)!important;}
     <h1>MAQAM EXPLORER</h1>
     <div class="subtitle">مقامات الموسيقى العربية</div>
     <div class="hline"><div class="diamond"></div></div>
+    <a class="ls-jump" href="#listenPanel">♪ Identify a maqam from a melody</a>
   </header>
 
   <div class="controls">
@@ -288,11 +434,17 @@ input[type=range].vol::-webkit-slider-thumb{background:var(--navy)!important;}
   </div>
 
   <div class="panel">
-    <div class="rtitle">Notes of the Scale</div>
+    <div class="rtitle">Notes of the Scale <button type="button" class="jc-play big" id="playScaleBtn">▶ Play scale</button></div>
+    <div class="tap-hint">Tap any note to hear it — quarter tones included.</div>
     <div class="notes-row" id="notesRow"></div>
     <div class="isec">
       <div class="slabel">Interval Pattern</div>
       <div class="irow" id="iRow"></div>
+    </div>
+    <div class="isec">
+      <div class="slabel">Jins Breakdown &nbsp;·&nbsp; <span class="ar-inline">الأجناس</span></div>
+      <div class="jmap" id="jMap"></div>
+      <div class="jcards" id="jCards"></div>
     </div>
     <div class="jins" id="jinsInfo"></div>
   </div>
@@ -300,6 +452,27 @@ input[type=range].vol::-webkit-slider-thumb{background:var(--navy)!important;}
   <div class="fret-panel">
     <div class="rtitle" style="border-top:none;color:var(--tl);">OUD FRETBOARD</div>
     <canvas id="fretCanvas"></canvas>
+  </div>
+
+  <div class="examples" id="examplesPanel">
+    <div class="rtitle">Listen to examples · <span id="exFor"></span></div>
+    <div class="ex-list" id="exList"></div>
+    <div class="ex-player" id="exPlayerWrap" hidden>
+      <div class="ex-video"><div id="exPlayer"></div></div>
+      <div class="ex-ctrl">
+        <div class="ex-now"><b id="exNowTitle"></b><small id="exNowBy"></small></div>
+        <div class="ex-buttons">
+          <button type="button" class="ex-btn" id="exBack" title="Back 10 seconds">↺ 10</button>
+          <button type="button" class="ex-btn main" id="exPlay">▶ Play</button>
+          <button type="button" class="ex-btn" id="exFwd" title="Forward 10 seconds">10 ↻</button>
+          <label class="ex-rate">Speed
+            <select id="exRate"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option></select>
+          </label>
+        </div>
+        <div class="ex-seek"><span id="exCur">0:00</span><input type="range" id="exSeek" min="0" max="1000" value="0"><span id="exDur">0:00</span></div>
+        <div class="ex-foot"><span id="exStatus"></span><a id="exYtLink" target="_blank" rel="noopener">Open on YouTube ↗</a></div>
+      </div>
+    </div>
   </div>
 
   <div class="drone">
@@ -319,6 +492,34 @@ input[type=range].vol::-webkit-slider-thumb{background:var(--navy)!important;}
       </div>
     </div>
     <div class="dstatus" id="dStatus">Press Play to start drone</div>
+  </div>
+
+  <div class="listen" id="listenPanel">
+    <div class="rtitle">Listen &amp; Identify</div>
+    <p class="ls-intro">Play or sing a melody and the explorer will suggest which maqam it fits. Solo melodies work best, ideally ending on the tonic. Your audio never leaves this device.</p>
+    <div class="ls-actions">
+      <button class="ls-btn rec" id="lsRec" type="button">● Record</button>
+      <label class="ls-btn ghost" for="lsFile">⤒ Load audio file</label>
+      <input type="file" id="lsFile" accept="audio/*" hidden>
+      <span class="ls-timer" id="lsTimer"></span>
+    </div>
+    <div class="ls-src" id="lsSrc" hidden>
+      <div class="ls-srcname" id="lsSrcName"></div>
+      <audio id="lsAudio" controls preload="auto"></audio>
+      <div class="ls-range">
+        <span>Analyse from</span>
+        <input type="range" id="lsStart" min="0" max="0" step="0.5" value="0">
+        <span id="lsStartLbl">0:00</span>
+        <span>for</span>
+        <select id="lsLen"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="45">45 s</option></select>
+      </div>
+      <div class="ls-actions">
+        <button class="ls-btn" id="lsGo" type="button">Find the maqam →</button>
+        <button class="ls-btn ghost" id="lsPlayPass" type="button">▶ Play passage</button>
+      </div>
+    </div>
+    <div class="ls-status" id="lsStatus"></div>
+    <div class="ls-result" id="lsResult" hidden></div>
   </div>
 
   <div style="height:24px"></div>
@@ -404,7 +605,7 @@ const MAQAMAT = {
   "Saba Zamzam": {
     arabic: "صبا زمزم",
     family: "Bayati",
-    intervals: [1.5, 0.5, 1, 1.5, 1.5, 0.5, 2],
+    intervals: [1, 2, 1, 3, 1, 2, 2],
     character: "Intense sorrow, plaintive",
     region: "Egypt",
     description: "A variant of Saba with a different upper structure, even more intensely plaintive.",
@@ -423,7 +624,7 @@ const MAQAMAT = {
   "Hijaz Kar": {
     arabic: "حجاز كار",
     family: "Hijaz",
-    intervals: [1, 3, 1, 1, 3, 1, 2],
+    intervals: [1, 3, 1, 2, 1, 3, 1],
     character: "Majestic, grand, ceremonial",
     region: "Turkey, Iran",
     description: "A double-Hijaz maqam with two augmented 2nds, creating a very symmetrical and majestic sound.",
@@ -539,7 +740,7 @@ const MAQAMAT = {
     character: "Ethereal, floating, mystical",
     region: "Egypt, Pan-Arab",
     description: "Built entirely on quarter-tone intervals, Sikah starts and ends on a quarter-tone flat note. Mystical and otherworldly.",
-    jins: "Sikah + Bayati"
+    jins: "Sikah + Rast"
   },
   "Iraq": {
     arabic: "عراق",
@@ -553,11 +754,11 @@ const MAQAMAT = {
   "Bastanikar": {
     arabic: "بستنكار",
     family: "Sikah",
-    intervals: [1.5, 0.5, 1, 1.5, 1, 3, 1],
+    intervals: [1.5, 2, 1.5, 1.5, 1, 3, 1.5],
     character: "Complex, layered",
     region: "Egypt, Iraq",
     description: "A complex Sikah variant. Multi-layered and sophisticated with an augmented interval.",
-    jins: "Sikah variant"
+    jins: "Sikah + Saba"
   },
   // ─── NAWA ATHAR FAMILY ─────────────────────────────────────────
   "Nawa Athar": {
@@ -662,6 +863,262 @@ const MAQAMAT = {
   }
 };
 
+// ── AJNAS (melodic building blocks) ──────────────────────────────────────────
+// steps in semitones (1.5 = three-quarter tone). A jins of n steps spans n+1 notes.
+const JINS = {
+  Rast:     { arabic:'راست',    steps:[2,1.5,1.5],  desc:'Whole, ¾, ¾. The reference jins of Arabic music — stable, noble and balanced, with the neutral (half-flat) 3rd.' },
+  Bayati:   { arabic:'بياتي',   steps:[1.5,1.5,2],  desc:'¾, ¾, whole. Warm and earthy; the neutral 2nd gives it its characteristic tender, folk-like colour.' },
+  Hijaz:    { arabic:'حجاز',    steps:[1,3,1],      desc:'Half, augmented 2nd, half. The unmistakable "desert" sound — longing and dramatic.' },
+  Nahawand: { arabic:'نهاوند',  steps:[2,1,2],      desc:'Whole, half, whole. The minor-sounding jins — romantic and melancholic.' },
+  Kurd:     { arabic:'كرد',     steps:[1,2,2],      desc:'Half, whole, whole. Dark and raw, like the opening of the Phrygian mode.' },
+  Ajam:     { arabic:'عجم',     steps:[2,2,1],      desc:'Whole, whole, half. The major-sounding jins — bright and open.' },
+  Ajam3:    { name:'Ajam', arabic:'عجم', steps:[2,2], desc:'Ajam trichord: two whole tones. Bright opening, used as a lower jins.' },
+  Saba:     { arabic:'صبا',     steps:[1.5,1.5,1],  desc:'¾, ¾, half. The diminished 4th makes it the jins of grief and lament.' },
+  SabaZamzam:{ name:'Saba Zamzam', arabic:'صبا زمزم', steps:[1,2,1], desc:'Half, whole, half. Saba with a flat (not half-flat) 2nd — even more plaintive.' },
+  Sikah:    { arabic:'سيكاه',   steps:[1.5,2],      desc:'Trichord: ¾, whole. Begins on a half-flat note, giving a floating, mystical quality.' },
+  Nikriz:   { arabic:'نكريز',   steps:[2,1,3,1],    desc:'Pentachord: whole, half, augmented 2nd, half. Tense and assertive, with a raised 4th.' },
+};
+
+// Each maqam: list of [jins key, starting degree, optional alternatives [[key, degree], ...]].
+// First = lower jins on the tonic; later ones start on the ghammaz (the pivot note where
+// the upper jins begins). Alternatives are other ajnas commonly played in that slot —
+// choosing one changes the scale shown everywhere on the page.
+const AJNAS = {
+  'Rast':              [['Rast',1],['Rast',5,[['Nahawand',5]]]],
+  'Suznak':            [['Rast',1],['Hijaz',5]],
+  'Mahur':             [['Rast',1],['Ajam',5]],
+  'Yakah':             [['Rast',1],['Rast',5,[['Nahawand',5]]]],
+  'Bayati':            [['Bayati',1],['Rast',4,[['Nahawand',4]]]],
+  'Husseini':          [['Bayati',1],['Nahawand',4,[['Bayati',5]]]],
+  'Saba':              [['Saba',1],['Hijaz',3]],
+  'Saba Zamzam':       [['SabaZamzam',1],['Hijaz',3]],
+  'Hijaz':             [['Hijaz',1],['Rast',4,[['Nahawand',4]]]],
+  'Hijaz Kar':         [['Hijaz',1],['Hijaz',5]],
+  'Hijaz Kar Kurd':    [['Hijaz',1],['Ajam',5]],
+  'Zanjaran':          [['Hijaz',1],['Nahawand',4,[['Ajam',4]]]],
+  'Nahawand':          [['Nahawand',1],['Kurd',5,[['Hijaz',5]]]],
+  'Nahawand Murassah': [['Nahawand',1],['Hijaz',5]],
+  'Farahfaza':         [['Nahawand',1],['Bayati',5,[['Kurd',5]]]],
+  'Ajam':              [['Ajam',1],['Ajam',5,[['Nahawand',5]]]],
+  'Ajam Ushayran':     [['Ajam',1],['Ajam',5]],
+  'Jiharkah':          [['Ajam',1],['Rast',4]],
+  'Shawq Afza':        [['Ajam',1],['Hijaz',5]],
+  'Kurd':              [['Kurd',1],['Nahawand',4]],
+  'Kurd Hijaz':        [['Kurd',1],['Hijaz',5]],
+  'Sikah':             [['Sikah',1],['Rast',3,[['Hijaz',3]]]],
+  'Iraq':              [['Sikah',1],['Bayati',3]],
+  'Bastanikar':        [['Sikah',1],['Saba',3]],
+  'Nawa Athar':        [['Nikriz',1],['Hijaz',5]],
+  'Nikriz':            [['Nikriz',1],['Ajam',5,[['Rast',5],['Nahawand',5]]]],
+  'Athar Kurd':        [['Hijaz',1],['Rast',5]],
+  'Lami':              [['Kurd',1],['Ajam',4]],
+  'Mustaar':           [['Bayati',1],['Kurd',5]],
+  'Shadd Araban':      [['Nikriz',1],['Kurd',5]],
+  'Suzdalara':         [['Rast',1],['Hijaz',5]],
+  'Tarz Naw':          [['Ajam3',1],['Bayati',3],['Rast',5]],
+  'Bayati Shuri':      [['Bayati',1],['Hijaz',5]],
+  'Huzam':             [['Sikah',1],['Hijaz',3]],
+  'Awj Ara':           [['Sikah',1],['Hijaz',3]],
+};
+
+// Notes commonly used below the tonic, as steps downward (semitones).
+const BELOW = {
+  'Rast':[1.5,1.5], 'Suznak':[1.5,1.5], 'Mahur':[1.5,1.5], 'Suzdalara':[1.5,1.5],
+  'Bayati':[2,1.5], 'Husseini':[2,1.5], 'Bayati Shuri':[2,1.5], 'Mustaar':[2,1.5],
+  'Hijaz':[2,1.5], 'Saba':[2], 'Saba Zamzam':[2], 'Kurd':[2],
+  'Sikah':[1.5,2], 'Huzam':[1.5,2], 'Iraq':[1.5,2],
+};
+
+const jinsChoice = {};   // maqamName -> {slotIndex: chosen option index}
+const jinsName = k => JINS[k].name || k;
+const ORD = ['I','II','III','IV','V','VI','VII','VIII'];
+
+function ajnasFor(name) {
+  const ch = jinsChoice[name] || {};
+  return (AJNAS[name] || []).map((e, i) => {
+    const opts = [[e[0], e[1]]].concat(e[2] || []);
+    const sel = Math.min(ch[i] || 0, opts.length - 1);
+    return { slot:i, key:opts[sel][0], deg:opts[sel][1], opts, sel };
+  });
+}
+// Positions of degrees I..VIII in semitones from the tonic, with chosen alternatives applied.
+function scalePositions(name) {
+  const iv = MAQAMAT[name].intervals, p = [0];
+  let c = 0;
+  for (let i = 0; i < 7; i++) { c += iv[i]; p.push(c); }
+  ajnasFor(name).forEach(a => {
+    if (a.sel === 0) return;
+    const st = JINS[a.key].steps;
+    let x = p[a.deg - 1];
+    for (let k = 0; k < st.length; k++) { x += st[k]; if (a.deg + k < 8) p[a.deg + k] = x; }
+  });
+  return p;
+}
+function effectiveIntervals(name) {
+  const p = scalePositions(name);
+  return p.slice(1).map((v, i) => v - p[i]);
+}
+// Name of the note `pos` semitones from the root (handles half-flat roots and quarter tones).
+function noteAt(root, pos, acc) {
+  const half = String(root).endsWith('¼♭');
+  const base = half ? root.replace('¼♭','') : root;
+  const x = (half ? -0.5 : 0) + pos;
+  const semi = ((noteIndex(base) + Math.round(x)) % 12 + 12) % 12;
+  let name = noteName(semi, base, acc);
+  if (acc === 'auto' && pos < 0) name = spellLetter(semi, letterFrom(base, -Math.round(-pos / 1.75)), name);
+  return { name, qt: x % 1 !== 0 };
+}
+
+// ── Microtonal synth (plucked, oud-like) ─────────────────────────────────────
+let _ac = null, curRoot = 'C', curPositions = [];
+function audioCtx() {
+  if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (_ac.state === 'suspended') _ac.resume();
+  return _ac;
+}
+function rootCents(root) {
+  const half = String(root).endsWith('¼♭');
+  let c = noteIndex(root) * 100 - (half ? 50 : 0);
+  if (c < 0) c += 1200;
+  return 4800 + c;                    // tonic between C3 and B3
+}
+function pluckAt(cents, when, dur) {
+  const c = audioCtx(), f = 440 * Math.pow(2, (cents - 6900) / 1200), t0 = c.currentTime + 0.02 + when;
+  const o1 = c.createOscillator(), o2 = c.createOscillator();
+  o1.type = 'sawtooth'; o2.type = 'triangle';
+  o1.frequency.value = f; o2.frequency.value = f * 2;
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 1.2;
+  lp.frequency.setValueAtTime(Math.min(9000, f * 10), t0);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(250, f * 1.6), t0 + dur * 0.8);
+  const g = c.createGain(), g2 = c.createGain();
+  g2.gain.value = 0.25;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0006, t0 + dur);
+  o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(c.destination);
+  o1.start(t0); o2.start(t0); o1.stop(t0 + dur + 0.05); o2.stop(t0 + dur + 0.05);
+}
+let _seqTimers = [];
+function playPositions(positions, els, gap) {
+  gap = gap || 0.36;
+  _seqTimers.forEach(clearTimeout); _seqTimers = [];
+  positions.forEach((p, i) => {
+    pluckAt(rootCents(curRoot) + p * 100, i * gap, i === positions.length - 1 ? 1.4 : 0.9);
+    const el = els && els[i];
+    if (el) _seqTimers.push(setTimeout(() => {
+      el.classList.add('sounding');
+      setTimeout(() => el.classList.remove('sounding'), Math.max(150, gap * 900));
+    }, i * gap * 1000 + 20));
+  });
+}
+const upDown = a => a.concat(a.slice(0, -1).reverse());
+
+function renderAjnas(maqamName, notes, root) {
+  const map = document.getElementById('jMap'), cards = document.getElementById('jCards');
+  map.innerHTML = ''; cards.innerHTML = '';
+  const list = ajnasFor(maqamName);
+  const pos = scalePositions(maqamName);
+  const all = notes.concat([{name:root.replace('¼♭',''), qt:String(root).endsWith('¼♭')}]); // degrees I..VIII
+  const ghammaz = new Set(list.slice(1).map(j => j.deg));
+
+  // Notes below the tonic
+  const acc = ddAcc.get();
+  const below = [];
+  let x = 0;
+  (BELOW[maqamName] || []).forEach(s => { x -= s; below.unshift(Object.assign({pos:x}, noteAt(root, x, acc))); });
+  const nb = below.length;
+  map.style.gridTemplateColumns = 'repeat(' + (nb + 8) + ',minmax(0,1fr))';
+
+  const cell = (n, col, label, cls, p) => {
+    const d = document.createElement('div');
+    d.className = 'jm-note' + cls;
+    d.style.gridColumn = col;
+    d.innerHTML = n.name + (n.qt ? '<span class="q">¼♭</span>' : '') + '<small>' + label + '</small>';
+    d.addEventListener('click', () => playPositions([p], [d]));
+    map.appendChild(d);
+    return d;
+  };
+  below.forEach((n, i) => {
+    const d = cell(n, i + 1, 'below', ' below', n.pos);
+    d.title = 'Commonly used below the tonic';
+  });
+  const degCells = all.map((n, i) => {
+    const d = cell({name: n.name + (i===7 ? "'" : ''), qt: n.qt}, nb + i + 1, ORD[i],
+      (i===0||i===7 ? ' root' : '') + (ghammaz.has(i+1) ? ' gh' : ''), pos[i]);
+    if (ghammaz.has(i+1)) d.title = 'Ghammaz — pivot note of the upper jins';
+    return d;
+  });
+
+  list.forEach((a, idx) => {
+    const j = JINS[a.key]; if (!j) return;
+    const start = a.deg, end = Math.min(start + j.steps.length, 8);
+    const cls = 'c' + Math.min(idx, 2);
+    const spanPos = pos.slice(start - 1, end);
+    const spanCells = degCells.slice(start - 1, end);
+
+    const bar = document.createElement('div');
+    bar.className = 'jm-bar ' + cls;
+    bar.style.gridColumn = (nb + start) + ' / ' + (nb + end + 1);
+    bar.style.gridRow = 2 + idx;
+    bar.textContent = '▶ ' + jinsName(a.key);
+    bar.title = 'Play jins ' + jinsName(a.key);
+    bar.addEventListener('click', () => playPositions(upDown(spanPos), upDown(spanCells)));
+    map.appendChild(bar);
+
+    const span = all.slice(start - 1, end);
+    const labels = j.steps.map(s => s===1?'H':s===1.5?'¾':s===2?'W':s===3?'A2':s);
+    const size = ['','','trichord','tetrachord','pentachord'][j.steps.length] || '';
+    const role = idx === 0 ? 'Lower jins · on the tonic (I)'
+                           : 'Upper jins · on degree ' + ORD[start-1] + ' (ghammaz)';
+
+    const c = document.createElement('div');
+    c.className = 'jcard ' + cls;
+    c.innerHTML =
+      '<div class="jc-role">' + role + '</div>' +
+      '<div class="jc-name"><b>Jins ' + jinsName(a.key) + ' <small class="jc-size">' + size + '</small></b><span>' + j.arabic + '</span></div>' +
+      '<div class="jc-notes"></div>' +
+      '<div class="jc-desc">' + j.desc + '</div>';
+    const nEl = c.querySelector('.jc-notes');
+    const chips = span.map((n, k) => {
+      const i = document.createElement('i');
+      if (n.qt) i.className = 'qt';
+      i.textContent = n.name + (start - 1 + k === 7 ? "'" : '') + (n.qt ? '¼♭' : '');
+      i.title = 'Play';
+      i.addEventListener('click', () => playPositions([spanPos[k]], [i]));
+      nEl.appendChild(i);
+      if (k < labels.length) { const e = document.createElement('em'); e.textContent = labels[k]; nEl.appendChild(e); }
+      return i;
+    });
+    const play = document.createElement('button');
+    play.type = 'button'; play.className = 'jc-play'; play.textContent = '▶ Play';
+    play.addEventListener('click', () => playPositions(upDown(spanPos), upDown(chips)));
+    nEl.appendChild(play);
+
+    if (a.opts.length > 1) {
+      const alt = document.createElement('div');
+      alt.className = 'jc-alts';
+      alt.innerHTML = '<span>Also played as</span>';
+      a.opts.forEach((o, oi) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'jc-alt' + (oi === a.sel ? ' on' : '');
+        const onNote = all[o[1] - 1] ? all[o[1] - 1].name : '';
+        b.textContent = jinsName(o[0]) + (idx > 0 ? ' on ' + onNote : '');
+        b.addEventListener('click', () => {
+          jinsChoice[maqamName] = Object.assign({}, jinsChoice[maqamName], {[a.slot]: oi});
+          render();
+        });
+        alt.appendChild(b);
+      });
+      c.appendChild(alt);
+    }
+    cards.appendChild(c);
+
+    const hl = on => { bar.classList.toggle('hl', on); c.classList.toggle('hl', on); };
+    [bar, c].forEach(el => { el.addEventListener('mouseenter', () => hl(true)); el.addEventListener('mouseleave', () => hl(false)); });
+  });
+}
+
 // ── OUD TUNINGS ──────────────────────────────────────────────────────────────
 const OUD_TUNINGS = {
   arabic:  { label:'Arabic Standard', strings:['C2','F2','A2','D3','G3','C4'] },
@@ -679,6 +1136,7 @@ const NOTE_MIDI = {
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function noteIndex(n) {
+  n = String(n).replace('¼♭', '');
   return {'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11}[n] || 0;
 }
 function noteName(semi, root, acc) {
@@ -687,13 +1145,26 @@ function noteName(semi, root, acc) {
   const flat = acc==='flats' ? true : acc==='sharps' ? false : ['F','Bb','Eb','Ab','Db','Gb'].includes(root);
   return flat ? F[semi%12] : S[semi%12];
 }
+// Auto spelling: each scale degree uses the next letter (D Bayati → B♭ not A♯, D Hijaz → F♯ not G♭).
+const LETTERS = ['C','D','E','F','G','A','B'];
+function letterFrom(base, steps) { return LETTERS[(((LETTERS.indexOf(base[0]) + steps) % 7) + 7) % 7]; }
+function spellLetter(semi, letter, fallback) {
+  const S=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'], F=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+  return S[semi][0] === letter ? S[semi] : F[semi][0] === letter ? F[semi] : fallback;
+}
 function buildScale(root, intervals, acc) {
-  const ri = noteIndex(root);
-  const notes = [{name:root, qt:false}];
-  let cum = 0;
+  // A root like 'E¼♭' (half-flat) starts the scale a quarter tone below E.
+  const half = String(root).endsWith('¼♭');
+  const base = half ? root.replace('¼♭','') : root;
+  const ri = noteIndex(base);
+  const notes = [{name:base, qt:half}];
+  let cum = half ? -0.5 : 0;
   for (let i=0; i<intervals.length-1; i++) {
     cum += intervals[i];
-    notes.push({name: noteName((ri+Math.round(cum))%12, root, acc), qt: cum%1!==0});
+    const semi = (ri+Math.round(cum)+12)%12;
+    let name = noteName(semi, base, acc);
+    if (acc === 'auto') name = spellLetter(semi, letterFrom(base, i+1), name);
+    notes.push({name, qt: cum%1!==0});
   }
   return notes;
 }
@@ -795,6 +1266,8 @@ function drawFretboard(scaleNotes, tuningKey) {
   // Scale semitone set — and separate set for quarter-tone flat notes
   const scaleSet = new Set(noteObjs.map(n => noteIndex(n.name)));
   const qtSet    = new Set(noteObjs.filter(n => n.qt).map(n => noteIndex(n.name)));
+  const nameBySemi = {};
+  noteObjs.forEach(n => { nameBySemi[noteIndex(n.name)] = n.name; });
   const rootSemi = noteIndex(ddKey.get() || 'C');
   const acc      = ddAcc.get() || 'auto';
   const useFlat  = acc==='flats' ? true : acc==='sharps' ? false : ['F','Bb','Eb','Ab','Db','Gb'].includes(ddKey.get());
@@ -885,7 +1358,7 @@ function drawFretboard(scaleNotes, tuningKey) {
         ctx.lineWidth   = 1.5; ctx.fill(); ctx.stroke();
       }
 
-      const letter = useFlat ? FLAT[semi] : SHARP[semi];
+      const letter = nameBySemi[semi] || (useFlat ? FLAT[semi] : SHARP[semi]);
       ctx.fillStyle    = isRoot ? '#ffffff' : '#ffffff';
       ctx.font         = `bold ${letter.length>1 ? Math.round(fontSize*0.75) : Math.round(fontSize)}px Josefin Sans,sans-serif`;
       ctx.textAlign    = 'center';
@@ -934,10 +1407,14 @@ function render() {
   document.getElementById('droneNote').textContent = root;
   droneChangeNote(root);
 
-  const notes = buildScale(root, maqam.intervals, acc);
+  const ivs   = effectiveIntervals(maqamName);   // with any chosen alternative ajnas
+  const pos   = scalePositions(maqamName);
+  curRoot = root; curPositions = pos;
+  const notes = buildScale(root, ivs, acc);
   const nr    = document.getElementById('notesRow');
   nr.innerHTML = '';
   const DEG   = ['I','II','III','IV','V','VI','VII'];
+  const bubs  = [];
 
   notes.forEach((note, i) => {
     if (i>0) { const a=document.createElement('div'); a.className='arrow'; a.textContent='›'; nr.appendChild(a); }
@@ -948,28 +1425,36 @@ function render() {
     const ns = document.createElement('span'); ns.textContent = note.name; bub.appendChild(ns);
     if (note.qt) { const t=document.createElement('span'); t.className='qt-tag'; t.textContent='¼♭'; bub.appendChild(t); }
     const dg = document.createElement('div'); dg.className='ndeg'; dg.textContent=DEG[i]||'';
+    bub.title = 'Play'; bub.addEventListener('click', () => playPositions([pos[i]], [bub]));
+    bubs.push(bub);
     chip.appendChild(bub); chip.appendChild(dg); nr.appendChild(chip);
   });
   const al=document.createElement('div'); al.className='arrow'; al.textContent='›'; nr.appendChild(al);
   const c8=document.createElement('div'); c8.className='nc';
   const b8=document.createElement('div'); b8.className='nb root'; b8.style.animationDelay=(notes.length*0.055)+'s'; b8.textContent=root+"'";
   const d8=document.createElement('div'); d8.className='ndeg'; d8.textContent='VIII';
+  b8.title = 'Play'; b8.addEventListener('click', () => playPositions([12], [b8]));
+  bubs.push(b8);
   c8.appendChild(b8); c8.appendChild(d8); nr.appendChild(c8);
+  document.getElementById('playScaleBtn').onclick = () => playPositions(upDown(pos), upDown(bubs));
 
   const ir = document.getElementById('iRow'); ir.innerHTML='';
-  maqam.intervals.forEach((iv,i) => {
+  ivs.forEach((iv,i) => {
     const b=document.createElement('div');
     const lbl=iv===0.5?'¼':iv===1?'H':iv===1.5?'¾':iv===2?'W':'A2';
     const cls=iv===3?' aug':(iv===0.5||iv===1.5)?' qt':'';
     b.className='ibadge'+cls; b.textContent=lbl; ir.appendChild(b);
-    if (i<maqam.intervals.length-1) { const s=document.createElement('span'); s.style.cssText='color:rgba(201,151,44,.2);font-size:.7rem;'; s.textContent='·'; ir.appendChild(s); }
+    if (i<ivs.length-1) { const s=document.createElement('span'); s.style.cssText='color:rgba(201,151,44,.2);font-size:.7rem;'; s.textContent='·'; ir.appendChild(s); }
   });
 
+  renderAjnas(maqamName, notes, root);
+  const aj = ajnasFor(maqamName).map(j => jinsName(j.key)).join(' + ');
   document.getElementById('jinsInfo').textContent =
-    maqam.description + (maqam.jins ? ' | Jins: '+maqam.jins : '');
+    maqam.description + (aj ? ' | Ajnas: ' + aj : '');
 
   // Fretboard — draw with current canvas size
   drawFretboard(notes, tuning);  // pass full objects including qt flag
+  if (typeof window.onMaqamRender === 'function') window.onMaqamRender(maqamName, root);
 
   // Save prefs
   try {
@@ -1002,6 +1487,7 @@ const DRONE_FILES = {
 // Normalise any root name to our map key
 function droneKey(root) {
   const map = {'Db':'C#','D#':'Eb','Gb':'F#','G#':'Ab','A#':'Bb'};
+  root = String(root).replace('¼♭', ''); // half-flat roots use the nearest drone
   return map[root] || root;
 }
 
@@ -1108,6 +1594,9 @@ Object.keys(MAQAMAT).forEach(n=>{ const f=MAQAMAT[n].family; if(!fams[f])fams[f]
 Object.keys(fams).forEach(f=>{ ddMaqam.addGroup('── '+f+' Family'); fams[f].forEach(n=>ddMaqam.addOption(n,n+' — '+MAQAMAT[n].arabic,false)); });
 
 ALL_ROOTS.forEach(r => ddKey.addOption(r, r, r==='C'));
+ddKey.addGroup('Half-flat roots');
+['E','B','A'].concat(ALL_ROOTS.filter(r => !['E','B','A'].includes(r)))
+  .forEach(r => ddKey.addOption(r+'¼♭', r+'¼♭  (half-flat)', false));
 ddAcc.addOption('auto','Auto',true);
 ddAcc.addOption('sharps','♯  Sharps',false);
 ddAcc.addOption('flats','♭  Flats',false);
@@ -1152,10 +1641,12 @@ function ytEnableButtons() {
 var _renderBeforeYT = render;
 render = function() {
   _renderBeforeYT();
-  ytUpdateSuggestions();
+  if (typeof ytUpdateSuggestions === 'function') ytUpdateSuggestions();
 };
 
 </script>
+<script src="listen.js"></script>
+<script src="examples.js"></script>
 
 <script>
 if ('serviceWorker' in navigator) {
