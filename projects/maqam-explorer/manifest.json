@@ -1,22 +1,32 @@
 {
+  "id": "./",
   "name": "Maqam Explorer",
   "short_name": "Maqam",
-  "description": "Explore Arabic maqamat scales, oud fretboard, cello drone and YouTube search",
-  "start_url": "/",
+  "description": "Arabic maqamat for oud: scales, ajnas, playable quarter tones, oud fretboard, drone, recorded examples and a melody identifier",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0d0a06",
-  "theme_color": "#c9972c",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#f7f5f0",
+  "theme_color": "#1a2744",
   "lang": "en",
   "categories": ["music", "education"],
   "icons": [
-    { "src": "icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icon.svg",     "sizes": "any",     "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Identify a maqam", "url": "./#identify", "icons": [{ "src": "icon-96.png", "sizes": "96x96" }] },
+    { "name": "Listen to examples", "url": "./#listen", "icons": [{ "src": "icon-96.png", "sizes": "96x96" }] }
   ]
 }

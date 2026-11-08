@@ -337,6 +337,7 @@
     ddMaqam.setValue(name);
     ddKey.setValue(rootFor(T));
     render();
+    if (window.showTab) window.showTab('scale', { noScroll: true });
     document.querySelector('.panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
