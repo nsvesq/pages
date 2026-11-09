@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GO Puck Editor</title>
+<meta name="description" content="USB MIDI tone editor for the BOSS Katana:GO headphone amp.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#16181b">
+<style>
+:root{
+  --bg:#16181b; --panel:#212429; --panel2:#2a2e34; --line:#3a3f47;
+  --ink:#eceae6; --muted:#9aa0a8; --accent:#ff8a1f; --accent-dim:#7a4a1c;
+  --ok:#4fd18b; --warn:#ffcf4a; --bad:#ff5d5d; --hi:#ffe2c2;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+a{color:var(--accent)}
+header{display:flex;align-items:center;gap:14px;padding:16px;border-bottom:1px solid var(--line);background:linear-gradient(#1c1f23,#16181b);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.puck{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#3a3f47,#101214 70%);border:2px solid #000;box-shadow:0 0 0 2px #2b2f35,inset 0 0 0 3px #1b1d20;position:relative;flex:none}
+.puck::after{content:"";position:absolute;inset:8px;border-radius:50%;border:3px solid var(--accent);border-right-color:transparent;border-bottom-color:transparent;transform:rotate(-20deg);opacity:.35;transition:opacity .2s}
+.puck.on::after{opacity:1;filter:drop-shadow(0 0 4px var(--accent))}
+h1{font-size:18px;margin:0;letter-spacing:.04em}
+h1 small{display:block;font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0}
+.grow{flex:1}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:#1b1006;border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+#status{font-size:13px;color:var(--muted)}
+#status.ok{color:var(--ok)} #status.bad{color:var(--bad)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.patchbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:16px}
+.lcd{font:600 20px/1 ui-monospace,Consolas,monospace;color:var(--accent);background:#0d0e10;border:1px solid #000;border-radius:6px;padding:8px 12px;letter-spacing:.08em;min-width:15ch;text-shadow:0 0 6px rgba(255,138,31,.5)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h2{font-size:14px;margin:0 0 10px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.08em}
+.tag{font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-radius:99px;padding:2px 8px;font-weight:600}
+.tag.ok{background:rgba(79,209,139,.15);color:var(--ok)}
+.tag.guess{background:rgba(255,207,74,.15);color:var(--warn)}
+.row{display:grid;grid-template-columns:1fr 1.4fr 3.2ch;gap:10px;align-items:center;padding:5px 0}
+.row label{font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row label .addr{display:block;font:11px ui-monospace,Consolas,monospace;color:var(--muted)}
+.row output{font:13px ui-monospace,Consolas,monospace;text-align:right;color:var(--hi)}
+.row select,.patchbar select{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;grid-column:2/4}
+.patchbar select{padding:6px 8px;margin-left:6px}
+select option{background:var(--panel2);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.sw{position:relative;width:44px;height:24px;grid-column:2;appearance:none;background:#0d0e10;border:1px solid var(--line);border-radius:99px;cursor:pointer;margin:0}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.15s}
+.sw:checked{background:var(--accent-dim);border-color:var(--accent)}
+.sw:checked::after{left:22px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.flash{animation:fl 1.6s ease-out}
+@keyframes fl{0%{background:rgba(255,138,31,.45)}100%{background:transparent}}
+.note{font-size:13px;color:var(--muted);margin:0 0 10px}
+details{margin-top:16px}
+summary{cursor:pointer;color:var(--muted);font-size:14px;padding:8px 0}
+.raw{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 16px}
+.learn{background:var(--panel);border:1px dashed var(--accent);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:none}
+.learn.on{display:block}
+.learn ol{margin:6px 0 0;padding-left:20px;font:13px ui-monospace,Consolas,monospace;max-height:220px;overflow:auto}
+.learn li{padding:3px 0}
+.learn li input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 6px;width:16ch;margin-left:8px}
+.banner{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.banner h2{margin:0 0 6px;font-size:16px}
+.banner p{margin:4px 0;color:var(--muted)}
+footer{max-width:1100px;margin:24px auto;padding:0 16px 32px;color:var(--muted);font-size:12px}
+@media (max-width:600px){
+  header{padding:12px 16px} .lcd{font-size:16px;min-width:0;flex:1 1 100%}
+  .grid{grid-template-columns:1fr} main{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="puck" id="puck"></div>
+  <h1>GO Puck Editor<small>USB tone editor for the Katana:GO</small></h1>
+  <div class="grow"></div>
+  <span id="status">Not connected</span>
+  <button class="primary" id="connect">Connect</button>
+</header>
+
+<main>
+  <div class="banner" id="intro">
+    <h2>Plug the Katana:GO into this computer or phone with a USB-C data cable</h2>
+    <p>Then press <b>Connect</b> and allow MIDI access when the browser asks. Use Chrome or Edge (Web MIDI with SysEx).</p>
+    <p>Changes go to the amp's current tone straight away. They are not saved into a preset slot.</p>
+  </div>
+
+  <div class="patchbar">
+    <div class="lcd" id="pname">— — —</div>
+    <label>Preset <select id="preset" disabled></select></label>
+    <div class="grow"></div>
+    <button id="refresh" disabled>Read from amp</button>
+    <button id="learnBtn" disabled>Learn</button>
+  </div>
+
+  <div class="learn" id="learn">
+    <b>Learn mode</b>: change one setting on the amp or in the phone app. The value that changed shows up here and flashes below. Type a name to label it; labels are kept in this browser.
+    <ol id="learnList"></ol>
+    <p class="note" style="margin-top:8px"><button id="exportMap">Copy labels as JSON</button></p>
+  </div>
+
+  <div class="grid" id="sections"></div>
+
+  <details id="rawWrap">
+    <summary>All values (raw memory)</summary>
+    <p class="note">Every byte the amp reports for the current tone. Use this for anything the sections above don't cover yet.</p>
+    <div id="raw"></div>
+  </details>
+</main>
+
+<footer>
+  Unofficial. Not made by or affiliated with BOSS or Roland. The address map was worked out on a real Katana:GO over USB
+  by reading and comparing all 30 factory presets. Sections marked “guess” follow a clear pattern but haven't been checked by ear yet.
+  Type names ending in “?” are hints taken from factory preset names.
+</footer>
+
+<script>
+'use strict';
+// ---- Roland SysEx (DT1 / RQ1), Katana:GO model 01 05 0D, device 10 ----
+const HDR = [0x41, 0x10, 0x01, 0x05, 0x0D];
+const RQ1 = 0x11, DT1 = 0x12;
+const checksum = d => (128 - d.reduce((a, b) => a + b, 0) % 128) % 128;
+const toNum = a => (a[0] << 21) | (a[1] << 14) | (a[2] << 7) | a[3];
+const toAddr = n => [(n >> 21) & 127, (n >> 14) & 127, (n >> 7) & 127, n & 127];
+const hex = a => a.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+const A = (a, b, c, d) => toNum([a, b, c, d]);
+
+// Areas read on refresh (the amp answers each with every valid byte inside it)
+const AREAS = [[0x20, 0, 0, 0, 0x4000], [0x20, 1, 0, 0, 0x4000], [0x10, 0, 0, 0, 0x4000]];
+
+// ---- Address map ----
+// Worked out on a real Katana:GO over USB: reads, test writes, and a comparison of all 30 factory presets
+// (preset names vs. values). "ok" = confirmed; "guess" = a strong pattern but not checked by ear.
+// Type numbers have no official names; hints come from the factory presets that use them.
+const AMP_TYPES = ['Acoustic', 'Clean', 'Crunch', 'Lead', 'Brown'];
+const typeList = (max, hints) => Array.from({length: max + 1}, (_, i) => hints[i] ? `${hints[i]}?` : `Type ${i}`);
+const BOOST_HINTS = { 4: 'blues OD', 14: 'ring/dist', 18: 'fuzz' };
+const MOD_HINTS = { 0: 'chorus', 2: 'phaser', 4: 'tremolo', 7: 'ring mod', 18: 'acoustic', 25: 'vintage phaser' };
+const FX_HINTS = { 6: 'rotary/octave', 12: 'touch wah', 23: 'harmonist' };
+const delay = (base, label) => [
+  { n: 'Type', a: A(0x20,1,base,0), max: 10 },
+  { n: 'Time (ms)', a: A(0x20,1,base,1), ms: true, note: '4 bytes, 1 per hex digit' },
+  { n: 'Feedback', a: A(0x20,1,base,5), max: 100 },
+  { n: 'High cut', a: A(0x20,1,base,6), max: 14, note: 'guess' },
+  { n: 'Effect level', a: A(0x20,1,base,7), max: 120, note: 'guess' },
+  { n: 'Direct mix', a: A(0x20,1,base,8), max: 100, note: 'guess' },
+];
+const SECTIONS = [
+  { id: 'amp', title: 'Amp', ok: true, params: [
+    { n: 'Amp type', a: A(0x20,0,0x20,0x0C), list: AMP_TYPES },
+    { n: 'Variation', a: A(0x20,0,0x20,0x0D), sw: true },
+    { n: 'Gain', a: A(0x20,0,0x20,0x00), max: 100 },
+    { n: 'Volume', a: A(0x20,0,0x20,0x01), max: 100 },
+    { n: 'Bass', a: A(0x20,0,0x20,0x03), max: 100 },
+    { n: 'Middle', a: A(0x20,0,0x20,0x04), max: 100 },
+    { n: 'Treble', a: A(0x20,0,0x20,0x05), max: 100 },
+    { n: 'Presence', a: A(0x20,0,0x20,0x0A), max: 100 },
+    { n: 'Cab resonance', a: A(0x20,0,0x10,0x01), list: ['1', '2', '3', '4'], note: 'from the BLE capture' },
+  ]},
+  { id: 'sw', title: 'Effects on / off', ok: true, params: [
+    { n: 'Booster', a: A(0x20,0,0x30,0), sw: true },
+    { n: 'Mod', a: A(0x20,0,0x30,1), sw: true },
+    { n: 'FX', a: A(0x20,0,0x30,2), sw: true },
+    { n: 'Delay', a: A(0x20,0,0x30,3), sw: true },
+    { n: 'Delay 2', a: A(0x20,0,0x30,4), sw: true },
+    { n: 'Reverb', a: A(0x20,0,0x30,5), sw: true },
+    { n: 'Switch 7', a: A(0x20,0,0x30,6), sw: true, note: 'off in every preset' },
+  ]},
+  { id: 'types', title: 'Mod & FX type', ok: false, params: [
+    { n: 'Mod type', a: A(0x20,0,0x60,0), list: typeList(30, MOD_HINTS) },
+    { n: 'FX type', a: A(0x20,0,0x70,0), list: typeList(30, FX_HINTS) },
+  ], note: 'The knobs for each mod/FX type are in “All values” under 20 01 00 / 20 01 10. Use Learn to find them.' },
+  { id: 'boost', title: 'Booster', ok: false, params: [
+    { n: 'Type', a: A(0x20,0,0x40,0), list: typeList(30, BOOST_HINTS) },
+    { n: 'Drive', a: A(0x20,0,0x40,1), max: 120 },
+    { n: 'Bottom', a: A(0x20,0,0x40,2), max: 100 },
+    { n: 'Tone', a: A(0x20,0,0x40,3), max: 100 },
+    { n: 'Solo', a: A(0x20,0,0x40,4), sw: true },
+    { n: 'Solo level', a: A(0x20,0,0x40,5), max: 100 },
+    { n: 'Effect level', a: A(0x20,0,0x40,6), max: 100 },
+    { n: 'Direct mix', a: A(0x20,0,0x40,7), max: 100 },
+  ]},
+  { id: 'dly', title: 'Delay', ok: false, params: delay(0x20) },
+  { id: 'dly2', title: 'Delay 2', ok: false, params: delay(0x30) },
+  { id: 'rev', title: 'Reverb', ok: false, params: [
+    { n: 'Type', a: A(0x20,1,0x40,0), max: 10 },
+    { n: 'Time', a: A(0x20,1,0x40,2), max: 100 },
+    { n: 'Pre-delay', a: A(0x20,1,0x40,5), max: 20, note: 'guess' },
+    { n: 'Low cut', a: A(0x20,1,0x40,6), max: 17, note: 'guess' },
+    { n: 'High cut', a: A(0x20,1,0x40,7), max: 14, note: 'guess' },
+    { n: 'Density', a: A(0x20,1,0x40,8), max: 14, note: 'guess' },
+    { n: 'Effect level', a: A(0x20,1,0x40,10), max: 100 },
+    { n: 'Direct mix', a: A(0x20,1,0x40,11), max: 100, note: 'guess' },
+  ]},
+];
+
+// ---- State ----
+let midiIn = null, midiOut = null;
+const mem = new Map();          // address number -> value
+const ctrls = new Map();        // address number -> [{set(v)}]
+let labels = {};
+try { labels = JSON.parse(localStorage.getItem('gopuck.labels') || '{}'); } catch (e) {}
+const saveLabels = () => { try { localStorage.setItem('gopuck.labels', JSON.stringify(labels)); } catch (e) {} };
+const $ = s => document.querySelector(s);
+const status = (t, cls = '') => { const s = $('#status'); s.textContent = t; s.className = cls; };
+
+function send(cmd, addr, data) {
+  const body = [...addr, ...data];
+  midiOut.send([0xF0, ...HDR, cmd, ...body, checksum(body), 0xF7]);
+}
+function writeVal(n, v) {
+  send(DT1, toAddr(n), [v]);
+  mem.set(n, v);
+  updateCtrls(n, v, false);
+}
+
+let waiter = null;
+function onMidi(ev) {
+  const d = Array.from(ev.data);
+  if (d[0] !== 0xF0) return;
+  if (d.length > 12 && HDR.every((b, i) => d[1 + i] === b) && d[6] === DT1) {
+    const base = toNum(d.slice(7, 11));
+    const payload = d.slice(11, -2);
+    const changed = [];
+    payload.forEach((v, i) => {
+      const n = base + i, old = mem.get(n);
+      mem.set(n, v);
+      if (old !== undefined && old !== v) changed.push([n, old, v]);
+      updateCtrls(n, v, old !== undefined && old !== v);
+    });
+    if (changed.length) onLearn(changed);
+    if (base === A(0x20,0,0,0)) showName();
+    if (waiter) waiter.bump();
+  }
+}
+
+// Send an RQ1 and wait until replies stop arriving for a short moment
+function request(addr, size, quiet = 120, max = 1500) {
+  return new Promise(res => {
+    const sz = [(size >> 21) & 127, (size >> 14) & 127, (size >> 7) & 127, size & 127];
+    let t = setTimeout(done, 400), hard = setTimeout(done, max);
+    function done() { clearTimeout(t); clearTimeout(hard); waiter = null; res(); }
+    waiter = { bump() { clearTimeout(t); t = setTimeout(done, quiet); } };
+    send(RQ1, addr, sz);
+  });
+}
+let busy = false;
+async function readAll() {
+  if (busy || !midiOut) return; busy = true;
+  try {
+    for (const [a, b, c, d, size] of AREAS) await request([a, b, c, d], size);
+    await request([0x7F, 0, 1, 0], 2);
+    showName(); showPreset(); buildRaw();
+  } finally { busy = false; }
+}
+
+function showName() {
+  let s = '';
+  for (let i = 4; i < 20; i++) { const v = mem.get(A(0x20,0,0,i)); if (v === undefined) return; s += String.fromCharCode(v); }
+  s = s.replace(/[^\x20-\x7E]/g, '');
+  $('#pname').textContent = s.trim() || '(no name)';
+}
+function showPreset() {
+  const v = mem.get(A(0x7F,0,1,1));
+  if (v !== undefined) $('#preset').value = String(v);
+}
+
+// ---- UI ----
+function addRow(parent, p) {
+  const row = document.createElement('div'); row.className = 'row';
+  const lab = document.createElement('label');
+  lab.innerHTML = `${labels[p.a] || p.n}<span class="addr">${hex(toAddr(p.a))}${p.note ? ' · ' + p.note : ''}</span>`;
+  row.append(lab);
+  let set;
+  if (p.sw) {
+    const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'sw';
+    c.onchange = () => writeVal(p.a, c.checked ? 1 : 0);
+    const o = document.createElement('output');
+    row.append(c, o);
+    set = v => { c.checked = !!v; o.textContent = v; };
+  } else if (p.ms) {
+    // Delay time: 4 consecutive bytes, one hex digit (0-15) each, value in ms
+    const r = document.createElement('input'); r.type = 'range'; r.min = 1; r.max = 2000;
+    const o = document.createElement('output');
+    const nib = v => [(v >> 12) & 15, (v >> 8) & 15, (v >> 4) & 15, v & 15];
+    r.oninput = () => {
+      const v = +r.value; o.textContent = v;
+      send(DT1, toAddr(p.a), nib(v));
+      nib(v).forEach((b, i) => mem.set(p.a + i, b));
+    };
+    row.append(r, o);
+    set = () => {
+      const b = [0, 1, 2, 3].map(i => mem.get(p.a + i));
+      if (b.some(x => x === undefined)) return;
+      const v = (b[0] << 12) | (b[1] << 8) | (b[2] << 4) | b[3];
+      r.value = v; o.textContent = v;
+    };
+    for (let i = 1; i < 4; i++) {
+      if (!ctrls.has(p.a + i)) ctrls.set(p.a + i, []);
+      ctrls.get(p.a + i).push({ set, row, lab, p });
+    }
+  } else if (p.list) {
+    const s = document.createElement('select');
+    p.list.forEach((t, i) => s.add(new Option(`${i}: ${t}`, i)));
+    s.onchange = () => writeVal(p.a, +s.value);
+    row.append(s);
+    set = v => { if (v >= p.list.length) s.add(new Option(`${v}: ?`, v)); s.value = String(v); };
+  } else {
+    const r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = p.max ?? 127;
+    const o = document.createElement('output');
+    r.oninput = () => { o.textContent = r.value; writeVal(p.a, +r.value); };
+    row.append(r, o);
+    set = v => { if (v > +r.max) r.max = v; r.value = v; o.textContent = v; };
+  }
+  if (!ctrls.has(p.a)) ctrls.set(p.a, []);
+  ctrls.get(p.a).push({ set, row, lab, p });
+  parent.append(row);
+  const v = mem.get(p.a); if (v !== undefined) set(v);
+}
+function updateCtrls(n, v, flash) {
+  (ctrls.get(n) || []).forEach(c => {
+    c.set(v);
+    if (flash) { c.row.classList.remove('flash'); void c.row.offsetWidth; c.row.classList.add('flash'); }
+  });
+}
+function buildSections() {
+  const g = $('#sections');
+  for (const s of SECTIONS) {
+    const card = document.createElement('section'); card.className = 'card';
+    card.innerHTML = `<h2>${s.title} <span class="tag ${s.ok ? 'ok' : 'guess'}">${s.ok ? 'confirmed' : 'guess'}</span></h2>`;
+    s.params.forEach(p => addRow(card, p));
+    if (s.note) { const n = document.createElement('p'); n.className = 'note'; n.style.marginTop = '8px'; n.textContent = s.note; card.append(n); }
+    g.append(card);
+  }
+}
+const known = new Set(SECTIONS.flatMap(s => s.params.flatMap(p => p.ms ? [p.a, p.a + 1, p.a + 2, p.a + 3] : [p.a])));
+function buildRaw() {
+  const r = $('#raw');
+  if (r.dataset.built) return;
+  r.dataset.built = 1;
+  const groups = new Map();
+  [...mem.keys()].sort((a, b) => a - b).forEach(n => {
+    if (n >= A(0x7F,0,0,0)) return;
+    const k = hex(toAddr(n).slice(0, 3));
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(n);
+  });
+  for (const [k, ns] of groups) {
+    const h = document.createElement('h3'); h.textContent = k + ' ··'; h.style.cssText = 'font:600 13px ui-monospace,Consolas,monospace;color:var(--accent);margin:14px 0 4px';
+    const box = document.createElement('div'); box.className = 'raw';
+    ns.forEach(n => addRow(box, { n: labels[n] || (known.has(n) ? '(in a section above)' : 'Byte ' + hex(toAddr(n).slice(3))), a: n, max: 127 }));
+    r.append(h, box);
+  }
+}
+
+// ---- Learn mode ----
+let learnTimer = null;
+function onLearn(changed) {
+  if (!learnTimer) return;
+  const ol = $('#learnList');
+  for (const [n, o, v] of changed) {
+    const li = document.createElement('li');
+    li.innerHTML = `${new Date().toLocaleTimeString()} &nbsp; ${hex(toAddr(n))} &nbsp; ${o} → ${v}`;
+    const inp = document.createElement('input'); inp.placeholder = 'name it'; inp.value = labels[n] || '';
+    inp.onchange = () => {
+      labels[n] = inp.value.trim(); if (!labels[n]) delete labels[n]; saveLabels();
+      (ctrls.get(n) || []).forEach(c => { c.lab.firstChild.textContent = labels[n] || c.p.n; });
+    };
+    li.append(inp); ol.prepend(li);
+  }
+}
+$('#learnBtn').onclick = () => {
+  const on = !learnTimer;
+  $('#learn').classList.toggle('on', on);
+  $('#learnBtn').textContent = on ? 'Stop learning' : 'Learn';
+  if (on) learnTimer = setInterval(readAll, 900); else { clearInterval(learnTimer); learnTimer = null; }
+};
+$('#exportMap').onclick = async () => {
+  const out = Object.fromEntries(Object.entries(labels).map(([n, v]) => [hex(toAddr(+n)), v]));
+  const txt = JSON.stringify(out, null, 1);
+  try { await navigator.clipboard.writeText(txt); $('#exportMap').textContent = 'Copied'; }
+  catch (e) { prompt('Copy the labels:', txt); }
+};
+
+// ---- Presets ----
+for (let i = 0; i < 30; i++) $('#preset').add(new Option(`Preset ${i + 1}`, i));
+$('#preset').onchange = async () => {
+  send(DT1, [0x7F, 0, 1, 0], [0, +$('#preset').value]);
+  setTimeout(readAll, 350);
+};
+
+// ---- Connect ----
+$('#connect').onclick = async () => {
+  if (!navigator.requestMIDIAccess) { status('This browser has no Web MIDI. Use Chrome or Edge.', 'bad'); return; }
+  try {
+    status('Asking for MIDI access…');
+    const access = await navigator.requestMIDIAccess({ sysex: true });
+    const pick = m => [...m.values()].find(p => /katana/i.test(p.name));
+    const hook = () => {
+      const i = pick(access.inputs), o = pick(access.outputs);
+      if (midiIn && midiIn !== i) midiIn.onmidimessage = null;
+      midiIn = i || null; midiOut = o || null;
+      if (midiIn) midiIn.onmidimessage = onMidi;
+      const ok = !!(midiIn && midiOut);
+      $('#puck').classList.toggle('on', ok);
+      ['#refresh', '#learnBtn', '#preset'].forEach(s => $(s).disabled = !ok);
+      return ok;
+    };
+    access.onstatechange = () => { if (!hook()) status('Katana:GO unplugged', 'bad'); };
+    if (!hook()) { status('No Katana:GO found. Check the USB cable.', 'bad'); return; }
+    send(DT1, [0x7F, 0, 0, 1], [1]);        // editor mode on (as the phone app does)
+    status('Connected', 'ok');
+    $('#intro').style.display = 'none';
+    $('#connect').textContent = 'Reconnect';
+    await readAll();
+  } catch (e) {
+    status('MIDI access refused: ' + e.message, 'bad');
+  }
+};
+$('#refresh').onclick = readAll;
+
+buildSections();
+</script>
+</body>
+</html>
