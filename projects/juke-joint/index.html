@@ -192,6 +192,7 @@ details li{margin:4px 0}
       <option value="L">Left / input 1</option><option value="R">Right / input 2</option><option value="B">Both</option>
     </select></label>
     <label>Trim <input type="range" id="trim" min="-12" max="24" step="0.5" value="0" style="width:110px"></label>
+    <button class="btn" id="autoGateBtn" type="button" title="Turn the guitar volume down or mute the strings, then tap">Auto gate</button>
     <label id="outWrap" hidden>Output <select id="outSel"></select></label>
     <span class="pill" id="audioPill">Not plugged in</span>
   </div>
@@ -390,13 +391,16 @@ class JJRec extends AudioWorkletProcessor {
 registerProcessor("jj-rec", JJRec);
 class JJGate extends AudioWorkletProcessor {
   static get parameterDescriptors(){ return [{name:"threshold", defaultValue:-120, minValue:-120, maxValue:0}]; }
-  constructor(){ super(); this.env = 0; this.g = 1; this.hold = 0; }
+  constructor(){ super(); this.env = 0; this.g = 1; this.hold = 0; this.open = false; }
   process(inputs, outputs, p){
     const x = inputs[0] && inputs[0][0], y = outputs[0][0]; if (!x) return true;
     const th = Math.pow(10, p.threshold[0]/20), att = 1 - Math.exp(-1/(0.0008*sampleRate)), rel = 1 - Math.exp(-1/(0.09*sampleRate));
+    const dec = Math.exp(-1/(0.012*sampleRate));
     for (let n = 0; n < x.length; n++){
-      const a = Math.abs(x[n]); this.env = a > this.env ? a : this.env*0.9995;
-      let t; if (this.env > th){ t = 1; this.hold = 0.06*sampleRate; } else if (this.hold > 0){ this.hold--; t = 1; } else t = 0;
+      const a = Math.abs(x[n]); this.env = a > this.env ? a : this.env*dec;
+      // hysteresis: opens at the threshold, closes 6 dB below it, so hiss near the threshold doesn't chatter
+      if (this.env > th) this.open = true; else if (this.env < th*0.5) this.open = false;
+      let t; if (this.open){ t = 1; this.hold = 0.08*sampleRate; } else if (this.hold > 0){ this.hold--; t = 1; } else t = 0;
       this.g += (t - this.g)*(t > this.g ? att : rel); y[n] = x[n]*this.g;
     }
     return true;
@@ -413,7 +417,7 @@ const MODELS = {
   brit:     {name:"Brit '45 · 4×12",           voiceF:1000,voiceG:4,  asym:.10, mul:2.2,  bright:1.5, midF:800, cab:{hp:90, lowF:105,lowG:4, notchF:1400,notchG:-2, presF:2400,presG:4, lp:4600}},
 };
 const DEFAULTS = {model:"tweed", driveOn:false, dGain:3, dTone:5, dLevel:6, gain:5.5, bass:5, mid:6, treble:6, vol:6,
-  tRate:4, tDepth:0, eTime:1.5, eFb:1.5, eMix:0, verb:3, gate:0, master:6};
+  tRate:4, tDepth:0, eTime:1.5, eFb:1.5, eMix:0, verb:3, gate:3, master:6};
 const FACTORY = {
   "Tweed Breakup":    {model:"tweed", gain:6, bass:5, mid:6, treble:6, vol:6, verb:3},
   "Chicago Shuffle":  {model:"tweed410", gain:5.5, bass:4, mid:7, treble:6, vol:6, eTime:1.2, eFb:1, eMix:3, verb:2},
@@ -433,7 +437,7 @@ const ampCurve = b => { const k = 2.5, o = Math.tanh(k*b), norm = Math.max(Math.
   return curve(x => (Math.tanh(k*(x+b)) - o)/norm); };
 
 function springIR(c){
-  const sr = c.sampleRate, n = Math.floor(sr*2.6), b = c.createBuffer(2, n, sr);
+  const sr = c.sampleRate, n = Math.floor(sr*(isMobile ? 1.8 : 2.6)), b = c.createBuffer(2, n, sr);
   for (let ch = 0; ch < 2; ch++){
     const d = b.getChannelData(ch), period = 0.029 + ch*0.0037; let lp = 0, slow = 0;
     for (let i = 0; i < n; i++){
@@ -463,7 +467,8 @@ function build(){
   const c = A.ctx, N = A.N;
   const g = (v = 1) => { const n = c.createGain(); n.gain.value = v; return n; };
   const bq = (type, f, q = 0.707, gain = 0) => { const n = c.createBiquadFilter(); n.type = type; n.frequency.value = f; n.Q.value = q; n.gain.value = gain; return n; };
-  const ws = (cv, os) => { const n = c.createWaveShaper(); n.curve = cv; n.oversample = os; return n; };
+  // phones: 2x oversampling is plenty and avoids audio dropouts (crackle) from CPU load
+  const ws = (cv, os) => { const n = c.createWaveShaper(); n.curve = cv; n.oversample = isMobile && os === "4x" ? "2x" : os; return n; };
   const chain = (...ns) => { for (let i = 0; i < ns.length - 1; i++) ns[i].connect(ns[i+1]); return ns[ns.length-1]; };
 
   N.split = c.createChannelSplitter(2); N.chL = g(1); N.chR = g(0); N.inTrim = g(1);
@@ -473,7 +478,10 @@ function build(){
   N.inTrim.connect(N.gate);
 
   // Green Drive pedal (mid-hump overdrive)
-  N.pdIn = g(1); N.gate.connect(N.pdIn);
+  // De-hiss before any distortion: a guitar has little above ~6 kHz, but input hiss does,
+  // and the drive stages would turn it into fizz. Second filter trims 50 Hz mains hum.
+  N.deHiss = bq("lowpass", 6200, 0.6); N.deHum = bq("highpass", 70, 0.7);
+  N.pdIn = g(1); chain(N.gate, N.deHum, N.deHiss, N.pdIn);
   N.pdBypass = g(1); N.pdWet = g(0); N.pdIn.connect(N.pdBypass);
   N.pdPre = g(4); N.pdTone = bq("lowpass", 3000, 0.5); N.pdLevel = g(0.6);
   chain(N.pdIn, bq("highpass", 180), bq("peaking", 720, 0.9, 8), N.pdPre, ws(curve(x => Math.tanh(2.2*x)/Math.tanh(2.2)), "4x"), N.pdTone, N.pdLevel, N.pdWet);
@@ -599,6 +607,21 @@ $("inSel").onchange = () => { if (A.stream) plugIn(); };
 $("chSel").value = store.get("jj.ch") || "L"; $("trim").value = store.get("jj.trim") || "0";
 $("chSel").onchange = applyChannel; $("trim").oninput = applyChannel;
 $("outSel").onchange = async () => { try{ await A.ctx.setSinkId($("outSel").value); store.set("jj.output", $("outSel").value); }catch(e){ console.warn(e); } };
+// Auto gate: listen to the idle input for 2 s and set the gate just above its noise
+$("autoGateBtn").onclick = async () => {
+  const b = $("autoGateBtn");
+  if (!A.stream && !(await plugIn())) return;
+  b.disabled = true; b.textContent = "Quiet, listening…";
+  let peak = 0; const t0 = performance.now();
+  await new Promise(res => { const tick = () => { peak = Math.max(peak, level(A.N.inMeter)); performance.now() - t0 < 2000 ? requestAnimationFrame(tick) : res(); }; tick(); });
+  const floorDb = 20*Math.log10(peak + 1e-7), target = floorDb + 8;       // threshold 8 dB over the noise peaks
+  const v = Math.round(clamp((target + 78)/4, 0.5, 10)*10)/10;            // inverse of apply(): -78 + gate*4
+  knobs.gate.set(v);
+  b.disabled = false;
+  b.textContent = floorDb > -40 ? "Input very noisy" : "Gate " + v.toFixed(1);
+  if (floorDb > -40) $("deckMode").textContent = "Your input hiss is very loud (" + Math.round(floorDb) + " dB). Lower Trim, raise the guitar volume, or check the cable.";
+  setTimeout(() => b.textContent = "Auto gate", 2500);
+};
 $("latIn").value = store.get("jj.lat") || "0";
 $("latIn").onchange = () => store.set("jj.lat", $("latIn").value);
 
@@ -1122,7 +1145,7 @@ const mbuf = new Float32Array(1024);
 function level(an){ an.getFloatTimeDomainData(mbuf); let p = 0; for (let i = 0; i < mbuf.length; i++){ const a = Math.abs(mbuf[i]); if (a > p) p = a; } return p; }
 const mIn = $("mIn"), mOut = $("mOut"); let clipUntil = 0;
 function frame(){
-  if (A.ctx){
+  if (A.ctx && A.N.outMeter){   // the graph is built a moment after the context exists
     const li = A.stream ? level(A.N.inMeter) : 0, lo = level(A.N.outMeter);
     const w = v => Math.round(clamp((20*Math.log10(v + 1e-6) + 60)/60, 0, 1)*100) + "%";
     mIn.firstChild.style.width = w(li); mOut.firstChild.style.width = w(lo);

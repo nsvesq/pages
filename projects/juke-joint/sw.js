@@ -1,5 +1,5 @@
 // Juke Joint service worker: caches the app shell so it opens offline. Bump CACHE when shell files change.
-const CACHE = "jukejoint-v1";
+const CACHE = "jukejoint-v2";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "favicon.svg", "favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
