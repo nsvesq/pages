@@ -356,6 +356,59 @@ input[type=range].vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;h
 .ls-meta{font-size:.78rem;color:var(--muted);line-height:1.6;}
 @media(max-width:500px){.listen{padding:22px 16px}.ls-row{grid-template-columns:minmax(0,1.4fr) 1fr 40px}.ls-name b{font-size:1.5rem}}
 
+/* Note Finder (Identify tab) */
+.tabpane .listen.nf{margin-top:24px;border-top-color:var(--teal);}
+.nf-transport{margin-top:10px;}
+.nf-prog{height:4px;background:var(--paper);border-radius:2px;overflow:hidden;margin-top:12px;}
+.nf-prog[hidden],.nf-level[hidden],.nf-pick[hidden],.nf-yt[hidden]{display:none;}
+.nf-yt-form{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.nf-yt-form input{flex:1 1 260px;min-width:0;padding:10px 12px;border:1px solid var(--border);background:var(--white);color:var(--text);font:inherit;font-size:.92rem;}
+.nf-yt-form input:focus{outline:2px solid var(--gold);outline-offset:1px;}
+.nf-yt{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px;margin-top:14px;align-items:start;}
+.nf-yt-frame{position:relative;aspect-ratio:16/9;background:#000;}
+.nf-yt-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.nf-yt-side{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+.nf-yt-help{font-size:.84rem;color:var(--muted);line-height:1.5;}
+@media(max-width:640px){.nf-yt{grid-template-columns:1fr}}
+.nf-pick{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.nf-pick select{flex:0 1 360px;min-width:0;padding:6px 8px;border:1px solid var(--border);background:var(--white);color:var(--text);font:inherit;font-size:.88rem;letter-spacing:0;text-transform:none;}
+.nf-level{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.nf-level b{color:var(--navy);}
+.ls-btn.nf-on{background:var(--teal);border-color:var(--teal);color:var(--white);animation:lsPulse 1.2s ease-in-out infinite;}
+.nf-lbar{flex:0 1 320px;height:8px;background:var(--paper);border-radius:4px;overflow:hidden;}
+.nf-lbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal) 70%,var(--gold) 85%,var(--accent));transition:width .06s;}
+.nf-prog>i{display:block;height:100%;width:0;background:var(--gold);transition:width .1s;}
+.nf-readout{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:center;margin:14px 0 22px;padding:16px 20px;background:var(--off);border-left:4px solid var(--teal);}
+.nf-big{font-family:'Playfair Display',serif;font-weight:900;font-size:3.2rem;line-height:1;min-width:3.4ch;color:var(--navy);font-variant-numeric:tabular-nums;}
+.nf-big small{font-size:1.4rem;color:var(--muted);font-weight:600;}
+.nf-meta{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.nf-ar{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--gold);}
+.nf-meter{position:relative;height:14px;background:var(--paper);border-radius:7px;max-width:320px;}
+.nf-meter::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--muted);transform:translateX(-1px);}
+.nf-meter i{position:absolute;top:2px;width:10px;height:10px;border-radius:50%;background:var(--teal);left:calc(50% - 5px);transition:left .08s;}
+.nf-scale{display:flex;justify-content:space-between;max-width:320px;font-size:.7rem;color:var(--muted);}
+.nf-hz{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums;}
+.nf-sl{margin:18px 0 8px;}
+.nf-sl small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);margin-left:6px;}
+.nf-trace{overflow-x:auto;border:1px solid var(--border);background:var(--white);}
+.nf-trace canvas,#nfHist{display:block;}
+.nf-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+.nf-head .nf-sl{margin-bottom:8px;}
+.ls-btn.nf-small{padding:6px 12px;font-size:.66rem;}
+.nf-notes{display:flex;flex-wrap:wrap;gap:6px;}
+.nf-chip{display:flex;flex-direction:column;align-items:flex-start;padding:6px 10px;border:1px solid var(--border);background:var(--off);color:var(--navy);cursor:pointer;min-width:62px;font-family:inherit;text-align:left;border-radius:2px;}
+.nf-chip:hover{border-color:var(--navy);}
+.nf-chip b{font-family:'Playfair Display',serif;font-size:1.05rem;}
+.nf-chip span{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;}
+.nf-chip.on{background:rgba(184,150,42,.18);border-color:var(--gold);}
+.nf-empty{color:var(--muted);font-size:.88rem;}
+.nf-set{margin-top:20px;padding-top:14px;border-top:1px solid var(--border);}
+.nf-set summary{cursor:pointer;font-weight:600;color:var(--navy);font-size:.85rem;}
+.nf-fields{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;}
+.nf-fields label{display:flex;flex-direction:column;gap:6px;}
+.nf-fields input{font:inherit;font-size:.9rem;padding:6px 8px;border:1px solid var(--border);background:var(--white);color:var(--text);width:120px;letter-spacing:0;text-transform:none;}
+@media(max-width:500px){.nf-big{font-size:2.5rem}.nf-readout{padding:14px;gap:6px 14px}}
+
 /* Fretboard panel */
 .fret-panel{background:var(--white)!important;border:1px solid var(--border)!important;border-top:3px solid var(--teal)!important;box-shadow:0 2px 16px var(--shadow)!important;}
 .fret-panel .rtitle{color:var(--teal)!important;}
@@ -583,6 +636,68 @@ header{padding:22px 20px 18px;margin-bottom:22px;}
     </div>
     <div class="ls-status" id="lsStatus"></div>
     <div class="ls-result" id="lsResult" hidden></div>
+  </div>
+
+  <div class="listen nf" id="nfPanel">
+    <div class="rtitle">Note Finder</div>
+    <p class="ls-intro">Names each note of a recording in quarter tones, with how many cents it is off and its Arabic name. Works on a file, the microphone, or a browser tab such as YouTube.</p>
+    <div class="ls-actions">
+      <label class="ls-btn" for="nfFile">⤒ Load audio file</label>
+      <input type="file" id="nfFile" accept="audio/*,video/*" hidden>
+      <button class="ls-btn ghost" id="nfMic" type="button">🎙 Microphone</button>
+      <button class="ls-btn ghost" id="nfTab" type="button">⧉ Browser tab</button>
+      <button class="ls-btn ghost" id="nfSample" type="button">♪ Sample phrase</button>
+    </div>
+    <form class="nf-yt-form" id="nfYtForm">
+      <input type="text" id="nfYtUrl" placeholder="Paste a YouTube link" autocomplete="off" aria-label="YouTube link">
+      <button class="ls-btn ghost" type="submit">Load video</button>
+    </form>
+    <div class="nf-yt" id="nfYt" hidden>
+      <div class="nf-yt-frame"><iframe id="nfYtFrame" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <div class="nf-yt-side">
+        <button class="ls-btn rec" id="nfYtListen" type="button">● Listen to this video</button>
+        <p class="nf-yt-help">Chrome asks what to share: choose <b>this tab</b> and keep <b>“Also share tab audio”</b> on. Then press play on the video. Notes appear as it plays.</p>
+        <button class="ls-btn ghost nf-small" id="nfYtClose" type="button">✕ Remove video</button>
+      </div>
+    </div>
+    <div class="ls-actions nf-transport">
+      <button class="ls-btn ghost" id="nfPlay" type="button" disabled>▶ Play</button>
+      <button class="ls-btn ghost" id="nfStop" type="button" disabled>■ Stop</button>
+      <button class="ls-btn ghost" id="nfClear" type="button" disabled>✕ Clear</button>
+      <button class="ls-btn" id="nfMaqam" type="button" disabled title="Send this audio to Listen &amp; Identify above">Find the maqam ↑</button>
+    </div>
+    <label class="nf-pick" id="nfMicPick" hidden>Input <select id="nfMicSel"><option value="">Default microphone</option></select></label>
+    <div class="nf-level" id="nfLevelWrap" hidden><span>Listening to: <b id="nfLevelSrc"></b></span><div class="nf-lbar"><i id="nfLevel"></i></div></div>
+    <div class="nf-prog" id="nfProg" hidden><i></i></div>
+    <div class="ls-status" id="nfStatus" role="status"></div>
+
+    <div class="nf-readout">
+      <div class="nf-big" id="nfBig">–</div>
+      <div class="nf-meta">
+        <div class="nf-ar" id="nfAr">&nbsp;</div>
+        <div class="nf-meter" aria-hidden="true"><i id="nfNeedle"></i></div>
+        <div class="nf-scale"><span>−25¢</span><span>in tune</span><span>+25¢</span></div>
+        <div class="nf-hz" id="nfHz">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="slabel nf-sl">Pitch trace <small>lines are semitones, dotted lines quarter tones</small></div>
+    <div class="nf-trace" id="nfTraceBox"><canvas id="nfTrace"></canvas></div>
+
+    <div class="nf-head"><div class="slabel nf-sl">Notes <small id="nfCount"></small></div><button class="ls-btn ghost nf-small" id="nfCopy" type="button" disabled>Copy notes</button></div>
+    <div class="nf-notes" id="nfNotes"></div>
+
+    <div class="slabel nf-sl">Note spread <small>time spent on each quarter tone</small></div>
+    <div><canvas id="nfHist"></canvas></div>
+
+    <details class="nf-set">
+      <summary>Settings</summary>
+      <div class="nf-fields">
+        <label>Reference A4 (Hz)<input id="nfRef" type="number" min="400" max="480" step="0.5" value="440"></label>
+        <label>Shortest note (ms)<input id="nfMinMs" type="number" min="30" max="500" step="10" value="90"></label>
+        <label>Clarity threshold<input id="nfClar" type="number" min="0.5" max="0.98" step="0.02" value="0.8"></label>
+      </div>
+    </details>
   </div>
   </div>
 
@@ -1773,6 +1888,7 @@ render = function() {
 </script>
 <script src="listen.js"></script>
 <script src="examples.js"></script>
+<script src="notefinder.js"></script>
 
 <script>
 if ('serviceWorker' in navigator) {
