@@ -394,6 +394,9 @@
         const buf = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(await b.arrayBuffer());
         if (token !== recToken) return;
         blob = b; buffer = buf; label = lbl; mode = 'file';
+        // re-read the whole recording: the live view can drop frames on a busy or hidden page
+        const fr = await analyse(buf); if (token !== recToken) return;
+        frames = fr; resegment();
         $('nfPlay').disabled = false; $('nfMaqam').disabled = false; redraw();
         status('Stopped. ' + notes.length + ' notes captured. The recording is kept: tap a note to hear it.');
         if (notes.length) identify(false);
