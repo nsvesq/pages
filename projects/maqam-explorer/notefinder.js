@@ -6,7 +6,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  if (!$('nfPanel')) return;
+  if (!$('nfFile')) return;
 
   // Arabic names by quarter-tone index from C (0 = C, 1 = C¼♯ … 23 = B¼♯)
   const ARABIC = { 0: 'Rast', 2: 'Zirkulah', 4: 'Dukah', 6: 'Kurdi', 7: 'Sikah', 8: 'Busalik', 10: 'Jaharkah', 12: 'Hijaz',
@@ -188,12 +188,13 @@
 
   // ── File / sample ──────────────────────────────────────────────────
   async function loadBuffer(buf, lbl, srcBlob) {
-    stopAll(); recToken++; mode = 'file'; buffer = buf; blob = srcBlob || null; label = lbl;
+    stopAll(); recToken++; resetMaqam(); mode = 'file'; buffer = buf; blob = srcBlob || null; label = lbl;
     status('Analysing ' + lbl + '…');
     frames = await analyse(buf); resegment(); redraw(); showCurrent(null);
     $('nfPlay').disabled = false; $('nfStop').disabled = true; $('nfMaqam').disabled = false;
     status(notes.length ? `${lbl}: ${notes.length} notes over ${buf.duration.toFixed(1)} s. Tap a note to hear it.`
                         : `${lbl}: no clear notes found. Try a lower clarity threshold in Settings.`);
+    if (notes.length) identify(false);
   }
   $('nfFile').addEventListener('change', async e => {
     const f = e.target.files[0]; if (!f) return;
@@ -228,12 +229,29 @@
   }
   $('nfSample').addEventListener('click', () => loadBuffer(makeSample(), 'Sample phrase (Bayati on D)'));
 
-  // ── Hand-off to Listen & Identify ──────────────────────────────────
+  // ── Maqam: feed the audio to MaqamListen (listen.js) ────────────
+  let handed = null;                       // the blob/buffer MaqamListen already has
+  function resetMaqam() {
+    handed = null;
+    const a = $('lsAudio'); if (a) a.pause();
+    $('lsSrc').hidden = true; $('lsResult').hidden = true; $('lsStatus').textContent = '';
+  }
+  async function identify(scroll) {
+    if (!window.MaqamListen) return;
+    const cur = blob || buffer; if (!cur) return;
+    if (handed === cur) MaqamListen.analyse();
+    else {
+      handed = cur;
+      await MaqamListen.loadBlob(blob || toWav(buffer), label, true);
+      // the passage picker only matters for audio longer than one analysis window
+      const d = buffer ? buffer.duration : 0;
+      if (d && d <= 45) $('lsSrc').hidden = true;
+    }
+    if (scroll) $('lsMaqam').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   $('nfMaqam').addEventListener('click', async () => {
     if (mode === 'live') { stopAll(); await pendingRec; }
-    if ((!buffer && !blob) || !window.MaqamListen) return;
-    MaqamListen.loadBlob(blob || toWav(buffer), label, true);
-    $('listenPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    identify(true);
   });
 
   // ── Playback ───────────────────────────────────────────────────────
@@ -305,7 +323,7 @@
     analyser = liveCtx.createAnalyser(); analyser.fftSize = 2048; src.connect(analyser);
     liveT0 = liveCtx.currentTime; lastSeg = 0; heardAt = 0; silentHint = false; liveKind = kind;
     // keep a recording of what is heard, so "Find the maqam", Play and note taps work afterwards
-    recChunks = []; rec = null; recToken++;
+    recChunks = []; rec = null; recToken++; resetMaqam();
     if (window.MediaRecorder) {
       try {
         rec = new MediaRecorder(new MediaStream(liveStream.getAudioTracks()));
@@ -377,7 +395,8 @@
         if (token !== recToken) return;
         blob = b; buffer = buf; label = lbl; mode = 'file';
         $('nfPlay').disabled = false; $('nfMaqam').disabled = false; redraw();
-        status('Stopped. ' + notes.length + ' notes captured. The recording is kept: tap a note to hear it, or press Find the maqam.');
+        status('Stopped. ' + notes.length + ' notes captured. The recording is kept: tap a note to hear it.');
+        if (notes.length) identify(false);
       } catch (e) {
         if (token === recToken) { blob = b; label = lbl; $('nfMaqam').disabled = false; }
       }
@@ -427,7 +446,7 @@
   });
   $('nfStop').addEventListener('click', stopAll);
   $('nfClear').addEventListener('click', () => {
-    stopAll(); recToken++; recChunks = [];
+    stopAll(); recToken++; recChunks = []; resetMaqam();
     frames = []; notes = []; sm = []; buffer = null; blob = null; label = ''; mode = null;
     $('nfPlay').disabled = true; $('nfMaqam').disabled = true; $('nfTraceBox').scrollLeft = 0;
     status(''); redraw();

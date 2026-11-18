@@ -432,8 +432,8 @@
     }, 200);
   }
 
-  $('lsRec').addEventListener('click', toggleRec);
-  $('lsFile').addEventListener('change', e => {
+  if ($('lsRec')) $('lsRec').addEventListener('click', toggleRec);
+  if ($('lsFile')) $('lsFile').addEventListener('change', e => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     if (f.size > 60 * 1024 * 1024) { status('That file is very large — please use one under 60 MB.'); return; }

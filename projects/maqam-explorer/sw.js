@@ -2,7 +2,7 @@
 // Network-first for the app shell (so updates arrive straight away), falling back to the
 // cache when offline. Only same-origin GETs are handled; YouTube, fonts and the drone MP3s
 // (range requests) go straight to the network.
-const CACHE = 'maqam-explorer-v3';
+const CACHE = 'maqam-explorer-v4';
 const SHELL = [
   './', 'index.html', 'listen.js', 'examples.js', 'notefinder.js', 'manifest.json',
   'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-180.png',

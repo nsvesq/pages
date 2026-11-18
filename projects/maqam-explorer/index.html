@@ -357,7 +357,9 @@ input[type=range].vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;h
 @media(max-width:500px){.listen{padding:22px 16px}.ls-row{grid-template-columns:minmax(0,1.4fr) 1fr 40px}.ls-name b{font-size:1.5rem}}
 
 /* Note Finder (Identify tab) */
-.tabpane .listen.nf{margin-top:24px;border-top-color:var(--teal);}
+.ls-maqam{margin-top:22px;}
+.ls-maqam .ls-src{margin-top:4px;}
+.ls-maqam .ls-src audio{display:none;}
 .nf-transport{margin-top:10px;}
 .nf-prog{height:4px;background:var(--paper);border-radius:2px;overflow:hidden;margin-top:12px;}
 .nf-prog[hidden],.nf-level[hidden],.nf-pick[hidden],.nf-yt[hidden]{display:none;}
@@ -610,37 +612,9 @@ header{padding:22px 20px 18px;margin-bottom:22px;}
   </div>
 
   <div class="tabpane" data-pane="identify">
-  <div class="listen" id="listenPanel">
+  <div class="listen nf" id="listenPanel">
     <div class="rtitle">Listen &amp; Identify</div>
-    <p class="ls-intro">Play or sing a melody and the explorer will suggest which maqam it fits. Solo melodies work best, ideally ending on the tonic. Your audio never leaves this device.</p>
-    <div class="ls-actions">
-      <button class="ls-btn rec" id="lsRec" type="button">● Record</button>
-      <label class="ls-btn ghost" for="lsFile">⤒ Load audio file</label>
-      <input type="file" id="lsFile" accept="audio/*" hidden>
-      <span class="ls-timer" id="lsTimer"></span>
-    </div>
-    <div class="ls-src" id="lsSrc" hidden>
-      <div class="ls-srcname" id="lsSrcName"></div>
-      <audio id="lsAudio" controls preload="auto"></audio>
-      <div class="ls-range">
-        <span>Analyse from</span>
-        <input type="range" id="lsStart" min="0" max="0" step="0.5" value="0">
-        <span id="lsStartLbl">0:00</span>
-        <span>for</span>
-        <select id="lsLen"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="45">45 s</option></select>
-      </div>
-      <div class="ls-actions">
-        <button class="ls-btn" id="lsGo" type="button">Find the maqam →</button>
-        <button class="ls-btn ghost" id="lsPlayPass" type="button">▶ Play passage</button>
-      </div>
-    </div>
-    <div class="ls-status" id="lsStatus"></div>
-    <div class="ls-result" id="lsResult" hidden></div>
-  </div>
-
-  <div class="listen nf" id="nfPanel">
-    <div class="rtitle">Note Finder</div>
-    <p class="ls-intro">Names each note of a recording in quarter tones, with how many cents it is off and its Arabic name. Works on a file, the microphone, or a browser tab such as YouTube.</p>
+    <p class="ls-intro">Play or sing, load a recording, or listen to a YouTube video or another browser tab. Each note is named in quarter tones with its Arabic name, then the explorer suggests which maqam it fits. Solo melodies work best, ideally ending on the tonic. Your audio never leaves this device.</p>
     <div class="ls-actions">
       <label class="ls-btn" for="nfFile">⤒ Load audio file</label>
       <input type="file" id="nfFile" accept="audio/*,video/*" hidden>
@@ -664,7 +638,7 @@ header{padding:22px 20px 18px;margin-bottom:22px;}
       <button class="ls-btn ghost" id="nfPlay" type="button" disabled>▶ Play</button>
       <button class="ls-btn ghost" id="nfStop" type="button" disabled>■ Stop</button>
       <button class="ls-btn ghost" id="nfClear" type="button" disabled>✕ Clear</button>
-      <button class="ls-btn" id="nfMaqam" type="button" disabled title="Send this audio to Listen &amp; Identify above">Find the maqam ↑</button>
+      <button class="ls-btn" id="nfMaqam" type="button" disabled title="Suggest the maqam for this audio">Find the maqam ↓</button>
     </div>
     <label class="nf-pick" id="nfMicPick" hidden>Input <select id="nfMicSel"><option value="">Default microphone</option></select></label>
     <div class="nf-level" id="nfLevelWrap" hidden><span>Listening to: <b id="nfLevelSrc"></b></span><div class="nf-lbar"><i id="nfLevel"></i></div></div>
@@ -689,6 +663,27 @@ header{padding:22px 20px 18px;margin-bottom:22px;}
 
     <div class="slabel nf-sl">Note spread <small>time spent on each quarter tone</small></div>
     <div><canvas id="nfHist"></canvas></div>
+
+    <div class="ls-maqam" id="lsMaqam">
+      <div class="slabel nf-sl">Maqam <small>which maqam the notes fit best</small></div>
+    <div class="ls-src" id="lsSrc" hidden>
+      <div class="ls-srcname" id="lsSrcName"></div>
+      <audio id="lsAudio" preload="auto" hidden></audio>
+      <div class="ls-range">
+        <span>Analyse from</span>
+        <input type="range" id="lsStart" min="0" max="0" step="0.5" value="0">
+        <span id="lsStartLbl">0:00</span>
+        <span>for</span>
+        <select id="lsLen"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="45">45 s</option></select>
+      </div>
+      <div class="ls-actions">
+        <button class="ls-btn" id="lsGo" type="button">Find the maqam in this passage</button>
+        <button class="ls-btn ghost" id="lsPlayPass" type="button">▶ Play passage</button>
+      </div>
+    </div>
+      <div class="ls-status" id="lsStatus"></div>
+      <div class="ls-result" id="lsResult" hidden></div>
+    </div>
 
     <details class="nf-set">
       <summary>Settings</summary>
